@@ -1,0 +1,43 @@
+generated: '2026-07-18'
+method: searched
+source: openapi/contextdev-openapi.yml
+method_note: >-
+  Derived bearerAuth from the OpenAPI, upgraded with the documented auth model
+  from https://www.context.dev/auth.md and the OAuth2 agent-auth metadata at
+  /.well-known/oauth-authorization-server.
+docs: https://www.context.dev/auth.md
+summary:
+  types:
+  - http
+  - oauth2
+  api_key_prefix: ctxt_secret_
+  oauth2_flows:
+  - jwt-bearer
+  - agent-auth-claim
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  description: >-
+    Static API key issued from the dashboard (prefix ctxt_secret_), sent as a
+    Bearer token in the Authorization header.
+  sources:
+  - openapi/contextdev-openapi.yml
+- name: AgentAuth
+  type: oauth2
+  description: >-
+    WorkOS-style agentic registration (service_auth). Agents discover the
+    authorization server, register at /agent/identity, deliver a claim code to
+    the user, then poll /oauth2/token. Scopes api.read + api.write.
+  authorization_server: https://www.context.dev
+  token_endpoint: https://www.context.dev/oauth2/token
+  revocation_endpoint: https://www.context.dev/oauth2/revoke
+  scopes:
+  - api.read
+  - api.write
+  grant_types:
+  - urn:ietf:params:oauth:grant-type:jwt-bearer
+  - urn:workos:agent-auth:grant-type:claim
+  sources:
+  - well-known/contextdev-oauth-authorization-server.json
+  - https://www.context.dev/auth.md
