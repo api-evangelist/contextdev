@@ -1,0 +1,2642 @@
+openapi: 3.1.0
+info:
+  title: Context Brand Intelligence API
+  description: API for retrieving context data from any website
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: Brand Intelligence
+paths:
+  /brand/retrieve:
+    get:
+      x-hidden: true
+      summary: Retrieve brand data by domain
+      description: Retrieve logos, backdrops, colors, industry, description, and more from any domain
+      security:
+      - bearerAuth: []
+      tags:
+      - Brand Intelligence
+      x-mint:
+        content: <Badge color="orange">10 Credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          minLength: 3
+          description: Domain name to retrieve brand data for (e.g., 'example.com', 'google.com'). Cannot be used with name or ticker parameters.
+        required: false
+        description: Domain name to retrieve brand data for (e.g., 'example.com', 'google.com'). Cannot be used with name or ticker parameters.
+        name: domain
+        in: query
+      - schema:
+          type: string
+          minLength: 3
+          maxLength: 30
+          description: Company name to retrieve brand data for (e.g., 'Apple Inc'). Cannot be used with domain or ticker parameters.
+        required: false
+        description: Company name to retrieve brand data for (e.g., 'Apple Inc'). Cannot be used with domain or ticker parameters.
+        name: name
+        in: query
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 15
+          pattern: ^[A-Za-z0-9.]+$
+          description: Stock ticker symbol to retrieve brand data for (e.g., 'AAPL'). Cannot be used with domain or name parameters.
+        required: false
+        description: Stock ticker symbol to retrieve brand data for (e.g., 'AAPL'). Cannot be used with domain or name parameters.
+        name: ticker
+        in: query
+      - schema:
+          $ref: '#/components/schemas/StockExchange'
+        required: false
+        description: Stock exchange code.
+        name: ticker_exchange
+        in: query
+      - schema:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        required: false
+        description: Language to force for the retrieved brand data.
+        name: force_language
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data. Works with all three lookup methods.
+        required: false
+        description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data. Works with all three lookup methods.
+        name: maxSpeed
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          default: 7776000000
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        required: false
+        description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        name: maxAgeMs
+        in: query
+      - schema:
+          $ref: '#/components/schemas/TimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandResponse'
+        '400':
+          description: Bad Request
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '401':
+          description: Unauthorized
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+    post:
+      summary: Retrieve brand data
+      description: 'Retrieve logos, backdrops, colors, industry, description, and more. Provide exactly one lookup identifier in the request body: a domain, company name, email address, stock ticker, transaction descriptor, or direct URL. Note: `by_direct_url` fetches brand data only from the provided URL — not from the entire internet.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandRetrieveRequest'
+            examples:
+              domain:
+                summary: By domain
+                value:
+                  type: by_domain
+                  domain: stripe.com
+              name:
+                summary: By name
+                value:
+                  type: by_name
+                  name: Stripe
+              email:
+                summary: By email
+                value:
+                  type: by_email
+                  email: jane@stripe.com
+              ticker:
+                summary: By stock
+                value:
+                  type: by_ticker
+                  ticker: AAPL
+                  ticker_exchange: NASDAQ
+              direct_url:
+                summary: By direct URL
+                value:
+                  type: by_direct_url
+                  direct_url: https://stripe.com/enterprise
+              transaction:
+                summary: By transaction
+                value:
+                  type: by_transaction
+                  transaction_info: SQ *COFFEE SHOP
+                  country_gl: us
+                  mcc: 5814
+                  high_confidence_only: true
+      security:
+      - bearerAuth: []
+      tags:
+      - Brand Intelligence
+      x-mint:
+        content: <Badge color="orange">10 Credits</Badge>
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandResponse'
+        '400':
+          description: Bad Request
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity - Free email or disposable email detected
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst brand = await client.brand.retrieve({ domain: 'stripe.com', type: 'by_domain' });\n\nconsole.log(brand.brand);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nbrand = client.brand.retrieve(\n    domain=\"stripe.com\",\n    type=\"by_domain\",\n)\nprint(brand.brand)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tbrand, err := client.Brand.Get(context.TODO(), contextdev.BrandGetParams{\n\t\tOfByDomain: &contextdev.BrandGetParamsBodyByDomain{\n\t\t\tDomain: \"stripe.com\",\n\t\t},\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", brand.Brand)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          brand = context_dev.brand.retrieve(body: {domain: "stripe.com", type: :by_domain})
+
+
+          puts(brand)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $brand = $client->brand->retrieve(\n    domain: 'xxx',\n    type: 'by_transaction',\n    forceLanguage: 'afrikaans',\n    maxAgeMs: 0,\n    maxSpeed: true,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    name: 'xxx',\n    countryGl: 'country_gl',\n    email: 'dev@stainless.com',\n    ticker: 'ticker',\n    tickerExchange: 'ticker_exchange',\n    directURL: 'https://example.com',\n    transactionInfo: 'xxx',\n    city: 'city',\n    highConfidenceOnly: true,\n    mcc: 'string',\n    phone: 'string',\n  );\n\n  var_dump($brand);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev brand retrieve \\\n  --api-key 'My API Key' \\\n  --domain xxx \\\n  --type by_domain \\\n  --name xxx \\\n  --email dev@stainless.com \\\n  --ticker ticker \\\n  --direct-url https://example.com \\\n  --transaction-info xxx"
+  /brand/retrieve-by-name:
+    get:
+      x-hidden: true
+      summary: Retrieve brand data by company name
+      description: Retrieve brand information using a company name.
+      security:
+      - bearerAuth: []
+      tags:
+      - Brand Intelligence
+      x-mint:
+        content: <Badge color="orange">10 Credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          minLength: 3
+          maxLength: 30
+          description: Company name to retrieve brand data for (e.g., 'Apple Inc', 'Microsoft Corporation'). Must be 3-30 characters.
+        required: true
+        description: Company name to retrieve brand data for (e.g., 'Apple Inc', 'Microsoft Corporation'). Must be 3-30 characters.
+        name: name
+        in: query
+      - schema:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        required: false
+        description: Language to force for the retrieved brand data.
+        name: force_language
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        required: false
+        description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        name: maxSpeed
+        in: query
+      - schema:
+          $ref: '#/components/schemas/CountryGL'
+        required: false
+        description: Two-letter ISO 3166-1 alpha-2 country code (GL parameter) used to localize search.
+        name: country_gl
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          default: 7776000000
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        required: false
+        description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        name: maxAgeMs
+        in: query
+      - schema:
+          $ref: '#/components/schemas/TimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandResponse'
+        '400':
+          description: Bad Request - Invalid company name or company not found
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal Server Error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /brand/retrieve-by-email:
+    get:
+      x-hidden: true
+      summary: Retrieve brand data by email address
+      description: Retrieve brand information using an email address while detecting disposable and free email addresses. Disposable and free email addresses (like gmail.com, yahoo.com) will throw a 422 error.
+      security:
+      - bearerAuth: []
+      tags:
+      - Brand Intelligence
+      x-mint:
+        content: <Badge color="orange">10 Credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          minLength: 1
+          format: email
+          description: Email address to retrieve brand data for (e.g., 'contact@example.com'). The domain will be extracted from the email. Free email providers (gmail.com, yahoo.com, etc.) and disposable email addresses are not allowed.
+        required: true
+        description: Email address to retrieve brand data for (e.g., 'contact@example.com'). The domain will be extracted from the email. Free email providers (gmail.com, yahoo.com, etc.) and disposable email addresses are not allowed.
+        name: email
+        in: query
+      - schema:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        required: false
+        description: Language to force for the retrieved brand data.
+        name: force_language
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        required: false
+        description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        name: maxSpeed
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          default: 7776000000
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        required: false
+        description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        name: maxAgeMs
+        in: query
+      - schema:
+          $ref: '#/components/schemas/TimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandResponse'
+        '400':
+          description: Bad Request - Invalid email or domain not found
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Entity - Free email or disposable email detected
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'error'
+                  error_code:
+                    type: string
+                    enum:
+                    - FREE_EMAIL_DETECTED
+                    - DISPOSABLE_EMAIL_DETECTED
+                    description: Error code indicating whether a free email provider or disposable email was detected
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal Server Error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /brand/retrieve-by-ticker:
+    get:
+      x-hidden: true
+      summary: Retrieve brand data by stock ticker
+      description: Retrieve brand information using a stock ticker symbol.
+      security:
+      - bearerAuth: []
+      tags:
+      - Brand Intelligence
+      x-mint:
+        content: <Badge color="orange">10 Credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 15
+          pattern: ^[A-Za-z0-9.]+$
+          description: Stock ticker symbol to retrieve brand data for (e.g., 'AAPL', 'GOOGL', 'BRK.A'). Must be 1-15 characters, letters/numbers/dots only.
+        required: true
+        description: Stock ticker symbol to retrieve brand data for (e.g., 'AAPL', 'GOOGL', 'BRK.A'). Must be 1-15 characters, letters/numbers/dots only.
+        name: ticker
+        in: query
+      - schema:
+          $ref: '#/components/schemas/StockExchange'
+        required: false
+        description: Stock exchange code.
+        name: ticker_exchange
+        in: query
+      - schema:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        required: false
+        description: Language to force for the retrieved brand data.
+        name: force_language
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        required: false
+        description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        name: maxSpeed
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          default: 7776000000
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        required: false
+        description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        name: maxAgeMs
+        in: query
+      - schema:
+          $ref: '#/components/schemas/TimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandResponse'
+        '400':
+          description: Bad Request - Invalid ticker or ticker not found
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal Server Error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /brand/retrieve-by-isin:
+    get:
+      x-hidden: true
+      summary: Retrieve brand data by ISIN
+      description: 'Retrieve brand information using an ISIN (International Securities Identification Number). '
+      security:
+      - bearerAuth: []
+      tags:
+      - Brand Intelligence
+      x-mint:
+        content: <Badge color="orange">10 Credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          minLength: 12
+          maxLength: 12
+          pattern: ^[A-Z]{2}[A-Z0-9]{9}[0-9]$
+          description: 'ISIN (International Securities Identification Number) to retrieve brand data for (e.g., ''AU000000IMD5'', ''US0378331005''). Must be exactly 12 characters: 2 letters followed by 9 alphanumeric characters and ending with a digit.'
+        required: true
+        description: 'ISIN (International Securities Identification Number) to retrieve brand data for (e.g., ''AU000000IMD5'', ''US0378331005''). Must be exactly 12 characters: 2 letters followed by 9 alphanumeric characters and ending with a digit.'
+        name: isin
+        in: query
+      - schema:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        required: false
+        description: Language to force for the retrieved brand data.
+        name: force_language
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        required: false
+        description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        name: maxSpeed
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          default: 7776000000
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        required: false
+        description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        name: maxAgeMs
+        in: query
+      - schema:
+          $ref: '#/components/schemas/TimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandResponse'
+        '400':
+          description: Bad Request - Invalid ISIN or ISIN not found
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal Server Error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /brand/transaction_identifier:
+    get:
+      x-hidden: true
+      summary: Identify brand from transaction data
+      description: Endpoint specially designed for platforms that want to identify transaction data by the transaction title.
+      security:
+      - bearerAuth: []
+      tags:
+      - Brand Intelligence
+      x-mint:
+        content: <Badge color="orange">10 Credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          minLength: 3
+          maxLength: 500
+          description: Transaction information to identify the brand
+        required: true
+        description: Transaction information to identify the brand
+        name: transaction_info
+        in: query
+      - schema:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        required: false
+        description: Language to force for the retrieved brand data.
+        name: force_language
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        required: false
+        description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        name: maxSpeed
+        in: query
+      - schema:
+          $ref: '#/components/schemas/TimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - schema:
+          $ref: '#/components/schemas/CountryGL'
+        required: false
+        description: Two-letter ISO 3166-1 alpha-2 country code (GL parameter) used to localize search.
+        name: country_gl
+        in: query
+      - schema:
+          type: string
+          description: Optional city name to prioritize when searching for the brand.
+        required: false
+        description: Optional city name to prioritize when searching for the brand.
+        name: city
+        in: query
+      - schema:
+          anyOf:
+          - type: string
+          - type: number
+          description: Optional Merchant Category Code (MCC) to help identify the business category/industry.
+        required: false
+        description: Optional Merchant Category Code (MCC) to help identify the business category/industry.
+        name: mcc
+        in: query
+      - schema:
+          anyOf:
+          - type: string
+          - type: number
+          description: Optional phone number from the transaction to help verify brand match.
+        required: false
+        description: Optional phone number from the transaction to help verify brand match.
+        name: phone
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: When set to true, the API will perform an additional verification steps to ensure the identified brand matches the transaction with high confidence.
+        required: false
+        description: When set to true, the API will perform an additional verification steps to ensure the identified brand matches the transaction with high confidence.
+        name: high_confidence_only
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrandResponse'
+        '401':
+          description: Unauthorized
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /brand/retrieve-simplified:
+    get:
+      summary: Retrieve simplified brand data by domain
+      description: 'Returns a simplified version of brand data containing only essential information: domain, title, colors, logos, and backdrops. Optimized for faster responses and reduced data transfer.'
+      security:
+      - bearerAuth: []
+      tags:
+      - Brand Intelligence
+      x-mint:
+        content: <Badge color="orange">10 Credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          minLength: 3
+          description: Domain name to retrieve simplified brand data for
+        required: true
+        description: Domain name to retrieve simplified brand data for
+        name: domain
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          default: 7776000000
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        required: false
+        description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        name: maxAgeMs
+        in: query
+      - schema:
+          $ref: '#/components/schemas/TimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - schema:
+          type: string
+          enum:
+          - light
+          - dark
+          description: Optional theme preference used when selecting brand assets.
+        required: false
+        description: Optional theme preference used when selecting brand assets.
+        name: theme
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimplifiedBrandResponse'
+        '400':
+          description: Bad Request
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '401':
+          description: Unauthorized
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '404':
+          description: Brand not found.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'error'
+                  error_code:
+                    type: string
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.brand.retrieveSimplified({ domain: 'xxx' });\n\nconsole.log(response.brand);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.brand.retrieve_simplified(\n    domain=\"xxx\",\n)\nprint(response.brand)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Brand.GetSimplified(context.TODO(), contextdev.BrandGetSimplifiedParams{\n\t\tDomain: \"xxx\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Brand)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.brand.retrieve_simplified(domain: "xxx")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->brand->retrieveSimplified(\n    domain: 'xxx',\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    theme: 'light',\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev brand retrieve-simplified \\\n  --api-key 'My API Key' \\\n  --domain xxx"
+components:
+  schemas:
+    BrandRetrieveByDirectUrlRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - by_direct_url
+          description: Discriminator for direct-URL-based brand retrieval.
+        direct_url:
+          type: string
+          format: uri
+          description: Full http(s) URL to fetch brand data from (e.g., 'https://stripe.com/enterprise'). Only this URL is fetched — not the entire internet.
+        timeoutMS:
+          $ref: '#/components/schemas/TimeoutMS'
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      required:
+      - type
+      - direct_url
+      additionalProperties: false
+      title: By direct URL
+      description: 'Retrieve brand data by fetching the provided URL directly. Note: if you use this, brand data is fetched only from the provided URL — not from the entire internet — so results are limited to what that single page contains. No domain resolution, database lookup, or cross-source enrichment is performed. Cannot be combined with domain, name, email, or ticker.'
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    BrandRetrieveByEmailRequest:
+      type: object
+      properties:
+        force_language:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        maxSpeed:
+          type: boolean
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        maxAgeMs:
+          type: integer
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        timeoutMS:
+          $ref: '#/components/schemas/TimeoutMS'
+        type:
+          type: string
+          enum:
+          - by_email
+          description: Discriminator for email-based brand retrieval.
+        email:
+          type: string
+          minLength: 1
+          format: email
+          description: Email address to retrieve brand data for (e.g., 'jane@stripe.com').
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      required:
+      - type
+      - email
+      additionalProperties: false
+      title: By email
+      description: Retrieve brand data by email address. The domain is extracted from the email. Free and disposable email providers are rejected with 422. Cannot be combined with domain, name, or ticker.
+    Subindustry:
+      type: string
+      enum:
+      - Defense Systems & Military Hardware
+      - Aerospace Manufacturing
+      - Avionics & Navigation Technology
+      - Subsea & Naval Defense Systems
+      - Space & Satellite Technology
+      - Defense IT & Systems Integration
+      - Software (B2B)
+      - Software (B2C)
+      - Cloud Infrastructure & DevOps
+      - Cybersecurity
+      - Artificial Intelligence & Machine Learning
+      - Data Infrastructure & Analytics
+      - Hardware & Semiconductors
+      - Fintech Infrastructure
+      - eCommerce & Marketplace Platforms
+      - Developer Tools & APIs
+      - Web3 & Blockchain
+      - XR & Spatial Computing
+      - Banking & Lending
+      - Investment Management & WealthTech
+      - Insurance & InsurTech
+      - Payments & Money Movement
+      - Accounting, Tax & Financial Planning Tools
+      - Capital Markets & Trading Platforms
+      - Financial Infrastructure & APIs
+      - Credit Scoring & Risk Management
+      - Cryptocurrency & Digital Assets
+      - BNPL & Alternative Financing
+      - Healthcare Providers & Services
+      - Pharmaceuticals & Drug Development
+      - Medical Devices & Diagnostics
+      - Biotechnology & Genomics
+      - Digital Health & Telemedicine
+      - Health Insurance & Benefits Tech
+      - Clinical Trials & Research Platforms
+      - Mental Health & Wellness
+      - Healthcare IT & EHR Systems
+      - Consumer Health & Wellness Products
+      - Online Marketplaces
+      - Direct-to-Consumer (DTC) Brands
+      - Retail Tech & Point-of-Sale Systems
+      - Omnichannel & In-Store Retail
+      - E-commerce Enablement & Infrastructure
+      - Subscription & Membership Commerce
+      - Social Commerce & Influencer Platforms
+      - Fashion & Apparel Retail
+      - Food, Beverage & Grocery E-commerce
+      - Streaming Platforms (Video, Music, Audio)
+      - Gaming & Interactive Entertainment
+      - Creator Economy & Influencer Platforms
+      - Film, TV & Production Studios
+      - Events, Venues & Live Entertainment
+      - Virtual Worlds & Metaverse Experiences
+      - K-12 Education Platforms & Tools
+      - Higher Education & University Tech
+      - Online Learning & MOOCs
+      - Test Prep & Certification
+      - Corporate Training & Upskilling
+      - Tutoring & Supplemental Learning
+      - Education Management Systems (LMS/SIS)
+      - Language Learning
+      - Creator-Led & Cohort-Based Courses
+      - Special Education & Accessibility Tools
+      - Government Technology & Digital Services
+      - Civic Engagement & Policy Platforms
+      - International Development & Humanitarian Aid
+      - Philanthropy & Grantmaking
+      - Nonprofit Operations & Fundraising Tools
+      - Public Health & Social Services
+      - Education & Youth Development Programs
+      - Environmental & Climate Action Organizations
+      - Legal Aid & Social Justice Advocacy
+      - Municipal & Infrastructure Services
+      - Manufacturing & Industrial Automation
+      - Energy Production (Oil, Gas, Nuclear)
+      - Renewable Energy & Cleantech
+      - Utilities & Grid Infrastructure
+      - Industrial IoT & Monitoring Systems
+      - Construction & Heavy Equipment
+      - Mining & Natural Resources
+      - Environmental Engineering & Sustainability
+      - Energy Storage & Battery Technology
+      - Automotive OEMs & Vehicle Manufacturing
+      - Electric Vehicles (EVs) & Charging Infrastructure
+      - Mobility-as-a-Service (MaaS)
+      - Fleet Management
+      - Public Transit & Urban Mobility
+      - Autonomous Vehicles & ADAS
+      - Aftermarket Parts & Services
+      - Telematics & Vehicle Connectivity
+      - Aviation & Aerospace Transport
+      - Maritime Shipping
+      - Fitness & Wellness
+      - Beauty & Personal Care
+      - Home & Living
+      - Dating & Relationships
+      - Hobbies, Crafts & DIY
+      - Outdoor & Recreational Gear
+      - Events, Experiences & Ticketing Platforms
+      - Designer & Luxury Apparel
+      - Accessories, Jewelry & Watches
+      - Footwear & Leather Goods
+      - Beauty, Fragrance & Skincare
+      - Fashion Marketplaces & Retail Platforms
+      - Sustainable & Ethical Fashion
+      - Resale, Vintage & Circular Fashion
+      - Fashion Tech & Virtual Try-Ons
+      - Streetwear & Emerging Luxury
+      - Couture & Made-to-Measure
+      - News Publishing & Journalism
+      - Advertising, Adtech & Media Buying
+      - Digital Media & Content Platforms
+      - Broadcasting (TV & Radio)
+      - Podcasting & Audio Media
+      - News Aggregators & Curation Tools
+      - Independent & Creator-Led Media
+      - Newsletters & Substack-Style Platforms
+      - Political & Investigative Media
+      - Trade & Niche Publications
+      - Media Monitoring & Analytics
+      - Professional Teams & Leagues
+      - Sports Media & Broadcasting
+      - Sports Betting & Fantasy Sports
+      - Fitness & Athletic Training Platforms
+      - Sportswear & Equipment
+      - Esports & Competitive Gaming
+      - Sports Venues & Event Management
+      - Athlete Management & Talent Agencies
+      - Sports Tech & Performance Analytics
+      - Youth, Amateur & Collegiate Sports
+      - Real Estate Marketplaces
+      - Property Management Software
+      - Rental Platforms
+      - Mortgage & Lending Tech
+      - Real Estate Investment Platforms
+      - Law Firms & Legal Services
+      - Legal Tech & Automation
+      - Regulatory Compliance
+      - E-Discovery & Litigation Tools
+      - Contract Management
+      - Governance, Risk & Compliance (GRC)
+      - IP & Trademark Management
+      - Legal Research & Intelligence
+      - Compliance Training & Certification
+      - Whistleblower & Ethics Reporting
+      - Mobile & Wireless Networks (3G/4G/5G)
+      - Broadband & Fiber Internet
+      - Satellite & Space-Based Communications
+      - Network Equipment & Infrastructure
+      - Telecom Billing & OSS/BSS Systems
+      - VoIP & Unified Communications
+      - Internet Service Providers (ISPs)
+      - Edge Computing & Network Virtualization
+      - IoT Connectivity Platforms
+      - Precision Agriculture & AgTech
+      - Crop & Livestock Production
+      - Food & Beverage Manufacturing & Processing
+      - Food Distribution
+      - Restaurants & Food Service
+      - Agricultural Inputs & Equipment
+      - Sustainable & Regenerative Agriculture
+      - Seafood & Aquaculture
+      - Management Consulting
+      - Marketing & Advertising Agencies
+      - Design, Branding & Creative Studios
+      - IT Services & Managed Services
+      - Staffing, Recruiting & Talent
+      - Accounting & Tax Firms
+      - Public Relations & Communications
+      - Business Process Outsourcing (BPO)
+      - Professional Training & Coaching
+      - Specialty Chemicals
+      - Commodity & Petrochemicals
+      - Polymers, Plastics & Rubber
+      - Coatings, Adhesives & Sealants
+      - Industrial Gases
+      - Advanced Materials & Composites
+      - Battery Materials & Energy Storage
+      - Electronic Materials & Semiconductor Chemicals
+      - Agrochemicals & Fertilizers
+      - Freight & Transportation Tech
+      - Last-Mile Delivery
+      - Warehouse Automation
+      - Supply Chain Visibility Platforms
+      - Logistics Marketplaces
+      - Shipping & Freight Forwarding
+      - Cold Chain Logistics
+      - Reverse Logistics & Returns
+      - Cross-Border Trade Tech
+      - Transportation Management Systems (TMS)
+      - Hotels & Accommodation
+      - Vacation Rentals & Short-Term Stays
+      - Restaurant Tech & Management
+      - Travel Booking Platforms
+      - Tourism Experiences & Activities
+      - Cruise Lines & Marine Tourism
+      - Hospitality Management Systems
+      - Event & Venue Management
+      - Corporate Travel Management
+      - Travel Insurance & Protection
+      - Construction Management Software
+      - BIM/CAD & Design Tools
+      - Construction Marketplaces
+      - Equipment Rental & Management
+      - Building Materials & Procurement
+      - Construction Workforce Management
+      - Project Estimation & Bidding
+      - Modular & Prefab Construction
+      - Construction Safety & Compliance
+      - Smart Building Technology
+      - Food & Beverage CPG
+      - Home & Personal Care CPG
+      - CPG Analytics & Insights
+      - Direct-to-Consumer CPG Brands
+      - CPG Supply Chain & Distribution
+      - Private Label Manufacturing
+      - CPG Retail Intelligence
+      - Sustainable CPG & Packaging
+      - Beauty & Cosmetics CPG
+      - Health & Wellness CPG
+      description: Subindustry classification enum
+    BrandRetrieveRequest:
+      oneOf:
+      - $ref: '#/components/schemas/BrandRetrieveByDomainRequest'
+      - $ref: '#/components/schemas/BrandRetrieveByNameRequest'
+      - $ref: '#/components/schemas/BrandRetrieveByEmailRequest'
+      - $ref: '#/components/schemas/BrandRetrieveByTickerRequest'
+      - $ref: '#/components/schemas/BrandRetrieveByDirectUrlRequest'
+      - $ref: '#/components/schemas/BrandRetrieveFromTransactionRequest'
+      discriminator:
+        propertyName: type
+        mapping:
+          by_domain: '#/components/schemas/BrandRetrieveByDomainRequest'
+          by_name: '#/components/schemas/BrandRetrieveByNameRequest'
+          by_email: '#/components/schemas/BrandRetrieveByEmailRequest'
+          by_ticker: '#/components/schemas/BrandRetrieveByTickerRequest'
+          by_direct_url: '#/components/schemas/BrandRetrieveByDirectUrlRequest'
+          by_transaction: '#/components/schemas/BrandRetrieveFromTransactionRequest'
+      description: Exactly one lookup type must be provided.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    StockExchange:
+      type: string
+      enum:
+      - AMEX
+      - AMS
+      - AQS
+      - ASX
+      - ATH
+      - BER
+      - BME
+      - BRU
+      - BSE
+      - BUD
+      - BUE
+      - BVC
+      - CBOE
+      - CNQ
+      - CPH
+      - DFM
+      - DOH
+      - DUB
+      - DUS
+      - DXE
+      - EGX
+      - FSX
+      - HAM
+      - HEL
+      - HKSE
+      - HOSE
+      - ICE
+      - IOB
+      - IST
+      - JKT
+      - JNB
+      - JPX
+      - KLS
+      - KOE
+      - KSC
+      - KUW
+      - LIS
+      - LSE
+      - MCX
+      - MEX
+      - MIL
+      - MUN
+      - NASDAQ
+      - NEO
+      - NSE
+      - NYSE
+      - NZE
+      - OSL
+      - OTC
+      - PAR
+      - PNK
+      - PRA
+      - RIS
+      - SAO
+      - SAU
+      - SES
+      - SET
+      - SGO
+      - SHH
+      - SHZ
+      - SIX
+      - STO
+      - STU
+      - TAI
+      - TAL
+      - TLV
+      - TSX
+      - TSXV
+      - TWO
+      - VIE
+      - WSE
+      - XETRA
+      description: Stock exchange code.
+    SupportedLanguage:
+      type: string
+      enum:
+      - afrikaans
+      - albanian
+      - amharic
+      - arabic
+      - armenian
+      - assamese
+      - aymara
+      - azeri
+      - basque
+      - belarusian
+      - bengali
+      - bosnian
+      - bulgarian
+      - burmese
+      - cantonese
+      - catalan
+      - cebuano
+      - chinese
+      - corsican
+      - croatian
+      - czech
+      - danish
+      - dutch
+      - english
+      - esperanto
+      - estonian
+      - farsi
+      - fijian
+      - finnish
+      - french
+      - galician
+      - georgian
+      - german
+      - greek
+      - guarani
+      - gujarati
+      - haitian-creole
+      - hausa
+      - hawaiian
+      - hebrew
+      - hindi
+      - hmong
+      - hungarian
+      - icelandic
+      - igbo
+      - indonesian
+      - irish
+      - italian
+      - japanese
+      - javanese
+      - kannada
+      - kazakh
+      - khmer
+      - kinyarwanda
+      - korean
+      - kurdish
+      - kyrgyz
+      - lao
+      - latin
+      - latvian
+      - lingala
+      - lithuanian
+      - luxembourgish
+      - macedonian
+      - malagasy
+      - malay
+      - malayalam
+      - maltese
+      - maori
+      - marathi
+      - mongolian
+      - nepali
+      - norwegian
+      - odia
+      - oromo
+      - pashto
+      - pidgin
+      - polish
+      - portuguese
+      - punjabi
+      - quechua
+      - romanian
+      - russian
+      - samoan
+      - scottish-gaelic
+      - serbian
+      - sesotho
+      - shona
+      - sindhi
+      - sinhala
+      - slovak
+      - slovene
+      - somali
+      - spanish
+      - sundanese
+      - swahili
+      - swedish
+      - tagalog
+      - tajik
+      - tamil
+      - tatar
+      - telugu
+      - thai
+      - tibetan
+      - tigrinya
+      - tongan
+      - tswana
+      - turkish
+      - turkmen
+      - ukrainian
+      - urdu
+      - uyghur
+      - uzbek
+      - vietnamese
+      - welsh
+      - wolof
+      - xhosa
+      - yiddish
+      - yoruba
+      - zulu
+      description: Language to force for the retrieved brand data.
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        error_code:
+          type: string
+          enum:
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - WEBSITE_ACCESS_ERROR
+          - EXTERNAL_PROVIDER_ERROR
+          - INPUT_VALIDATION_ERROR
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - UNSUPPORTED_CONTENT
+          - MONITOR_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          description: Error code indicating the type of error
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    BrandRetrieveByDomainRequest:
+      type: object
+      properties:
+        force_language:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        maxSpeed:
+          type: boolean
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        maxAgeMs:
+          type: integer
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        timeoutMS:
+          $ref: '#/components/schemas/TimeoutMS'
+        type:
+          type: string
+          enum:
+          - by_domain
+          description: Discriminator for domain-based brand retrieval.
+        domain:
+          type: string
+          minLength: 3
+          description: Domain name to retrieve brand data for (e.g., 'stripe.com').
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      required:
+      - type
+      - domain
+      additionalProperties: false
+      title: By domain
+      description: Retrieve brand data by domain. Cannot be combined with name, email, or ticker.
+    SimplifiedBrandResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status of the response, e.g., 'ok'
+        brand:
+          type: object
+          properties:
+            domain:
+              type: string
+              description: The domain name of the brand
+            title:
+              type: string
+              description: The title or name of the brand
+            colors:
+              type: array
+              items:
+                type: object
+                properties:
+                  hex:
+                    type: string
+                    description: Color in hexadecimal format
+                  name:
+                    type: string
+                    description: Name of the color
+              description: An array of brand colors
+            logos:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: CDN hosted url of the logo (ready for display)
+                  mode:
+                    type: string
+                    enum:
+                    - light
+                    - dark
+                    - has_opaque_background
+                    description: 'Indicates when this logo is best used: ''light'' = best for light mode, ''dark'' = best for dark mode, ''has_opaque_background'' = can be used for either as image has its own background'
+                  colors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hex:
+                          type: string
+                          description: Color in hexadecimal format
+                        name:
+                          type: string
+                          description: Name of the color
+                    description: Array of colors in the logo
+                  resolution:
+                    type: object
+                    properties:
+                      width:
+                        type: integer
+                        description: Width of the image in pixels
+                      height:
+                        type: integer
+                        description: Height of the image in pixels
+                      aspect_ratio:
+                        type: number
+                        description: Aspect ratio of the image (width/height)
+                    description: Resolution of the logo image
+                  type:
+                    type: string
+                    enum:
+                    - icon
+                    - logo
+                    description: Type of the logo based on resolution (e.g., 'icon', 'logo')
+              description: An array of logos associated with the brand
+            backdrops:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: URL of the backdrop image
+                  colors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hex:
+                          type: string
+                          description: Color in hexadecimal format
+                        name:
+                          type: string
+                          description: Name of the color
+                    description: Array of colors in the backdrop image
+                  resolution:
+                    type: object
+                    properties:
+                      width:
+                        type: integer
+                        description: Width of the image in pixels
+                      height:
+                        type: integer
+                        description: Height of the image in pixels
+                      aspect_ratio:
+                        type: number
+                        description: Aspect ratio of the image (width/height)
+                    description: Resolution of the backdrop image
+              description: An array of backdrop images for the brand
+          description: Simplified brand information
+        code:
+          type: integer
+          description: HTTP status code of the response
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+    BrandRetrieveByTickerRequest:
+      type: object
+      properties:
+        force_language:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        maxSpeed:
+          type: boolean
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        maxAgeMs:
+          type: integer
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        timeoutMS:
+          $ref: '#/components/schemas/TimeoutMS'
+        type:
+          type: string
+          enum:
+          - by_ticker
+          description: Discriminator for ticker-based brand retrieval.
+        ticker:
+          type: string
+          minLength: 1
+          maxLength: 15
+          pattern: ^[A-Za-z0-9.]+$
+          description: Stock ticker symbol to retrieve brand data for (e.g., 'AAPL').
+        ticker_exchange:
+          type: string
+          description: Optional stock exchange for the ticker. Defaults to NASDAQ if not specified.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      required:
+      - type
+      - ticker
+      additionalProperties: false
+      title: By stock
+      description: Retrieve brand data by stock ticker. Cannot be combined with domain, name, or email.
+    BrandRetrieveFromTransactionRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - by_transaction
+          description: Discriminator for transaction-based brand retrieval.
+        transaction_info:
+          type: string
+          minLength: 3
+          maxLength: 500
+          description: Transaction information to identify the brand.
+        force_language:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        maxSpeed:
+          type: boolean
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        timeoutMS:
+          $ref: '#/components/schemas/TimeoutMS'
+        country_gl:
+          type: string
+          description: Optional country code hint (GL parameter) to specify the country when identifying a transaction.
+        city:
+          type: string
+          description: Optional city name to prioritize when searching for the brand.
+        mcc:
+          anyOf:
+          - type: string
+          - type: number
+          description: Optional Merchant Category Code (MCC) to help identify the business category or industry.
+        phone:
+          anyOf:
+          - type: string
+          - type: number
+          description: Optional phone number from the transaction to help verify brand match.
+        high_confidence_only:
+          type: boolean
+          description: When set to true, the API performs additional verification to ensure the identified brand matches the transaction with high confidence.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      required:
+      - type
+      - transaction_info
+      additionalProperties: false
+      title: By transaction
+      description: Identify brand data from a transaction descriptor. Cannot be combined with domain, name, email, or ticker.
+    BrandResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Status of the response, e.g., 'ok'
+        brand:
+          type: object
+          properties:
+            domain:
+              type: string
+              description: The domain name of the brand
+            title:
+              type: string
+              description: The title or name of the brand
+            description:
+              type: string
+              description: A brief description of the brand
+            slogan:
+              type: string
+              description: The brand's slogan
+            colors:
+              type: array
+              items:
+                type: object
+                properties:
+                  hex:
+                    type: string
+                    description: Color in hexadecimal format
+                  name:
+                    type: string
+                    description: Name of the color
+              description: An array of brand colors
+            logos:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: CDN hosted url of the logo (ready for display)
+                  mode:
+                    type: string
+                    enum:
+                    - light
+                    - dark
+                    - has_opaque_background
+                    description: 'Indicates when this logo is best used: ''light'' = best for light mode, ''dark'' = best for dark mode, ''has_opaque_background'' = can be used for either as image has its own background'
+                  colors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hex:
+                          type: string
+                          description: Color in hexadecimal format
+                        name:
+                          type: string
+                          description: Name of the color
+                    description: Array of colors in the logo
+                  resolution:
+                    type: object
+                    properties:
+                      width:
+                        type: integer
+                        description: Width of the image in pixels
+                      height:
+                        type: integer
+                        description: Height of the image in pixels
+                      aspect_ratio:
+                        type: number
+                        description: Aspect ratio of the image (width/height)
+                    description: Resolution of the logo image
+                  type:
+                    type: string
+                    enum:
+                    - icon
+                    - logo
+                    description: Type of the logo based on resolution (e.g., 'icon', 'logo')
+              description: An array of logos associated with the brand
+            backdrops:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: URL of the backdrop image
+                  colors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        hex:
+                          type: string
+                          description: Color in hexadecimal format
+                        name:
+                          type: string
+                          description: Name of the color
+                    description: Array of colors in the backdrop image
+                  resolution:
+                    type: object
+                    properties:
+                      width:
+                        type: integer
+                        description: Width of the image in pixels
+                      height:
+                        type: integer
+                        description: Height of the image in pixels
+                      aspect_ratio:
+                        type: number
+                        description: Aspect ratio of the image (width/height)
+                    description: Resolution of the backdrop image
+              description: An array of backdrop images for the brand
+            socials:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                    - x
+                    - facebook
+                    - instagram
+                    - linkedin
+                    - youtube
+                    - pinterest
+                    - tiktok
+                    - dribbble
+                    - github
+                    - behance
+                    - snapchat
+                    - whatsapp
+                    - telegram
+                    - line
+                    - discord
+                    - twitch
+                    - vimeo
+                    - imdb
+                    - tumblr
+                    - flickr
+                    - giphy
+                    - medium
+                    - spotify
+                    - soundcloud
+                    - tripadvisor
+                    - yelp
+                    - producthunt
+                    - reddit
+                    - crunchbase
+                    - appstore
+                    - playstore
+                    description: Type of social media platform
+                  url:
+                    type: string
+                    description: URL of the social media page
+              description: An array of social media links for the brand
+            address:
+              type: object
+              properties:
+                street:
+                  type: string
+                  description: Street address
+                city:
+                  type: string
+                  description: City name
+                country:
+                  type: string
+                  description: Country name
+                country_code:
+                  type: string
+                  description: Country code
+                state_province:
+                  type: string
+                  description: State or province name
+                state_code:
+                  type: string
+                  description: State or province code
+                postal_code:
+                  type: string
+                  description: Postal or ZIP code
+              description: Physical address of the brand
+            stock:
+              type: object
+              properties:
+                ticker:
+                  type: string
+                  description: Stock ticker symbol
+                exchange:
+                  type: string
+                  description: Stock exchange name
+              description: Stock market information for this brand (will be null if not a publicly traded company)
+            is_nsfw:
+              type: boolean
+              description: Indicates whether the brand content is not safe for work (NSFW)
+            email:
+              type: string
+              description: Company email address
+            phone:
+              type: string
+              description: Company phone number
+            industries:
+              type: object
+              properties:
+                eic:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      industry:
+                        $ref: '#/components/schemas/Industry'
+                      subindustry:
+                        $ref: '#/components/schemas/Subindustry'
+                    required:
+                    - industry
+                    - subindustry
+                  description: Easy Industry Classification - array of industry and subindustry pairs
+              description: Industry classification information for the brand
+            links:
+              type: object
+              properties:
+                careers:
+                  type:
+                  - string
+                  - 'null'
+                  description: URL to the brand's careers or job opportunities page
+                privacy:
+                  type:
+                  - string
+                  - 'null'
+                  description: URL to the brand's privacy policy page
+                terms:
+                  type:
+                  - string
+                  - 'null'
+                  description: URL to the brand's terms of service or terms and conditions page
+                contact:
+                  type:
+                  - string
+                  - 'null'
+                  description: URL to the brand's contact or contact us page
+                blog:
+                  type:
+                  - string
+                  - 'null'
+                  description: URL to the brand's blog or news page
+                pricing:
+                  type:
+                  - string
+                  - 'null'
+                  description: URL to the brand's pricing or plans page
+              description: Important website links for the brand
+            primary_language:
+              anyOf:
+              - allOf:
+                - $ref: '#/components/schemas/SupportedLanguage'
+              - type: 'null'
+              description: The primary language of the brand's website content. Detected from the HTML lang tag, page content analysis, or social media descriptions.
+          description: Detailed brand information
+        code:
+          type: integer
+          description: HTTP status code
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    CountryGL:
+      type: string
+      enum:
+      - af
+      - al
+      - dz
+      - as
+      - ad
+      - ao
+      - ai
+      - aq
+      - ag
+      - ar
+      - am
+      - aw
+      - au
+      - at
+      - az
+      - bs
+      - bh
+      - bd
+      - bb
+      - by
+      - be
+      - bz
+      - bj
+      - bm
+      - bt
+      - bo
+      - ba
+      - bw
+      - bv
+      - br
+      - io
+      - bn
+      - bg
+      - bf
+      - bi
+      - kh
+      - cm
+      - ca
+      - cv
+      - ky
+      - cf
+      - td
+      - cl
+      - cn
+      - cx
+      - cc
+      - co
+      - km
+      - cg
+      - cd
+      - ck
+      - cr
+      - ci
+      - hr
+      - cu
+      - cy
+      - cz
+      - dk
+      - dj
+      - dm
+      - do
+      - ec
+      - eg
+      - sv
+      - gq
+      - er
+      - ee
+      - et
+      - fk
+      - fo
+      - fj
+      - fi
+      - fr
+      - gf
+      - pf
+      - tf
+      - ga
+      - gm
+      - ge
+      - de
+      - gh
+      - gi
+      - gr
+      - gl
+      - gd
+      - gp
+      - gu
+      - gt
+      - gn
+      - gw
+      - gy
+      - ht
+      - hm
+      - va
+      - hn
+      - hk
+      - hu
+      - is
+      - in
+      - id
+      - ir
+      - iq
+      - ie
+      - il
+      - it
+      - jm
+      - jp
+      - jo
+      - kz
+      - ke
+      - ki
+      - kp
+      - kr
+      - kw
+      - kg
+      - la
+      - lv
+      - lb
+      - ls
+      - lr
+      - ly
+      - li
+      - lt
+      - lu
+      - mo
+      - mk
+      - mg
+      - mw
+      - my
+      - mv
+      - ml
+      - mt
+      - mh
+      - mq
+      - mr
+      - mu
+      - yt
+      - mx
+      - fm
+      - md
+      - mc
+      - mn
+      - ms
+      - ma
+      - mz
+      - mm
+      - na
+      - nr
+      - np
+      - nl
+      - an
+      - nc
+      - nz
+      - ni
+      - ne
+      - ng
+      - nu
+      - nf
+      - mp
+      - 'no'
+      - om
+      - pk
+      - pw
+      - ps
+      - pa
+      - pg
+      - py
+      - pe
+      - ph
+      - pn
+      - pl
+      - pt
+      - pr
+      - qa
+      - re
+      - ro
+      - ru
+      - rw
+      - sh
+      - kn
+      - lc
+      - pm
+      - vc
+      - ws
+      - sm
+      - st
+      - sa
+      - sn
+      - rs
+      - sc
+      - sl
+      - sg
+      - sk
+      - si
+      - sb
+      - so
+      - za
+      - gs
+      - es
+      - lk
+      - sd
+      - sr
+      - sj
+      - sz
+      - se
+      - ch
+      - sy
+      - tw
+      - tj
+      - tz
+      - th
+      - tl
+      - tg
+      - tk
+      - to
+      - tt
+      - tn
+      - tr
+      - tm
+      - tc
+      - tv
+      - ug
+      - ua
+      - ae
+      - gb
+      - us
+      - um
+      - uy
+      - uz
+      - vu
+      - ve
+      - vn
+      - vg
+      - vi
+      - wf
+      - eh
+      - ye
+      - zm
+      - zw
+      description: Two-letter ISO 3166-1 alpha-2 country code (GL parameter) used to localize search.
+    Industry:
+      type: string
+      enum:
+      - Aerospace & Defense
+      - Technology
+      - Finance
+      - Healthcare
+      - Retail & E-commerce
+      - Entertainment
+      - Education
+      - Government & Nonprofit
+      - Industrial & Energy
+      - Automotive & Transportation
+      - Lifestyle & Leisure
+      - Luxury & Fashion
+      - News & Media
+      - Sports
+      - Real Estate & PropTech
+      - Legal & Compliance
+      - Telecommunications
+      - Agriculture & Food
+      - Professional Services & Agencies
+      - Chemicals & Materials
+      - Logistics & Supply Chain
+      - Hospitality & Tourism
+      - Construction & Built Environment
+      - Consumer Packaged Goods (CPG)
+      description: Industry classification enum
+    BrandRetrieveByNameRequest:
+      type: object
+      properties:
+        force_language:
+          allOf:
+          - $ref: '#/components/schemas/SupportedLanguage'
+          - type:
+            - string
+            - 'null'
+        maxSpeed:
+          type: boolean
+          description: Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data.
+        maxAgeMs:
+          type: integer
+          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        timeoutMS:
+          $ref: '#/components/schemas/TimeoutMS'
+        type:
+          type: string
+          enum:
+          - by_name
+          description: Discriminator for name-based brand retrieval.
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          description: Company name to retrieve brand data for (e.g., 'Apple Inc').
+        country_gl:
+          type: string
+          description: Optional country code hint (GL parameter) to specify the country when looking up by company name.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      required:
+      - type
+      - name
+      additionalProperties: false
+      title: By name
+      description: Retrieve brand data by company name. Cannot be combined with domain, email, or ticker.
+  responses:
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          description: Seconds until the per-minute rate limit window resets
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message
+              error_code:
+                type: string
+                enum:
+                - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+            required:
+            - message
+            - error_code
+  headers:
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

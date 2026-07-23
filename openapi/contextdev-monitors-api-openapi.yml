@@ -1,0 +1,2138 @@
+openapi: 3.1.0
+info:
+  title: Context Brand Intelligence Monitors API
+  description: API for retrieving context data from any website
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: Monitors
+  description: Monitor pages, sitemaps, and extracted website data for exact or semantic changes. Webhook payloads are documented by the MonitorsChangeDetectedWebhookPayload and MonitorsRunCompletedWebhookPayload schemas.
+paths:
+  /monitors:
+    post:
+      x-hidden: true
+      summary: Create a monitor
+      description: Creates a monitor. The request body is a union of the supported target/change detection combinations. The monitor runs immediately after creation to create its initial baseline.
+      operationId: createMonitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitorsCreateMonitorRequest'
+            examples:
+              page_exact:
+                summary: Exact page monitor
+                value:
+                  mode: web
+                  name: Acme pricing page
+                  target:
+                    type: page
+                    url: https://acme.com/pricing
+                  change_detection:
+                    type: exact
+                  schedule:
+                    type: interval
+                    frequency: 6
+                    unit: hours
+                  webhook:
+                    url: https://example.com/webhook
+              sitemap_exact:
+                summary: Exact sitemap monitor
+                value:
+                  mode: web
+                  name: Acme sitemap
+                  target:
+                    type: sitemap
+                    url: https://acme.com/sitemap.xml
+                  change_detection:
+                    type: exact
+                  schedule:
+                    type: interval
+                    frequency: 1
+                    unit: days
+                  webhook:
+                    url: https://example.com/webhook
+              extract_semantic:
+                summary: Semantic extract monitor
+                value:
+                  mode: web
+                  name: Acme website positioning
+                  target:
+                    type: extract
+                    url: https://acme.com
+                    instructions: Extract the product positioning, pricing, packaging, and headline feature claims.
+                    max_pages: 10
+                  change_detection:
+                    type: semantic
+                  schedule:
+                    type: interval
+                    frequency: 1
+                    unit: days
+                  webhook:
+                    url: https://example.com/webhook
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      responses:
+        '201':
+          description: Monitor created
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsMonitor'
+        '400':
+          $ref: '#/components/responses/MonitorsBadRequest'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+        '403':
+          $ref: '#/components/responses/MonitorsLimitExceeded'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst monitor = await client.monitors.create({\n  change_detection: { type: 'exact' },\n  name: 'Acme pricing page',\n  schedule: {\n    type: 'interval',\n    frequency: 6,\n    unit: 'hours',\n  },\n  target: { type: 'page', url: 'https://acme.com/pricing' },\n  mode: 'web',\n  webhook: { url: 'https://example.com/webhook' },\n});\n\nconsole.log(monitor.id);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nmonitor = client.monitors.create(\n    change_detection={\n        \"type\": \"exact\"\n    },\n    name=\"Acme pricing page\",\n    schedule={\n        \"type\": \"interval\",\n        \"frequency\": 6,\n        \"unit\": \"hours\",\n    },\n    target={\n        \"type\": \"page\",\n        \"url\": \"https://acme.com/pricing\",\n    },\n    mode=\"web\",\n    webhook={\n        \"url\": \"https://example.com/webhook\"\n    },\n)\nprint(monitor.id)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tmonitor, err := client.Monitors.New(context.TODO(), contextdev.MonitorNewParams{\n\t\tChangeDetection: contextdev.MonitorNewParamsChangeDetectionUnion{\n\t\t\tOfExact: &contextdev.MonitorNewParamsChangeDetectionExact{},\n\t\t},\n\t\tName: \"Acme pricing page\",\n\t\tSchedule: contextdev.MonitorNewParamsSchedule{\n\t\t\tType:      \"interval\",\n\t\t\tFrequency: 6,\n\t\t\tUnit:      \"hours\",\n\t\t},\n\t\tTarget: contextdev.MonitorNewParamsTargetUnion{\n\t\t\tOfPage: &contextdev.MonitorNewParamsTargetPage{\n\t\t\t\tURL: \"https://acme.com/pricing\",\n\t\t\t},\n\t\t},\n\t\tMode: contextdev.MonitorNewParamsModeWeb,\n\t\tWebhook: contextdev.MonitorNewParamsWebhook{\n\t\t\tURL: \"https://example.com/webhook\",\n\t\t},\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", monitor.ID)\n}\n"
+      - lang: Ruby
+        source: "require \"context_dev\"\n\ncontext_dev = ContextDev::Client.new(api_key: \"My API Key\")\n\nmonitor = context_dev.monitors.create(\n  change_detection: {type: :exact},\n  name: \"Acme pricing page\",\n  schedule: {frequency: 6, type: :interval, unit: :hours},\n  target: {type: :page, url: \"https://acme.com/pricing\"}\n)\n\nputs(monitor)"
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $monitor = $client->monitors->create(\n    changeDetection: ['type' => 'exact'],\n    name: 'Acme pricing page',\n    schedule: ['frequency' => 6, 'type' => 'interval', 'unit' => 'hours'],\n    target: [\n      'type' => 'page',\n      'url' => 'https://acme.com/pricing',\n      'normalizeWhitespace' => true,\n    ],\n    mode: 'web',\n    tags: ['pricing', 'competitor'],\n    webhook: [\n      'url' => 'https://example.com/webhook',\n      'events' => ['change.detected', 'run.completed'],\n    ],\n  );\n\n  var_dump($monitor);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors create \\\n  --api-key 'My API Key' \\\n  --change-detection '{type: exact}' \\\n  --name 'Acme pricing page' \\\n  --schedule '{frequency: 6, type: interval, unit: hours}' \\\n  --target '{type: page, url: https://acme.com/pricing}'"
+    get:
+      x-hidden: true
+      summary: List monitors
+      description: Lists monitors for the authenticated organization. Supports free-text search (`q` over `search_by` fields, `prefix` or `exact` via `search_type`) plus status/type/tag filters. Results are paginated via the opaque `cursor`.
+      operationId: listMonitors
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      parameters:
+      - schema:
+          type: string
+          maxLength: 200
+          description: Free-text search term, matched against the fields named in `search_by`.
+          example: pricing
+        required: false
+        description: Free-text search term, matched against the fields named in `search_by`.
+        name: q
+        in: query
+      - schema:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            enum:
+            - name
+            - url
+            - instructions
+            - tags
+          description: Comma-separated fields to search with `q`. Defaults to all of them. Note `instructions` only exists on extract monitors.
+          example: name,url
+        required: false
+        description: Comma-separated fields to search with `q`. Defaults to all of them. Note `instructions` only exists on extract monitors.
+        name: search_by
+        in: query
+      - schema:
+          type: string
+          enum:
+          - exact
+          - prefix
+          description: '`prefix` for as-you-type prefix matching (default), `exact` for full-token matching.'
+        required: false
+        description: '`prefix` for as-you-type prefix matching (default), `exact` for full-token matching.'
+        name: search_type
+        in: query
+      - schema:
+          type: string
+          enum:
+          - active
+          - paused
+          - failed
+          description: Filter monitors by lifecycle status.
+        required: false
+        description: Filter monitors by lifecycle status.
+        name: status
+        in: query
+      - schema:
+          type: string
+          enum:
+          - page
+          - sitemap
+          - extract
+          description: Filter by target type.
+        required: false
+        description: Filter by target type.
+        name: target_type
+        in: query
+      - schema:
+          type: string
+          enum:
+          - exact
+          - semantic
+          description: Filter by change detection type.
+        required: false
+        description: Filter by change detection type.
+        name: change_detection_type
+        in: query
+      - schema:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: Comma-separated list of tags to filter by (matches monitors having any of them).
+          example: pricing,competitor
+        required: false
+        description: Comma-separated list of tags to filter by (matches monitors having any of them).
+        name: tags
+        in: query
+      - schema:
+          type: string
+          description: Filter to items that have this tag.
+          example: pricing
+        required: false
+        description: Filter to items that have this tag.
+        name: tag
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Maximum number of items to return per page (1-100). Defaults to 25.
+        required: false
+        description: Maximum number of items to return per page (1-100). Defaults to 25.
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Opaque pagination cursor from a previous response.
+        required: false
+        description: Opaque pagination cursor from a previous response.
+        name: cursor
+        in: query
+      responses:
+        '200':
+          description: A paginated list of monitors
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsListMonitorsResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst monitors = await client.monitors.list();\n\nconsole.log(monitors.data);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nmonitors = client.monitors.list()\nprint(monitors.data)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tmonitors, err := client.Monitors.List(context.TODO(), contextdev.MonitorListParams{})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", monitors.Data)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          monitors = context_dev.monitors.list
+
+
+          puts(monitors)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $monitors = $client->monitors->list(\n    changeDetectionType: 'exact',\n    cursor: 'cursor',\n    limit: 1,\n    q: 'pricing',\n    searchBy: ['name'],\n    searchType: 'exact',\n    status: 'active',\n    tag: 'pricing',\n    tags: ['x'],\n    targetType: 'page',\n  );\n\n  var_dump($monitors);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors list \\\n  --api-key 'My API Key'"
+  /monitors/{monitor_id}:
+    get:
+      x-hidden: true
+      summary: Get a monitor
+      operationId: getMonitor
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      parameters:
+      - schema:
+          type: string
+          example: mon_123
+        required: true
+        name: monitor_id
+        in: path
+      responses:
+        '200':
+          description: Monitor
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsMonitor'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+        '404':
+          $ref: '#/components/responses/MonitorsNotFound'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst monitor = await client.monitors.retrieve('mon_123');\n\nconsole.log(monitor.id);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nmonitor = client.monitors.retrieve(\n    \"mon_123\",\n)\nprint(monitor.id)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tmonitor, err := client.Monitors.Get(context.TODO(), \"mon_123\")\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", monitor.ID)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          monitor = context_dev.monitors.retrieve("mon_123")
+
+
+          puts(monitor)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $monitor = $client->monitors->retrieve('mon_123');\n\n  var_dump($monitor);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors retrieve \\\n  --api-key 'My API Key' \\\n  --monitor-id mon_123"
+    patch:
+      x-hidden: true
+      summary: Update a monitor
+      description: Updates a monitor. If `target` or `change_detection` changes, the monitor creates a new baseline. Unsupported target/change detection combinations are rejected.
+      operationId: updateMonitor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitorsUpdateMonitorRequest'
+            example:
+              name: Acme pricing monitor
+              status: active
+              schedule:
+                type: interval
+                frequency: 1
+                unit: hours
+              webhook:
+                url: https://example.com/webhook
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      parameters:
+      - schema:
+          type: string
+          example: mon_123
+        required: true
+        name: monitor_id
+        in: path
+      responses:
+        '200':
+          description: Updated monitor
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsMonitor'
+        '400':
+          $ref: '#/components/responses/MonitorsBadRequest'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+        '404':
+          $ref: '#/components/responses/MonitorsNotFound'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst monitor = await client.monitors.update('mon_123', {\n  name: 'Acme pricing monitor',\n  schedule: {\n    type: 'interval',\n    frequency: 1,\n    unit: 'hours',\n  },\n  status: 'active',\n  webhook: { url: 'https://example.com/webhook' },\n});\n\nconsole.log(monitor.id);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nmonitor = client.monitors.update(\n    monitor_id=\"mon_123\",\n    name=\"Acme pricing monitor\",\n    schedule={\n        \"type\": \"interval\",\n        \"frequency\": 1,\n        \"unit\": \"hours\",\n    },\n    status=\"active\",\n    webhook={\n        \"url\": \"https://example.com/webhook\"\n    },\n)\nprint(monitor.id)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tmonitor, err := client.Monitors.Update(\n\t\tcontext.TODO(),\n\t\t\"mon_123\",\n\t\tcontextdev.MonitorUpdateParams{\n\t\t\tName: contextdev.String(\"Acme pricing monitor\"),\n\t\t\tSchedule: contextdev.MonitorUpdateParamsSchedule{\n\t\t\t\tType:      \"interval\",\n\t\t\t\tFrequency: 1,\n\t\t\t\tUnit:      \"hours\",\n\t\t\t},\n\t\t\tStatus: contextdev.MonitorUpdateParamsStatusActive,\n\t\t\tWebhook: contextdev.MonitorUpdateParamsWebhook{\n\t\t\t\tURL: \"https://example.com/webhook\",\n\t\t\t},\n\t\t},\n\t)\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", monitor.ID)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          monitor = context_dev.monitors.update("mon_123")
+
+
+          puts(monitor)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $monitor = $client->monitors->update(\n    'mon_123',\n    changeDetection: ['type' => 'exact'],\n    name: 'Acme pricing monitor',\n    schedule: ['frequency' => 1, 'type' => 'interval', 'unit' => 'hours'],\n    status: 'active',\n    tags: ['pricing', 'competitor'],\n    target: [\n      'type' => 'page',\n      'url' => 'https://acme.com/pricing',\n      'normalizeWhitespace' => true,\n    ],\n    webhook: [\n      'url' => 'https://example.com/webhook',\n      'events' => ['change.detected', 'run.completed'],\n    ],\n  );\n\n  var_dump($monitor);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors update \\\n  --api-key 'My API Key' \\\n  --monitor-id mon_123"
+    delete:
+      x-hidden: true
+      summary: Delete a monitor
+      operationId: deleteMonitor
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      parameters:
+      - schema:
+          type: string
+          example: mon_123
+        required: true
+        name: monitor_id
+        in: path
+      responses:
+        '200':
+          description: Monitor deleted
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsDeleteMonitorResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+        '404':
+          $ref: '#/components/responses/MonitorsNotFound'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst monitor = await client.monitors.delete('mon_123');\n\nconsole.log(monitor.id);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nmonitor = client.monitors.delete(\n    \"mon_123\",\n)\nprint(monitor.id)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tmonitor, err := client.Monitors.Delete(context.TODO(), \"mon_123\")\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", monitor.ID)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          monitor = context_dev.monitors.delete("mon_123")
+
+
+          puts(monitor)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $monitor = $client->monitors->delete('mon_123');\n\n  var_dump($monitor);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors delete \\\n  --api-key 'My API Key' \\\n  --monitor-id mon_123"
+  /monitors/{monitor_id}/runs:
+    get:
+      x-hidden: true
+      summary: List monitor runs
+      operationId: listMonitorRuns
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      parameters:
+      - schema:
+          type: string
+          example: mon_123
+        required: true
+        name: monitor_id
+        in: path
+      - schema:
+          type: string
+          enum:
+          - queued
+          - running
+          - completed
+          - failed
+          - skipped
+          description: Filter runs by lifecycle status.
+        required: false
+        description: Filter runs by lifecycle status.
+        name: status
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Maximum number of items to return per page (1-100). Defaults to 25.
+        required: false
+        description: Maximum number of items to return per page (1-100). Defaults to 25.
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Opaque pagination cursor from a previous response.
+        required: false
+        description: Opaque pagination cursor from a previous response.
+        name: cursor
+        in: query
+      responses:
+        '200':
+          description: A paginated list of runs for the monitor
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsListRunsResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+        '404':
+          $ref: '#/components/responses/MonitorsNotFound'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.monitors.listRuns('mon_123');\n\nconsole.log(response.data);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.monitors.list_runs(\n    monitor_id=\"mon_123\",\n)\nprint(response.data)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Monitors.ListRuns(\n\t\tcontext.TODO(),\n\t\t\"mon_123\",\n\t\tcontextdev.MonitorListRunsParams{},\n\t)\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Data)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.monitors.list_runs("mon_123")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->monitors->listRuns(\n    'mon_123', cursor: 'cursor', limit: 1, status: 'queued'\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors list-runs \\\n  --api-key 'My API Key' \\\n  --monitor-id mon_123"
+  /monitors/{monitor_id}/changes:
+    get:
+      x-hidden: true
+      summary: List changes for a monitor
+      operationId: listMonitorChanges
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      parameters:
+      - schema:
+          type: string
+          example: mon_123
+        required: true
+        name: monitor_id
+        in: path
+      - schema:
+          type: string
+          description: Filter to items that have this tag.
+          example: pricing
+        required: false
+        description: Filter to items that have this tag.
+        name: tag
+        in: query
+      - schema:
+          type: string
+          format: date-time
+          description: Only include items at or after this ISO 8601 timestamp.
+          example: '2026-06-01T00:00:00Z'
+        required: false
+        description: Only include items at or after this ISO 8601 timestamp.
+        name: since
+        in: query
+      - schema:
+          type: string
+          format: date-time
+          description: Only include items before this ISO 8601 timestamp.
+          example: '2026-06-28T00:00:00Z'
+        required: false
+        description: Only include items before this ISO 8601 timestamp.
+        name: until
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Maximum number of items to return per page (1-100). Defaults to 25.
+        required: false
+        description: Maximum number of items to return per page (1-100). Defaults to 25.
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Opaque pagination cursor from a previous response.
+        required: false
+        description: Opaque pagination cursor from a previous response.
+        name: cursor
+        in: query
+      responses:
+        '200':
+          description: A paginated list of changes for the monitor
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsListChangesResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+        '404':
+          $ref: '#/components/responses/MonitorsNotFound'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.monitors.listChanges('mon_123');\n\nconsole.log(response.data);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.monitors.list_changes(\n    monitor_id=\"mon_123\",\n)\nprint(response.data)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Monitors.ListChanges(\n\t\tcontext.TODO(),\n\t\t\"mon_123\",\n\t\tcontextdev.MonitorListChangesParams{},\n\t)\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Data)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.monitors.list_changes("mon_123")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->monitors->listChanges(\n    'mon_123',\n    cursor: 'cursor',\n    limit: 1,\n    since: new \\DateTimeImmutable('2026-06-01T00:00:00Z'),\n    tag: 'pricing',\n    until: new \\DateTimeImmutable('2026-06-28T00:00:00Z'),\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors list-changes \\\n  --api-key 'My API Key' \\\n  --monitor-id mon_123"
+  /monitors/runs:
+    get:
+      x-hidden: true
+      summary: List runs
+      description: Returns an account-wide feed of monitor runs across all monitors.
+      operationId: listAccountRuns
+      tags:
+      - Monitors
+      security:
+      - bearerAuth: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - queued
+          - running
+          - completed
+          - failed
+          - skipped
+          description: Filter runs by lifecycle status.
+        required: false
+        description: Filter runs by lifecycle status.
+        name: status
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Maximum number of items to return per page (1-100). Defaults to 25.
+        required: false
+        description: Maximum number of items to return per page (1-100). Defaults to 25.
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Opaque pagination cursor from a previous response.
+        required: false
+        description: Opaque pagination cursor from a previous response.
+        name: cursor
+        in: query
+      responses:
+        '200':
+          description: A paginated list of runs
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsListRunsResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.monitors.listAccountRuns();\n\nconsole.log(response.data);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.monitors.list_account_runs()\nprint(response.data)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Monitors.ListAccountRuns(context.TODO(), contextdev.MonitorListAccountRunsParams{})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Data)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.monitors.list_account_runs
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->monitors->listAccountRuns(\n    cursor: 'cursor', limit: 1, status: 'queued'\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors list-account-runs \\\n  --api-key 'My API Key'"
+  /monitors/credit-usage:
+    get:
+      x-hidden: true
+      summary: Monitor credit usage
+      description: Returns credits charged per monitor over an optional [since, until] window, newest spenders first.
+      operationId: listMonitorCreditUsage
+      tags:
+      - Monitors
+      security:
+      - bearerAuth: []
+      parameters:
+      - schema:
+          type: string
+          format: date-time
+          description: Only include items at or after this ISO 8601 timestamp.
+          example: '2026-06-01T00:00:00Z'
+        required: false
+        description: Only include items at or after this ISO 8601 timestamp.
+        name: since
+        in: query
+      - schema:
+          type: string
+          format: date-time
+          description: Only include items before this ISO 8601 timestamp.
+          example: '2026-06-28T00:00:00Z'
+        required: false
+        description: Only include items before this ISO 8601 timestamp.
+        name: until
+        in: query
+      responses:
+        '200':
+          description: Per-monitor credit usage
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsCreditUsageResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+  /monitors/limits:
+    get:
+      x-hidden: true
+      summary: Monitor limits
+      description: Returns how many monitors the account has and the maximum it allows.
+      operationId: getMonitorLimits
+      tags:
+      - Monitors
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Monitor usage and plan limit
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsLimitsResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+  /monitors/changes:
+    get:
+      x-hidden: true
+      summary: List changes
+      description: Returns an account-wide feed of detected changes across monitors.
+      operationId: listChanges
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      parameters:
+      - schema:
+          type: string
+          description: Filter changes to a single monitor.
+          example: mon_123
+        required: false
+        description: Filter changes to a single monitor.
+        name: monitor_id
+        in: query
+      - schema:
+          type: string
+          enum:
+          - page
+          - sitemap
+          - extract
+          description: Filter by target type.
+        required: false
+        description: Filter by target type.
+        name: target_type
+        in: query
+      - schema:
+          type: string
+          enum:
+          - exact
+          - semantic
+          description: Filter by change detection type.
+        required: false
+        description: Filter by change detection type.
+        name: change_detection_type
+        in: query
+      - schema:
+          type: string
+          description: Filter to items that have this tag.
+          example: pricing
+        required: false
+        description: Filter to items that have this tag.
+        name: tag
+        in: query
+      - schema:
+          type: string
+          format: date-time
+          description: Only include items at or after this ISO 8601 timestamp.
+          example: '2026-06-01T00:00:00Z'
+        required: false
+        description: Only include items at or after this ISO 8601 timestamp.
+        name: since
+        in: query
+      - schema:
+          type: string
+          format: date-time
+          description: Only include items before this ISO 8601 timestamp.
+          example: '2026-06-28T00:00:00Z'
+        required: false
+        description: Only include items before this ISO 8601 timestamp.
+        name: until
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Maximum number of items to return per page (1-100). Defaults to 25.
+        required: false
+        description: Maximum number of items to return per page (1-100). Defaults to 25.
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Opaque pagination cursor from a previous response.
+        required: false
+        description: Opaque pagination cursor from a previous response.
+        name: cursor
+        in: query
+      responses:
+        '200':
+          description: A paginated list of changes
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsListChangesResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.monitors.listAccountChanges();\n\nconsole.log(response.data);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.monitors.list_account_changes()\nprint(response.data)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Monitors.ListAccountChanges(context.TODO(), contextdev.MonitorListAccountChangesParams{})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Data)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.monitors.list_account_changes
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->monitors->listAccountChanges(\n    changeDetectionType: 'exact',\n    cursor: 'cursor',\n    limit: 1,\n    monitorID: 'mon_123',\n    since: new \\DateTimeImmutable('2026-06-01T00:00:00Z'),\n    tag: 'pricing',\n    targetType: 'page',\n    until: new \\DateTimeImmutable('2026-06-28T00:00:00Z'),\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors list-account-changes \\\n  --api-key 'My API Key'"
+  /monitors/changes/{change_id}:
+    get:
+      x-hidden: true
+      summary: Get a change
+      operationId: getChange
+      security:
+      - bearerAuth: []
+      tags:
+      - Monitors
+      parameters:
+      - schema:
+          type: string
+          example: chg_123
+        required: true
+        name: change_id
+        in: path
+      responses:
+        '200':
+          description: Change details
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsChange'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+        '404':
+          $ref: '#/components/responses/MonitorsNotFound'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.monitors.retrieveChange('chg_123');\n\nconsole.log(response.id);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.monitors.retrieve_change(\n    \"chg_123\",\n)\nprint(response.id)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Monitors.GetChange(context.TODO(), \"chg_123\")\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.ID)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.monitors.retrieve_change("chg_123")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->monitors->retrieveChange('chg_123');\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors retrieve-change \\\n  --api-key 'My API Key' \\\n  --change-id chg_123"
+  /monitors/{monitor_id}/run:
+    post:
+      x-hidden: true
+      summary: Run a monitor now
+      description: Triggers an immediate run of the monitor outside its normal schedule. The run is queued and processed asynchronously.
+      operationId: runMonitorNow
+      tags:
+      - Monitors
+      security:
+      - bearerAuth: []
+      parameters:
+      - schema:
+          type: string
+          example: mon_123
+        required: true
+        name: monitor_id
+        in: path
+      responses:
+        '202':
+          description: Run queued
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorsRunNowResponse'
+        '401':
+          $ref: '#/components/responses/MonitorsUnauthorized'
+        '404':
+          $ref: '#/components/responses/MonitorsNotFound'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.monitors.run('mon_123');\n\nconsole.log(response.monitor_id);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.monitors.run(\n    \"mon_123\",\n)\nprint(response.monitor_id)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Monitors.Run(context.TODO(), \"mon_123\")\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.MonitorID)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.monitors.run("mon_123")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->monitors->run('mon_123');\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev monitors run \\\n  --api-key 'My API Key' \\\n  --monitor-id mon_123"
+components:
+  schemas:
+    MonitorsSitemapTarget:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - sitemap
+        url:
+          type: string
+          format: uri
+          description: Sitemap URL to monitor.
+          example: https://acme.com/sitemap.xml
+        include:
+          type: array
+          items:
+            type: string
+          description: URL path patterns to include.
+          example:
+          - /blog/*
+          - /pricing*
+        exclude:
+          type: array
+          items:
+            type: string
+          description: URL path patterns to exclude.
+          example:
+          - /legal/*
+          - /privacy
+        max_urls:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 5000
+          description: Maximum number of sitemap URLs to track (capped at 10,000).
+      required:
+      - type
+      - url
+      additionalProperties: false
+      description: Watch a sitemap for URL additions and removals. Crawled URLs are normalized (lowercased host, no trailing slash/fragment) and scoped to the monitored site and its subdomains before comparison. On a detected difference the sitemap is re-fetched within the same run and only URLs both observations agree on are reported, suppressing transient crawl flaps.
+      title: Sitemap target
+    MonitorsMonitorStatus:
+      type: string
+      enum:
+      - active
+      - paused
+      - failed
+      description: Monitor lifecycle status. `failed` means the most recent run failed (see the monitor's `last_error`); failed monitors keep running on schedule and flip back to `active` on the next successful run. Monitors are auto-`paused` after repeated consecutive failures or insufficient-credit skips; resume by PATCHing status to `active`.
+    MonitorsNullableRunError:
+      anyOf:
+      - allOf:
+        - $ref: '#/components/schemas/MonitorsRunError'
+      - type: 'null'
+    MonitorsIntervalSchedule:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - interval
+        frequency:
+          type: integer
+          minimum: 1
+          maximum: 525600
+          description: Number of units between runs. The resulting interval (frequency × unit) must be at least 10 minutes and at most 1 year (e.g. minimum 10 when unit is minutes; maximum 365 when unit is days).
+          example: 6
+        unit:
+          $ref: '#/components/schemas/MonitorsScheduleUnit'
+      required:
+      - type
+      - frequency
+      - unit
+      additionalProperties: false
+      description: Run the monitor on a fixed interval defined by a frequency and a unit, e.g. every 6 hours or every 2 days. The total interval (frequency × unit) must be between 10 minutes and 1 year.
+      title: Interval
+    MonitorsRun:
+      type: object
+      properties:
+        id:
+          type: string
+          example: run_123
+        monitor_id:
+          type: string
+          example: mon_123
+        status:
+          $ref: '#/components/schemas/MonitorsRunStatus'
+        run_type:
+          type: string
+          enum:
+          - baseline
+          - scheduled
+          description: The first run after monitor creation is a baseline run.
+        target_type:
+          $ref: '#/components/schemas/MonitorsTargetType'
+        change_detection_type:
+          $ref: '#/components/schemas/MonitorsChangeDetectionType'
+        started_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        change_detected:
+          type: boolean
+          example: true
+        change_id:
+          type:
+          - string
+          - 'null'
+          example: chg_123
+        baseline_created:
+          type: boolean
+          description: True when this run established the monitor's initial baseline; baseline runs perform no change detection.
+        credits_charged:
+          type: integer
+          minimum: 0
+          description: Credits charged for this run (0 for skipped/failed runs).
+          example: 1
+        skip_reason:
+          type:
+          - string
+          - 'null'
+          enum:
+          - insufficient_credits
+          - monitor_paused
+          - superseded
+          - null
+          description: Why a skipped run never executed; null unless status is `skipped`.
+        error:
+          $ref: '#/components/schemas/MonitorsNullableRunError'
+        webhook_delivery:
+          $ref: '#/components/schemas/MonitorsWebhookDelivery'
+          deprecated: true
+          description: 'Deprecated: use `webhook_deliveries`, which records every attempt now that a run can deliver multiple events. Omitted when no webhook was attempted, including historical runs created before delivery tracking was added.'
+        webhook_deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsWebhookDelivery'
+          description: All webhook deliveries attempted by this run — one per subscribed event that fired. Omitted when no webhook was attempted, including runs created before event selection was added.
+      required:
+      - id
+      - monitor_id
+      - status
+      - run_type
+      - target_type
+      - change_detection_type
+      - change_detected
+      - baseline_created
+      - credits_charged
+      additionalProperties: false
+    MonitorsEvidence:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Optional URL the evidence relates to. Absent for whole-target diffs.
+        before:
+          type: string
+          description: Snapshot of the content before the change.
+        after:
+          type: string
+          description: Snapshot of the content after the change.
+      required:
+      - before
+      - after
+      additionalProperties: false
+    MonitorsListChangesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsChangeSummary'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
+      required:
+      - data
+      - has_more
+      - next_cursor
+      additionalProperties: false
+    MonitorsCreditUsageResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsCreditUsage'
+        total_credits:
+          type: integer
+          description: Sum of credits across all monitors in the window.
+      required:
+      - data
+      - total_credits
+      additionalProperties: false
+      title: Monitor credit usage response
+    MonitorsListMonitorsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsMonitor'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
+      required:
+      - data
+      - has_more
+      - next_cursor
+      additionalProperties: false
+    MonitorsLimitsResponse:
+      type: object
+      properties:
+        monitors_used:
+          type: integer
+          description: Number of monitors the account currently has.
+        monitors_limit:
+          type: integer
+          description: Maximum number of monitors allowed for the account. Defaults to the plan allowance unless a custom limit is set for the organization.
+        plan:
+          type: string
+          enum:
+          - free
+          - starter
+          - pro
+          - scale
+          description: The plan tier the limit was resolved from.
+      required:
+      - monitors_used
+      - monitors_limit
+      - plan
+      additionalProperties: false
+      title: Monitor limits response
+    MonitorsWebhookConfig:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Webhook URL events are delivered to.
+          example: https://example.com/webhook
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+            - change.detected
+            - run.completed
+          minItems: 1
+          maxItems: 2
+          uniqueItems: true
+          description: Events delivered to this endpoint. `change.detected` fires only when a run detects a change; `run.completed` fires on every completed run — including runs that detected no change — and embeds the change when one was detected. Defaults to `["change.detected"]` when omitted.
+          example:
+          - change.detected
+          - run.completed
+        secret:
+          type: string
+          readOnly: true
+          description: 'Signing secret used to verify webhook authenticity. Each delivery includes an `X-Context-Signature: t=<unix>,v1=<hmac>` header, where the HMAC is SHA-256 over `"{t}.{rawRequestBody}"` keyed by this secret. Recompute it with a constant-time compare and reject stale timestamps to prevent replay. Generated by the API; cannot be set by clients.'
+          example: whsec_8f3a…
+      required:
+      - url
+      additionalProperties: false
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    MonitorsTargetType:
+      type: string
+      enum:
+      - page
+      - sitemap
+      - extract
+    MonitorsCreateMonitorRequest:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/MonitorsMode'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Acme pricing monitor
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: User-defined tags for grouping and filtering monitors and their changes.
+          example:
+          - pricing
+          - competitor
+        target:
+          $ref: '#/components/schemas/MonitorsTarget'
+        change_detection:
+          $ref: '#/components/schemas/MonitorsChangeDetection'
+        schedule:
+          $ref: '#/components/schemas/MonitorsSchedule'
+        webhook:
+          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
+      required:
+      - name
+      - target
+      - change_detection
+      - schedule
+      additionalProperties: false
+      title: Create monitor request
+      description: 'Creates a web monitor. `mode` is the constant `web`; the behavior is described by `target` (page, sitemap, or extract) and `change_detection` (exact or semantic). Supported combinations: page + exact, sitemap + exact, extract + semantic.'
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        error_code:
+          type: string
+          enum:
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - WEBSITE_ACCESS_ERROR
+          - EXTERNAL_PROVIDER_ERROR
+          - INPUT_VALIDATION_ERROR
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - UNSUPPORTED_CONTENT
+          - MONITOR_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          description: Error code indicating the type of error
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    MonitorsPageBaseline:
+      type: object
+      properties:
+        text:
+          type: string
+          description: The page's visible text as last observed.
+          example: 'Acme Pricing
+
+            Starter $9/mo…'
+        captured_at:
+          type: string
+          format: date-time
+          description: When this baseline was last captured or replaced.
+      required:
+      - text
+      - captured_at
+      additionalProperties: false
+      title: Page baseline
+      description: 'Current baseline of a `page` monitor: the visible page text as last observed.'
+    MonitorsNullableWebhookConfig:
+      anyOf:
+      - allOf:
+        - $ref: '#/components/schemas/MonitorsWebhookConfig'
+      - type: 'null'
+    MonitorsRunStatus:
+      type: string
+      enum:
+      - queued
+      - running
+      - completed
+      - failed
+      - skipped
+      description: Lifecycle status of a run. `skipped` runs never executed — see `skip_reason` (insufficient credits, monitor paused, or superseded by a concurrent run).
+    MonitorsMonitor:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/MonitorsMode'
+        id:
+          type: string
+          example: mon_123
+        name:
+          type: string
+          example: Acme pricing monitor
+        target:
+          $ref: '#/components/schemas/MonitorsTarget'
+        change_detection:
+          $ref: '#/components/schemas/MonitorsChangeDetection'
+        schedule:
+          $ref: '#/components/schemas/MonitorsSchedule'
+        webhook:
+          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
+        status:
+          $ref: '#/components/schemas/MonitorsMonitorStatus'
+        last_run_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        last_change_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        next_run_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the next scheduled run is due.
+        last_error:
+          anyOf:
+          - allOf:
+            - $ref: '#/components/schemas/MonitorsRunError'
+          - type: 'null'
+          description: Error from the most recent failed run; null when the last run succeeded.
+        webhook_failure:
+          allOf:
+          - $ref: '#/components/schemas/MonitorsWebhookFailure'
+          nullable: true
+          description: Present while webhook deliveries are failing consecutively; null when deliveries are healthy or no webhook is configured. Cleared on the next successful delivery and when the webhook URL changes.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: User-defined tags for grouping and filtering monitors and their changes.
+          example:
+          - pricing
+          - competitor
+        baseline:
+          oneOf:
+          - $ref: '#/components/schemas/MonitorsPageBaseline'
+          - $ref: '#/components/schemas/MonitorsSitemapBaseline'
+          - $ref: '#/components/schemas/MonitorsExtractBaseline'
+          - type: 'null'
+          description: 'Current baseline: the last observed value the monitor compares new snapshots against. Its shape follows `target.type` (page/sitemap/extract). Only populated on GET /monitors/{monitor_id}; null until the first baseline run completes (and after a target or change_detection update, which resets the baseline).'
+      required:
+      - mode
+      - id
+      - name
+      - target
+      - change_detection
+      - schedule
+      - status
+      - created_at
+      - updated_at
+      additionalProperties: false
+      title: Monitor
+      description: A web monitor. `mode` is the constant `web`; behavior is described by `target` (page/sitemap/extract) and `change_detection` (exact/semantic).
+    MonitorsExtractTarget:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - extract
+        url:
+          type: string
+          format: uri
+          description: Root URL to extract structured data from.
+          example: https://acme.com
+        schema:
+          type: object
+          additionalProperties: {}
+          description: 'JSON Schema describing the data you care about. It is used three ways: it guides which pages are selected for tracking, it gives the change judge extra context on which changes matter (alongside `instructions`), and it defines the shape of the baseline `data` snapshot on GET /monitors/{monitor_id} (refreshed at most about once a day). It is not a response format for changes: change events and webhook payloads always contain diffs, summaries, and evidence excerpts — never data in this schema''s shape. If omitted, a default summary + key-points schema is used.'
+          example:
+            type: object
+            properties:
+              plans:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    price:
+                      type: string
+        instructions:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Natural-language instructions guiding which pages and facts to track and which changes to report.
+          example: Extract every pricing plan with its monthly price and included limits.
+        max_pages:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+          description: Maximum number of pages to track.
+        max_depth:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: Optional maximum link depth from the starting URL (0 = only the starting page).
+        follow_subdomains:
+          type: boolean
+          default: false
+      required:
+      - type
+      - url
+      - instructions
+      additionalProperties: false
+      title: Extract target
+    MonitorsExactChangeDetection:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - exact
+      required:
+      - type
+      additionalProperties: false
+      description: Detect exact changes. For page targets, this means visible text diffs. For sitemap targets, this means URL additions and removals.
+      title: Exact
+    MonitorsScheduleUnit:
+      type: string
+      enum:
+      - minutes
+      - hours
+      - days
+      example: hours
+    MonitorsMode:
+      type: string
+      enum:
+      - web
+      description: Top-level monitor category. Always `web` today; the concrete behavior is described by `target` and `change_detection`.
+      title: Monitor mode
+    MonitorsExtractBaseline:
+      type: object
+      properties:
+        data:
+          description: The extracted structured data, matching the monitor's extraction schema (same shape as the /web/extract endpoint's `data`). Refreshed when the monitor re-discovers its page set (at most about once a day); `null` when no extraction has been captured yet.
+          example:
+            plans:
+            - name: Starter
+              price: $9/mo
+        urls_analyzed:
+          type: array
+          items:
+            type: string
+          description: The page URLs the monitor tracks and analyzes for changes.
+          example:
+          - https://acme.com/pricing
+        captured_at:
+          type: string
+          format: date-time
+          description: When this baseline was last captured or replaced.
+      required:
+      - data
+      - urls_analyzed
+      - captured_at
+      additionalProperties: false
+      title: Extract baseline
+      description: 'Current baseline of an `extract` monitor: the pages it tracks and the structured data as last extracted.'
+    MonitorsRunError:
+      type: object
+      properties:
+        code:
+          type: string
+          example: fetch_failed
+        message:
+          type: string
+          example: The target URL could not be fetched.
+      required:
+      - code
+      - message
+      additionalProperties: false
+    MonitorsChangeDetection:
+      oneOf:
+      - $ref: '#/components/schemas/MonitorsExactChangeDetection'
+      - $ref: '#/components/schemas/MonitorsSemanticChangeDetection'
+      discriminator:
+        propertyName: type
+        mapping:
+          exact: '#/components/schemas/MonitorsExactChangeDetection'
+          semantic: '#/components/schemas/MonitorsSemanticChangeDetection'
+      description: Discriminated union describing how changes are detected.
+    MonitorsDeleteMonitorResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: mon_123
+        deleted:
+          type: boolean
+          example: true
+      required:
+      - id
+      - deleted
+      additionalProperties: false
+    MonitorsChangeSummary:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/MonitorsMode'
+        id:
+          type: string
+          example: chg_123
+        monitor_id:
+          type: string
+          example: mon_123
+        target_type:
+          $ref: '#/components/schemas/MonitorsTargetType'
+        change_detection_type:
+          $ref: '#/components/schemas/MonitorsChangeDetectionType'
+        title:
+          type: string
+          example: Acme pricing page changed
+        summary:
+          type: string
+          example: The visible text on the page changed.
+        detected_at:
+          type: string
+          format: date-time
+        url:
+          type: string
+          format: uri
+        importance:
+          $ref: '#/components/schemas/MonitorsImportance'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        added_url_count:
+          type: integer
+          minimum: 0
+        removed_url_count:
+          type: integer
+          minimum: 0
+        matched_url_count:
+          type: integer
+          minimum: 0
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: User-defined tags for grouping and filtering monitors and their changes.
+          example:
+          - pricing
+          - competitor
+      required:
+      - mode
+      - id
+      - monitor_id
+      - target_type
+      - change_detection_type
+      - title
+      - summary
+      - detected_at
+      - url
+      additionalProperties: false
+      title: Change summary
+      description: A lightweight change summary. `mode` is the constant `web`; `target_type` and `change_detection_type` describe the change, and which optional fields are present depends on them (e.g. sitemap changes include `added_url_count`/`removed_url_count`; semantic changes include `confidence`/`importance`).
+    MonitorsUpdateMonitorRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Acme pricing monitor
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: User-defined tags for grouping and filtering monitors and their changes.
+          example:
+          - pricing
+          - competitor
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        target:
+          $ref: '#/components/schemas/MonitorsTarget'
+        change_detection:
+          $ref: '#/components/schemas/MonitorsChangeDetection'
+        schedule:
+          $ref: '#/components/schemas/MonitorsSchedule'
+        webhook:
+          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
+          description: Set to null to remove the webhook.
+      additionalProperties: false
+      description: Shared monitor update fields. `target` and `change_detection` can be updated, but the final combination must be supported.
+    MonitorsPageTarget:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - page
+        url:
+          type: string
+          format: uri
+          example: https://acme.com/pricing
+        normalize_whitespace:
+          type: boolean
+          default: true
+          description: Normalize whitespace before comparing or analyzing text.
+      required:
+      - type
+      - url
+      additionalProperties: false
+      description: Watch a single web page.
+      title: Page target
+    MonitorsTarget:
+      oneOf:
+      - $ref: '#/components/schemas/MonitorsPageTarget'
+      - $ref: '#/components/schemas/MonitorsSitemapTarget'
+      - allOf:
+        - $ref: '#/components/schemas/MonitorsExtractTarget'
+        - description: Watch the monitor-relevant pages of a site for meaningful changes. A crawl guided by `schema`/`instructions` selects up to `max_pages` relevant pages to track; each run re-checks exactly those pages, and confirmed content changes are judged for relevance against the monitor's `instructions` (and `schema`, when provided). The tracked page set is refreshed by a periodic re-discovery crawl.
+      discriminator:
+        propertyName: type
+        mapping:
+          page: '#/components/schemas/MonitorsPageTarget'
+          sitemap: '#/components/schemas/MonitorsSitemapTarget'
+          extract: '#/components/schemas/MonitorsExtractTarget'
+      description: Discriminated union describing what the monitor watches.
+    MonitorsWebhookFailure:
+      type: object
+      properties:
+        consecutive_failures:
+          type: integer
+          minimum: 1
+          description: Number of consecutive delivery attempts that did not succeed.
+          example: 3
+        last_status:
+          type: string
+          enum:
+          - rejected
+          - failed
+          - skipped_unsafe_url
+          description: Outcome of the most recent failed delivery. rejected means a non-2xx response; failed means no HTTP response was received; skipped_unsafe_url means the URL failed the public-endpoint safety check.
+        last_message:
+          type: string
+          description: Human-readable description of the most recent failure.
+          example: Webhook endpoint returned HTTP 429.
+        last_failed_at:
+          type: string
+          format: date-time
+      required:
+      - consecutive_failures
+      - last_status
+      - last_message
+      - last_failed_at
+      additionalProperties: false
+    MonitorsSchedule:
+      oneOf:
+      - $ref: '#/components/schemas/MonitorsIntervalSchedule'
+      discriminator:
+        propertyName: type
+        mapping:
+          interval: '#/components/schemas/MonitorsIntervalSchedule'
+      description: Discriminated union describing how the monitor is scheduled. Only `interval` is supported today; `cron` and `exact_time` are reserved for future use.
+    MonitorsWebhookDelivery:
+      type: object
+      properties:
+        event_id:
+          type: string
+          description: Identifier sent in the X-Context-Id header.
+          example: evt_123
+        event:
+          type: string
+          enum:
+          - change.detected
+          - run.completed
+          description: The event this delivery carried. Deliveries recorded before event selection existed report change.detected.
+        status:
+          type: string
+          enum:
+          - delivered
+          - rejected
+          - failed
+          - skipped_unsafe_url
+          description: Delivery outcome. delivered means any 2xx response; rejected means a non-2xx response; failed means no HTTP response was received; skipped_unsafe_url means the URL failed the public-endpoint safety check.
+        http_status:
+          type:
+          - integer
+          - 'null'
+          minimum: 100
+          maximum: 599
+          description: The endpoint's final HTTP response status, or null when no response was received.
+          example: 200
+        attempted_at:
+          type: string
+          format: date-time
+        error:
+          $ref: '#/components/schemas/MonitorsNullableRunError'
+      required:
+      - event_id
+      - event
+      - status
+      - http_status
+      - attempted_at
+      - error
+      additionalProperties: false
+    MonitorsRunNowResponse:
+      type: object
+      properties:
+        monitor_id:
+          type: string
+          example: mon_123
+        run_id:
+          type: string
+          example: run_123
+          description: The queued run. Poll GET /monitors/{monitor_id}/runs or use it to correlate results.
+        queued:
+          type: boolean
+          example: true
+      required:
+      - monitor_id
+      - run_id
+      - queued
+      additionalProperties: false
+    MonitorsCreditUsage:
+      type: object
+      properties:
+        monitor_id:
+          type: string
+          example: mon_123
+        name:
+          type: string
+          description: Monitor name (falls back to the id when the monitor was deleted).
+        credits:
+          type: integer
+          description: Credits charged to this monitor over the window.
+        runs:
+          type: integer
+          description: Number of billed runs over the window.
+      required:
+      - monitor_id
+      - name
+      - credits
+      - runs
+      additionalProperties: false
+      title: Monitor credit usage
+    MonitorsImportance:
+      type: string
+      enum:
+      - low
+      - medium
+      - high
+    MonitorsSemanticChangeDetection:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - semantic
+        confidence_threshold:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.75
+      required:
+      - type
+      additionalProperties: false
+      description: Detect meaning-level changes to tracked page content, ignoring cosmetic or paraphrase-only differences. Which changes are meaningful is judged against the extract target's `instructions` (and `schema`, when provided).
+      title: Semantic
+    MonitorsChange:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/MonitorsMode'
+        id:
+          type: string
+          example: chg_123
+        monitor_id:
+          type: string
+          example: mon_123
+        run_id:
+          type: string
+          example: run_123
+          description: The run that detected this change.
+        target_type:
+          $ref: '#/components/schemas/MonitorsTargetType'
+        change_detection_type:
+          $ref: '#/components/schemas/MonitorsChangeDetectionType'
+        title:
+          type: string
+          example: Acme pricing page changed
+        summary:
+          type: string
+          example: The visible text on the page changed.
+        detected_at:
+          type: string
+          format: date-time
+        url:
+          type: string
+          format: uri
+        importance:
+          $ref: '#/components/schemas/MonitorsImportance'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        diff:
+          type: string
+          description: Text diff between the previous and current page baseline (page targets).
+        before_text_excerpt:
+          type: string
+        after_text_excerpt:
+          type: string
+        added_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: At most 500 URLs are included; the corresponding count field is always exact.
+        removed_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: At most 500 URLs are included; the corresponding count field is always exact.
+        added_url_count:
+          type: integer
+          minimum: 0
+        removed_url_count:
+          type: integer
+          minimum: 0
+        matched_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: At most 500 URLs are included; the corresponding count field is always exact.
+        matched_url_count:
+          type: integer
+          minimum: 0
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsEvidence'
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: User-defined tags for grouping and filtering monitors and their changes.
+          example:
+          - pricing
+          - competitor
+      required:
+      - mode
+      - id
+      - monitor_id
+      - run_id
+      - target_type
+      - change_detection_type
+      - title
+      - summary
+      - detected_at
+      - url
+      - tags
+      additionalProperties: false
+      title: Change
+      description: 'A detected change. `mode` is the constant `web`; `target_type` and `change_detection_type` describe the change, and which optional fields are present depends on them (page: `diff` + excerpts; sitemap: `added_urls`/`removed_urls`; semantic: `confidence`/`importance`/`evidence`/`matched_urls`).'
+    MonitorsSitemapBaseline:
+      type: object
+      properties:
+        urls:
+          type: array
+          items:
+            type: string
+          description: The sitemap URLs as last observed (sorted, normalized).
+          example:
+          - https://acme.com/blog/launch
+          - https://acme.com/pricing
+        url_count:
+          type: integer
+          description: Number of URLs in the baseline.
+          example: 2
+        captured_at:
+          type: string
+          format: date-time
+          description: When this baseline was last captured or replaced.
+      required:
+      - urls
+      - url_count
+      - captured_at
+      additionalProperties: false
+      title: Sitemap baseline
+      description: 'Current baseline of a `sitemap` monitor: the normalized URL set as last observed.'
+    MonitorsListRunsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsRun'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
+      required:
+      - data
+      - has_more
+      - next_cursor
+      additionalProperties: false
+    MonitorsChangeDetectionType:
+      type: string
+      enum:
+      - exact
+      - semantic
+  responses:
+    MonitorsUnauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+    MonitorsBadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+    MonitorsLimitExceeded:
+      description: Monitor limit for the account reached (error_code MONITOR_LIMIT_EXCEEDED)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+    MonitorsNotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+  headers:
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

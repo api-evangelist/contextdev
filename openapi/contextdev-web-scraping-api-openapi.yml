@@ -1,0 +1,3416 @@
+openapi: 3.1.0
+info:
+  title: Context Brand Intelligence Web Scraping API
+  description: API for retrieving context data from any website
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: Web Scraping
+paths:
+  /web/scrape/html:
+    get:
+      summary: Scrape HTML
+      description: Scrapes the given URL and returns the raw HTML content of the page.
+      security:
+      - bearerAuth: []
+      tags:
+      - Web Scraping
+      x-mint:
+        content: <Badge color="blue">1 Credit</Badge>
+        title: Scrape HTML
+        sidebarTitle: Scrape HTML
+        description: Scrape the raw HTML from a URL
+      parameters:
+      - schema:
+          type: string
+          minLength: 1
+          format: uri
+          description: Full URL to scrape (must include http:// or https:// protocol)
+        required: true
+        description: Full URL to scrape (must include http:// or https:// protocol)
+        name: url
+        in: query
+      - schema:
+          type: object
+          properties:
+            shouldParse:
+              anyOf:
+              - type: boolean
+              - type: string
+                enum:
+                - 'true'
+                - 'false'
+              default: true
+              description: When true, PDF URLs are fetched and parsed. When false, PDF URLs are skipped and a 400 WEBSITE_ACCESS_ERROR is returned.
+            start:
+              type: integer
+              minimum: 1
+              description: First 1-based PDF page to parse. When omitted, parsing starts at the first page.
+            end:
+              type: integer
+              minimum: 1
+              description: Last 1-based PDF page to parse. When omitted, parsing ends at the last page. Must be greater than or equal to start when both are provided.
+            ocr:
+              anyOf:
+              - type: boolean
+              - type: string
+                enum:
+                - 'true'
+                - 'false'
+              default: false
+              description: When true, detect and OCR images embedded in the selected PDF pages, inserting recognized text at each image's position in page reading order while preserving the PDF text layer. This is separate from automatic scanned-PDF OCR fallback.
+          default:
+            shouldParse: true
+            ocr: false
+          description: PDF parsing controls. Use start/end to limit text extraction and embedded-image detection/OCR to an inclusive 1-based page range.
+        required: false
+        description: PDF parsing controls. Use start/end to limit text extraction and embedded-image detection/OCR to an inclusive 1-based page range.
+        name: pdf
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: When true, iframes are rendered inline into the returned HTML.
+        required: false
+        description: When true, iframes are rendered inline into the returned HTML.
+        name: includeFrames
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: When true, return only the page's main content in the HTML response, excluding headers, footers, sidebars, and navigation when detectable.
+        required: false
+        description: When true, return only the page's main content in the HTML response, excluding headers, footers, sidebars, and navigation when detectable.
+        name: useMainContentOnly
+        in: query
+      - schema:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            minLength: 1
+            maxLength: 2048
+          maxItems: 50
+          description: 'CSS selectors. When provided, only matching subtrees (and their descendants) are kept and everything else is dropped. When omitted, the entire document is kept. Examples: "article.main", "#content", "[role=main]".'
+        required: false
+        description: 'CSS selectors. When provided, only matching subtrees (and their descendants) are kept and everything else is dropped. When omitted, the entire document is kept. Examples: "article.main", "#content", "[role=main]".'
+        name: includeSelectors
+        in: query
+      - schema:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            minLength: 1
+            maxLength: 2048
+          maxItems: 50
+          description: 'CSS selectors to remove from the result. Applied after includeSelectors. Exclusion takes precedence: an element matching both is removed. Examples: "nav", "footer", ".ad-banner", "[aria-hidden=true]".'
+        required: false
+        description: 'CSS selectors to remove from the result. Applied after includeSelectors. Exclusion takes precedence: an element matching both is removed. Examples: "nav", "footer", ".ad-banner", "[aria-hidden=true]".'
+        name: excludeSelectors
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 2592000000
+          default: 86400000
+          description: Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh.
+        required: false
+        description: Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh.
+        name: maxAgeMs
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 30000
+          description: 'Optional browser wait time in milliseconds after initial page load. Min: 0. Max: 30000 (30 seconds).'
+        required: false
+        description: 'Optional browser wait time in milliseconds after initial page load. Min: 0. Max: 30000 (30 seconds).'
+        name: waitForMs
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: When true, waits briefly for CSS and transition animations to settle before extracting HTML. Defaults to false. This adds a bit of latency in exchange for more stable output on animated pages.
+        required: false
+        description: When true, waits briefly for CSS and transition animations to settle before extracting HTML. Defaults to false. This adds a bit of latency in exchange for more stable output on animated pages.
+        name: settleAnimations
+        in: query
+      - schema:
+          type: object
+          additionalProperties:
+            type: string
+            maxLength: 8192
+            pattern: ^[^\r\n]*$
+          description: 'Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache.'
+        required: false
+        description: 'Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache.'
+        name: headers
+        in: query
+      - schema:
+          $ref: '#/components/schemas/BrowserCountryCode'
+        required: false
+        description: Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country.
+        name: country
+        in: query
+      - schema:
+          $ref: '#/components/schemas/LenientTimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum:
+                    - true
+                    description: Indicates success
+                  html:
+                    type: string
+                    description: The scraped content of the page. For normal pages this is the raw HTML. When the page is a sitemap or feed served behind an XSL stylesheet (which browsers render into HTML), this is the underlying XML instead — see the `type` field.
+                  url:
+                    type: string
+                    description: The URL that was scraped
+                  type:
+                    type: string
+                    enum:
+                    - html
+                    - xml
+                    - json
+                    - text
+                    - csv
+                    - markdown
+                    - svg
+                    - pdf
+                    - docx
+                    - doc
+                    - xlsx
+                    - xls
+                    - pptx
+                    - ppt
+                    description: Detected content type of the returned `html` field. Sitemaps and feeds are surfaced as `xml`; ordinary pages are `html`. Excel workbooks are surfaced as `xlsx`/`xls` with the extracted sheets as HTML tables; PowerPoint presentations are surfaced as `pptx`/`ppt` with the extracted slides as HTML.
+                  metadata:
+                    $ref: '#/components/schemas/PageMetadata'
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - success
+                - html
+                - url
+                - type
+                - metadata
+        '400':
+          description: Bad request - Invalid URL or failed to scrape
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - INPUT_VALIDATION_ERROR
+                    - WEBSITE_ACCESS_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - UNAUTHORIZED
+                    description: Error code indicating unauthorized access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Insufficient permissions or usage limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '404':
+          description: Target page returned a 404
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - NOT_FOUND
+                    description: Error code indicating the target page was not found
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '408':
+          description: Request timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '415':
+          description: Unsupported content type - the URL resolved to a content type that is not supported (e.g. an image, presentation, media, or archive). Supported types are HTML, XML, PDF, DOCX, DOC, XLSX, XLS, PPTX, PPT, and CSV.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the unsupported content type
+                  error_code:
+                    type: string
+                    enum:
+                    - UNSUPPORTED_CONTENT
+                    description: Error code indicating an unsupported content type
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.webScrapeHTML({ url: 'https://example.com' });\n\nconsole.log(response.html);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.web_scrape_html(\n    url=\"https://example.com\",\n)\nprint(response.html)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.WebScrapeHTML(context.TODO(), contextdev.WebWebScrapeHTMLParams{\n\t\tURL: \"https://example.com\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.HTML)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.web.web_scrape_html(url: "https://example.com")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webScrapeHTML(\n    url: 'https://example.com',\n    country: 'de',\n    excludeSelectors: ['x'],\n    headers: ['foo' => 'J!'],\n    includeFrames: 'true',\n    includeSelectors: ['x'],\n    maxAgeMs: 0,\n    pdf: ['end' => 1, 'ocr' => 'true', 'shouldParse' => 'true', 'start' => 1],\n    settleAnimations: 'true',\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    useMainContentOnly: 'true',\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev web web-scrape-html \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+  /web/scrape/markdown:
+    get:
+      summary: Scrape Markdown
+      description: 'Scrapes the given URL into LLM usable Markdown. Inspect key_metadata on JSON responses from a recognized API key; use error_code to distinguish stable failure categories.
+
+
+        ### Billing & errors
+
+
+        | HTTP status | Billed? | Meaning |
+
+        | --- | --- | --- |
+
+        | 200 | Yes — 1 credit | Successful scrape, including a zero-length result when includeSelectors matched nothing |
+
+        | 400 | No | Invalid input, skipped PDF, or the page could not be scraped |
+
+        | 401 / 403 | No | Invalid/disabled key, insufficient permissions, or credits exhausted; inspect error_code |
+
+        | 404 | No | Target page returned or fingerprinted as not found |
+
+        | 408 | No | Request timed out |
+
+        | 415 | No | Unsupported content type |
+
+        | 429 | No | Per-minute rate limit exceeded; honor Retry-After |
+
+        | 500 | No | Internal error |'
+      security:
+      - bearerAuth: []
+      tags:
+      - Web Scraping
+      x-mint:
+        content: <Badge color="blue">1 Credit</Badge>
+        title: Scrape Markdown
+        sidebarTitle: Scrape markdown
+        description: Scrape the given URL into LLM usable Markdown
+      parameters:
+      - schema:
+          type: string
+          minLength: 1
+          format: uri
+          description: Full URL to scrape into LLM usable Markdown (must include http:// or https:// protocol)
+        required: true
+        description: Full URL to scrape into LLM usable Markdown (must include http:// or https:// protocol)
+        name: url
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: true
+          description: Preserve hyperlinks in Markdown output
+        required: false
+        description: Preserve hyperlinks in Markdown output
+        name: includeLinks
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Include image references in Markdown output
+        required: false
+        description: Include image references in Markdown output
+        name: includeImages
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: true
+          description: Shorten base64-encoded image data in the Markdown output
+        required: false
+        description: Shorten base64-encoded image data in the Markdown output
+        name: shortenBase64Images
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Extract only the main content of the page, excluding headers, footers, sidebars, and navigation
+        required: false
+        description: Extract only the main content of the page, excluding headers, footers, sidebars, and navigation
+        name: useMainContentOnly
+        in: query
+      - schema:
+          type: object
+          properties:
+            shouldParse:
+              anyOf:
+              - type: boolean
+              - type: string
+                enum:
+                - 'true'
+                - 'false'
+              default: true
+              description: When true, PDF URLs are fetched and parsed. When false, PDF URLs are skipped and a 400 WEBSITE_ACCESS_ERROR is returned.
+            start:
+              type: integer
+              minimum: 1
+              description: First 1-based PDF page to parse. When omitted, parsing starts at the first page.
+            end:
+              type: integer
+              minimum: 1
+              description: Last 1-based PDF page to parse. When omitted, parsing ends at the last page. Must be greater than or equal to start when both are provided.
+            ocr:
+              anyOf:
+              - type: boolean
+              - type: string
+                enum:
+                - 'true'
+                - 'false'
+              default: false
+              description: When true, detect and OCR images embedded in the selected PDF pages, inserting recognized text at each image's position in page reading order while preserving the PDF text layer. This is separate from automatic scanned-PDF OCR fallback.
+          default:
+            shouldParse: true
+            ocr: false
+          description: PDF parsing controls. Use start/end to limit text extraction and embedded-image detection/OCR to an inclusive 1-based page range.
+        required: false
+        description: PDF parsing controls. Use start/end to limit text extraction and embedded-image detection/OCR to an inclusive 1-based page range.
+        name: pdf
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: When true, the contents of iframes are rendered to Markdown.
+        required: false
+        description: When true, the contents of iframes are rendered to Markdown.
+        name: includeFrames
+        in: query
+      - schema:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            minLength: 1
+            maxLength: 2048
+          maxItems: 50
+          description: 'CSS selectors. When provided, only matching HTML subtrees (and their descendants) are kept before conversion to Markdown. When omitted, the entire document is kept. Examples: "article.main", "#content", "[role=main]".'
+        required: false
+        description: 'CSS selectors. When provided, only matching HTML subtrees (and their descendants) are kept before conversion to Markdown. When omitted, the entire document is kept. Examples: "article.main", "#content", "[role=main]".'
+        name: includeSelectors
+        in: query
+      - schema:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            minLength: 1
+            maxLength: 2048
+          maxItems: 50
+          description: 'CSS selectors to remove before conversion to Markdown. Applied after includeSelectors. Exclusion takes precedence: an element matching both is removed. Examples: "nav", "footer", ".ad-banner", "[aria-hidden=true]".'
+        required: false
+        description: 'CSS selectors to remove before conversion to Markdown. Applied after includeSelectors. Exclusion takes precedence: an element matching both is removed. Examples: "nav", "footer", ".ad-banner", "[aria-hidden=true]".'
+        name: excludeSelectors
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 2592000000
+          default: 86400000
+          description: Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh.
+        required: false
+        description: Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh.
+        name: maxAgeMs
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 30000
+          description: 'Optional browser wait time in milliseconds after initial page load before converting the page to Markdown. Min: 0. Max: 30000 (30 seconds).'
+        required: false
+        description: 'Optional browser wait time in milliseconds after initial page load before converting the page to Markdown. Min: 0. Max: 30000 (30 seconds).'
+        name: waitForMs
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: When true, waits briefly for CSS and transition animations to settle before converting to Markdown. Defaults to false. This adds a bit of latency in exchange for more stable output on animated pages.
+        required: false
+        description: When true, waits briefly for CSS and transition animations to settle before converting to Markdown. Defaults to false. This adds a bit of latency in exchange for more stable output on animated pages.
+        name: settleAnimations
+        in: query
+      - schema:
+          type: object
+          additionalProperties:
+            type: string
+            maxLength: 8192
+            pattern: ^[^\r\n]*$
+          description: 'Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache.'
+        required: false
+        description: 'Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache.'
+        name: headers
+        in: query
+      - schema:
+          $ref: '#/components/schemas/BrowserCountryCode'
+        required: false
+        description: Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country.
+        name: country
+        in: query
+      - schema:
+          $ref: '#/components/schemas/LenientTimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum:
+                    - true
+                    description: Indicates success
+                  markdown:
+                    type: string
+                    description: Page content converted to GitHub Flavored Markdown
+                  contentLength:
+                    type: integer
+                    minimum: 0
+                    description: UTF-8 byte length of the returned Markdown. Use 0 to identify an empty result and compare small values against your workload's minimum useful-content threshold.
+                  url:
+                    type: string
+                    description: The URL that was scraped
+                  metadata:
+                    $ref: '#/components/schemas/PageMetadata'
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - success
+                - markdown
+                - contentLength
+                - url
+                - metadata
+        '400':
+          description: Bad request - Invalid URL or failed to scrape
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - INPUT_VALIDATION_ERROR
+                    - WEBSITE_ACCESS_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - UNAUTHORIZED
+                    description: Error code indicating unauthorized access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Insufficient permissions or usage limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '404':
+          description: Target page returned a 404
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - NOT_FOUND
+                    description: Error code indicating the target page was not found
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '408':
+          description: Request timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '415':
+          description: Unsupported content type - the URL resolved to a content type that is not supported (e.g. an image, presentation, media, or archive). Supported types are HTML, XML, PDF, DOCX, DOC, XLSX, XLS, PPTX, PPT, and CSV.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the unsupported content type
+                  error_code:
+                    type: string
+                    enum:
+                    - UNSUPPORTED_CONTENT
+                    description: Error code indicating an unsupported content type
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.webScrapeMd({ url: 'https://example.com' });\n\nconsole.log(response.contentLength);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.web_scrape_md(\n    url=\"https://example.com\",\n)\nprint(response.content_length)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.WebScrapeMd(context.TODO(), contextdev.WebWebScrapeMdParams{\n\t\tURL: \"https://example.com\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.ContentLength)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.web.web_scrape_md(url: "https://example.com")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webScrapeMd(\n    url: 'https://example.com',\n    country: 'de',\n    excludeSelectors: ['x'],\n    headers: ['foo' => 'J!'],\n    includeFrames: 'true',\n    includeImages: 'true',\n    includeLinks: 'true',\n    includeSelectors: ['x'],\n    maxAgeMs: 0,\n    pdf: ['end' => 1, 'ocr' => 'true', 'shouldParse' => 'true', 'start' => 1],\n    settleAnimations: 'true',\n    shortenBase64Images: 'true',\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    useMainContentOnly: 'true',\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev web web-scrape-md \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+  /web/scrape/images:
+    get:
+      summary: Scrape Images
+      description: Extract image assets from a web page, including standard URLs, inline SVGs, data URIs, responsive image sources, metadata, CSS backgrounds, video posters, and embeds. The base request costs 1 credit. When enrichment is enabled, the entire call costs 5 credits.
+      security:
+      - bearerAuth: []
+      tags:
+      - Web Scraping
+      x-mint:
+        content: '<Badge color="blue">1 Credit</Badge><Badge color="orange">Enriched: 5 Credits</Badge>'
+        title: Scrape Images
+        sidebarTitle: Scrape images
+        description: Extract image assets from a page.
+      parameters:
+      - schema:
+          type: string
+          minLength: 1
+          format: uri
+          description: Page URL to inspect. Must include http:// or https://.
+        required: true
+        description: Page URL to inspect. Must include http:// or https://.
+        name: url
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 2592000000
+          default: 86400000
+          description: 'Reuse a cached result this many milliseconds old or newer. Default: 86400000 (1 day). Set to 0 to bypass cache. Maximum: 2592000000 (30 days).'
+        required: false
+        description: 'Reuse a cached result this many milliseconds old or newer. Default: 86400000 (1 day). Set to 0 to bypass cache. Maximum: 2592000000 (30 days).'
+        name: maxAgeMs
+        in: query
+      - schema:
+          type:
+          - object
+          - 'null'
+          properties:
+            resolution:
+              anyOf:
+              - type: boolean
+              - type: string
+                enum:
+                - 'true'
+                - 'false'
+              default: false
+              description: Measure image width and height when possible.
+            hostedUrl:
+              anyOf:
+              - type: boolean
+              - type: string
+                enum:
+                - 'true'
+                - 'false'
+              default: false
+              description: Host materializable images on the Brand.dev CDN and return their URL and MIME type.
+            classification:
+              anyOf:
+              - type: boolean
+              - type: string
+                enum:
+                - 'true'
+                - 'false'
+              default: false
+              description: Classify each image by visual asset type.
+            maxTimePerMs:
+              type: integer
+              minimum: 1
+              maximum: 60000
+              default: 30000
+              description: 'Per-image enrichment timeout in milliseconds. Default: 30000. Maximum: 60000.'
+          additionalProperties: false
+          description: Optional per-image processing, sent as deep-object query params such as enrichment[resolution]=true.
+        required: false
+        description: Optional per-image processing, sent as deep-object query params such as enrichment[resolution]=true.
+        name: enrichment
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: 'When true, visually duplicate images are removed: every image is loaded and perceptually hashed, and only the highest-resolution copy of each duplicate group is kept. Images that cannot be downloaded or hashed are kept. Default: false.'
+        required: false
+        description: 'When true, visually duplicate images are removed: every image is loaded and perceptually hashed, and only the highest-resolution copy of each duplicate group is kept. Images that cannot be downloaded or hashed are kept. Default: false.'
+        name: dedupe
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 30000
+          description: 'Optional browser wait time in milliseconds after initial page load before collecting images. Min: 0. Max: 30000 (30 seconds).'
+        required: false
+        description: 'Optional browser wait time in milliseconds after initial page load before collecting images. Min: 0. Max: 30000 (30 seconds).'
+        name: waitForMs
+        in: query
+      - schema:
+          type: object
+          additionalProperties:
+            type: string
+            maxLength: 8192
+            pattern: ^[^\r\n]*$
+          description: 'Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache.'
+        required: false
+        description: 'Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache.'
+        name: headers
+        in: query
+      - schema:
+          $ref: '#/components/schemas/LenientTimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum:
+                    - true
+                    description: Always true on success.
+                  images:
+                    type: array
+                    description: Images found on the page.
+                    items:
+                      type: object
+                      properties:
+                        src:
+                          type: string
+                          description: 'Original image value: URL, inline SVG or HTML, or base64 data URI.'
+                        element:
+                          type: string
+                          enum:
+                          - img
+                          - svg
+                          - link
+                          - source
+                          - video
+                          - css
+                          - object
+                          - meta
+                          - background
+                          description: Where the image was found.
+                        type:
+                          type: string
+                          enum:
+                          - url
+                          - html
+                          - base64
+                          description: Format of src.
+                        alt:
+                          type:
+                          - string
+                          - 'null'
+                          description: Image alt text, or null when unavailable.
+                        enrichment:
+                          type: object
+                          description: Requested metadata for images that could be processed.
+                          properties:
+                            width:
+                              type: integer
+                              description: Image width in pixels, when measured.
+                            height:
+                              type: integer
+                              description: Image height in pixels, when measured.
+                            mimetype:
+                              type: string
+                              description: Detected MIME type, when hosted.
+                            url:
+                              type: string
+                              format: uri
+                              description: Brand.dev CDN URL, when hosted.
+                            type:
+                              type: string
+                              enum:
+                              - photography
+                              - illustration
+                              - logo
+                              - wordmark
+                              - icon
+                              - pattern
+                              - graphic
+                              - other
+                              description: Visual asset category, when classified.
+                      required:
+                      - src
+                      - element
+                      - type
+                      - alt
+                  url:
+                    type: string
+                    description: Page URL that was scraped.
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - success
+                - images
+                - url
+        '400':
+          description: Invalid URL or scrape failed.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - INPUT_VALIDATION_ERROR
+                    - WEBSITE_ACCESS_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - UNAUTHORIZED
+                    description: Error code indicating unauthorized access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Insufficient permissions or usage limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '408':
+          description: Request timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.webScrapeImages({ url: 'https://example.com' });\n\nconsole.log(response.images);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.web_scrape_images(\n    url=\"https://example.com\",\n)\nprint(response.images)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.WebScrapeImages(context.TODO(), contextdev.WebWebScrapeImagesParams{\n\t\tURL: \"https://example.com\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Images)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.web.web_scrape_images(url: "https://example.com")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webScrapeImages(\n    url: 'https://example.com',\n    dedupe: 'true',\n    enrichment: [\n      'classification' => 'true',\n      'hostedURL' => 'true',\n      'maxTimePerMs' => 1,\n      'resolution' => 'true',\n    ],\n    headers: ['foo' => 'J!'],\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev web web-scrape-images \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+  /web/scrape/sitemap:
+    get:
+      summary: Crawl Sitemap
+      description: Crawl an entire website's sitemap and return all discovered page URLs.
+      security:
+      - bearerAuth: []
+      tags:
+      - Web Scraping
+      x-mint:
+        content: <Badge color="blue">1 Credit</Badge>
+        title: Crawl Sitemap
+        sidebarTitle: Crawl sitemap
+        description: Crawl a domain's sitemap and return all discovered page URLs
+      parameters:
+      - schema:
+          type: string
+          minLength: 3
+          description: Domain to build a sitemap for
+        required: true
+        description: Domain to build a sitemap for
+        name: domain
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100000
+          default: 10000
+          description: Maximum number of links to return from the sitemap crawl. Defaults to 10,000. Minimum is 1, maximum is 100,000.
+        required: false
+        description: Maximum number of links to return from the sitemap crawl. Defaults to 10,000. Minimum is 1, maximum is 100,000.
+        name: maxLinks
+        in: query
+      - schema:
+          type: string
+          format: uri
+          description: Optional explicit sitemap URL. When provided, exactly this sitemap is crawled instead of discovering the domain's sitemaps.
+        required: false
+        description: Optional explicit sitemap URL. When provided, exactly this sitemap is crawled instead of discovering the domain's sitemaps.
+        name: sitemapUrl
+        in: query
+      - schema:
+          type: string
+          maxLength: 256
+          description: Optional RE2-compatible regex pattern. Only URLs matching this pattern are returned and counted against maxLinks.
+          example: ^https?://[^/]+/blog/
+        required: false
+        description: Optional RE2-compatible regex pattern. Only URLs matching this pattern are returned and counted against maxLinks.
+        name: urlRegex
+        in: query
+      - schema:
+          type: object
+          additionalProperties:
+            type: string
+            maxLength: 8192
+            pattern: ^[^\r\n]*$
+          description: 'Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache.'
+        required: false
+        description: 'Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache.'
+        name: headers
+        in: query
+      - schema:
+          $ref: '#/components/schemas/LenientTimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum:
+                    - true
+                    description: Indicates success
+                  domain:
+                    type: string
+                    description: The normalized domain that was crawled
+                  urls:
+                    type: array
+                    items:
+                      type: string
+                    description: Array of discovered page URLs from the sitemap (max 500)
+                  meta:
+                    type: object
+                    description: Metadata about the sitemap crawl operation
+                    properties:
+                      sitemapsDiscovered:
+                        type: integer
+                        description: Total number of sitemap files discovered
+                      sitemapsFetched:
+                        type: integer
+                        description: Number of sitemap files successfully fetched and parsed
+                      sitemapsSkipped:
+                        type: integer
+                        description: Number of sitemap files skipped (due to errors, timeouts, or limits)
+                      errors:
+                        type: integer
+                        description: Number of errors encountered during crawling
+                    required:
+                    - sitemapsDiscovered
+                    - sitemapsFetched
+                    - sitemapsSkipped
+                    - errors
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - success
+                - domain
+                - urls
+                - meta
+        '400':
+          description: Bad request - Invalid domain
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - INPUT_VALIDATION_ERROR
+                    - WEBSITE_ACCESS_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - UNAUTHORIZED
+                    description: Error code indicating unauthorized access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Insufficient permissions or usage limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '408':
+          description: Request timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.webScrapeSitemap({ domain: 'xxx' });\n\nconsole.log(response.domain);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.web_scrape_sitemap(\n    domain=\"xxx\",\n)\nprint(response.domain)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.WebScrapeSitemap(context.TODO(), contextdev.WebWebScrapeSitemapParams{\n\t\tDomain: \"xxx\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Domain)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.web.web_scrape_sitemap(domain: "xxx")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webScrapeSitemap(\n    domain: 'xxx',\n    headers: ['foo' => 'J!'],\n    maxLinks: 1,\n    sitemapURL: 'https://example.com',\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    urlRegex: '^https?://[^/]+/blog/',\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev web web-scrape-sitemap \\\n  --api-key 'My API Key' \\\n  --domain xxx"
+  /web/crawl:
+    post:
+      summary: Crawl Website & Scrape Markdown
+      description: Performs a crawl starting from a given URL, extracts page content as Markdown, and returns results for all crawled pages.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: The starting URL for the crawl (must include http:// or https:// protocol)
+                maxPages:
+                  type: integer
+                  minimum: 1
+                  maximum: 500
+                  default: 100
+                  description: 'Maximum number of pages to crawl. Hard cap: 500.'
+                maxDepth:
+                  type: integer
+                  minimum: 0
+                  description: Maximum link depth from the starting URL (0 = only the starting page)
+                urlRegex:
+                  type: string
+                  description: Regex pattern. Only URLs matching this pattern will be followed and scraped.
+                  example: ^https?://[^/]+/blog/
+                includeLinks:
+                  type: boolean
+                  default: true
+                  description: Preserve hyperlinks in the Markdown output
+                includeImages:
+                  type: boolean
+                  default: false
+                  description: Include image references in the Markdown output
+                shortenBase64Images:
+                  type: boolean
+                  default: true
+                  description: Truncate base64-encoded image data in the Markdown output
+                useMainContentOnly:
+                  type: boolean
+                  default: false
+                  description: Extract only the main content, stripping headers, footers, sidebars, and navigation
+                followSubdomains:
+                  type: boolean
+                  default: false
+                  description: When true, follow links on subdomains of the starting URL's domain (e.g. docs.example.com when starting from example.com). www and apex are always treated as equivalent.
+                pdf:
+                  type: object
+                  properties:
+                    shouldParse:
+                      type: boolean
+                      default: true
+                      description: When true, PDF pages are fetched and parsed. When false, PDF pages are skipped entirely (not included in results and not counted as failures).
+                    ocr:
+                      type: boolean
+                      default: false
+                      description: When true, detect and OCR images embedded in the selected PDF pages, inserting recognized text at each image's position in page reading order while preserving the PDF text layer. This is separate from automatic scanned-PDF OCR fallback.
+                    start:
+                      type: integer
+                      minimum: 1
+                      description: First 1-based PDF page to parse. When omitted, parsing starts at the first page.
+                    end:
+                      type: integer
+                      minimum: 1
+                      description: Last 1-based PDF page to parse. When omitted, parsing ends at the last page. Must be greater than or equal to start when both are provided.
+                  additionalProperties: false
+                  default:
+                    shouldParse: true
+                    ocr: false
+                  description: PDF parsing controls. Use start/end to limit text extraction and embedded-image detection/OCR to an inclusive 1-based page range.
+                includeFrames:
+                  type: boolean
+                  default: false
+                  description: When true, the contents of iframes are rendered to Markdown for each crawled page.
+                includeSelectors:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: string
+                    maxLength: 2048
+                  description: 'CSS selectors. When provided, only matching HTML subtrees (and their descendants) are kept before each crawled page is converted to Markdown. When omitted, the entire document is kept. Examples: "article.main", "#content", "[role=main]".'
+                excludeSelectors:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: string
+                    maxLength: 2048
+                  description: 'CSS selectors to remove before each crawled page is converted to Markdown. Applied after includeSelectors. Exclusion takes precedence: an element matching both is removed. Examples: "nav", "footer", ".ad-banner", "[aria-hidden=true]".'
+                maxAgeMs:
+                  type: integer
+                  minimum: 0
+                  maximum: 2592000000
+                  default: 86400000
+                  description: Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh.
+                waitForMs:
+                  type: integer
+                  minimum: 0
+                  maximum: 30000
+                  description: 'Optional browser wait time in milliseconds after initial page load for each crawled page. Min: 0. Max: 30000 (30 seconds). '
+                settleAnimations:
+                  type: boolean
+                  default: false
+                  description: When true, waits briefly for CSS and transition animations to settle before extracting each crawled page. Defaults to false. This adds a bit of latency in exchange for more stable output on animated pages.
+                stopAfterMs:
+                  type: integer
+                  minimum: 10000
+                  maximum: 110000
+                  default: 80000
+                  description: 'Soft time budget for the crawl in milliseconds. After each scrape, the crawler checks the elapsed time and, if exceeded, returns the pages collected so far instead of continuing. Min: 10000 (10s). Max: 110000 (110s). Default: 80000 (80s).'
+                country:
+                  $ref: '#/components/schemas/BrowserCountryCode'
+                timeoutMS:
+                  $ref: '#/components/schemas/TimeoutMS'
+                tags:
+                  $ref: '#/components/schemas/RequestTags'
+              required:
+              - url
+      security:
+      - bearerAuth: []
+      tags:
+      - Web Scraping
+      x-mint:
+        content: <Badge color="blue">1 Credit Per Page</Badge>
+        title: Crawl Website & Scrape Markdown
+        sidebarTitle: Crawl website & scrape markdown
+        description: Crawl an entire website and extract pages' content as LLM usable Markdown
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        markdown:
+                          type: string
+                          description: Extracted page content as Markdown (empty string on failure)
+                        metadata:
+                          allOf:
+                          - $ref: '#/components/schemas/PageMetadata'
+                          - type: object
+                            properties:
+                              url:
+                                type: string
+                                description: The crawl URL fetched for this page.
+                              title:
+                                type: string
+                                description: Best page title extracted from the page (empty string if unavailable).
+                              crawlDepth:
+                                type: integer
+                                description: Depth relative to the start URL. 0 = start URL, 1 = one link away.
+                              statusCode:
+                                type: integer
+                                description: HTTP status code of the response
+                              success:
+                                type: boolean
+                                description: true if the page was fetched and parsed successfully
+                            required:
+                            - url
+                            - title
+                            - crawlDepth
+                            - statusCode
+                            - success
+                      required:
+                      - markdown
+                      - metadata
+                  metadata:
+                    type: object
+                    properties:
+                      numUrls:
+                        type: integer
+                        description: Total number of URLs crawled
+                      maxCrawlDepth:
+                        type: integer
+                        description: Maximum crawl depth reached during the crawl
+                      numSucceeded:
+                        type: integer
+                        description: Number of pages successfully crawled
+                      numFailed:
+                        type: integer
+                        description: Number of pages that failed to crawl
+                      numSkipped:
+                        type: integer
+                        description: Number of URLs skipped (PDFs when pdf.shouldParse=false, or URLs not matching urlRegex)
+                    required:
+                    - numUrls
+                    - maxCrawlDepth
+                    - numSucceeded
+                    - numFailed
+                    - numSkipped
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - results
+                - metadata
+        '400':
+          description: Bad request - Invalid URL or parameters
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - INPUT_VALIDATION_ERROR
+                    - WEBSITE_ACCESS_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - UNAUTHORIZED
+                    description: Error code indicating unauthorized access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Insufficient permissions or usage limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '404':
+          description: Start URL returned a 404
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - NOT_FOUND
+                    description: Error code indicating the start URL was not found
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '408':
+          description: Request timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '415':
+          description: Unsupported content type - the start URL resolved to a content type that is not supported (e.g. an image, presentation, media, or archive). Supported types are HTML, XML, PDF, DOCX, DOC, XLSX, XLS, PPTX, PPT, and CSV.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the unsupported content type
+                  error_code:
+                    type: string
+                    enum:
+                    - UNSUPPORTED_CONTENT
+                    description: Error code indicating an unsupported content type
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.webCrawlMd({ url: 'https://example.com' });\n\nconsole.log(response.metadata);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.web_crawl_md(\n    url=\"https://example.com\",\n)\nprint(response.metadata)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.WebCrawlMd(context.TODO(), contextdev.WebWebCrawlMdParams{\n\t\tURL: \"https://example.com\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Metadata)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.web.web_crawl_md(url: "https://example.com")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webCrawlMd(\n    url: 'https://example.com',\n    country: 'de',\n    excludeSelectors: ['string'],\n    followSubdomains: true,\n    includeFrames: true,\n    includeImages: true,\n    includeLinks: true,\n    includeSelectors: ['string'],\n    maxAgeMs: 0,\n    maxDepth: 0,\n    maxPages: 1,\n    pdf: ['end' => 1, 'ocr' => true, 'shouldParse' => true, 'start' => 1],\n    settleAnimations: true,\n    shortenBase64Images: true,\n    stopAfterMs: 10000,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    urlRegex: '^https?://[^/]+/blog/',\n    useMainContentOnly: true,\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev web web-crawl-md \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+  /web/search:
+    post:
+      summary: Web Search
+      description: Search the web and optionally scrape each result to Markdown in one round-trip.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+                  description: Search query. Accepts natural language as well as Google-style search operators such as `site:`, `-site:`, `inurl:`, `intitle:`, quoted phrases, and `OR`.
+                numResults:
+                  type: integer
+                  minimum: 10
+                  maximum: 100
+                  default: 10
+                  description: Number of results to request and return (10–100). Defaults to 10.
+                includeDomains:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Allowlist — only return results from these domains. Example: ["arxiv.org", "github.com"].'
+                excludeDomains:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Blocklist — drop results from these domains. Example: ["pinterest.com", "reddit.com"].'
+                freshness:
+                  type: string
+                  enum:
+                  - last_24_hours
+                  - last_week
+                  - last_month
+                  - last_year
+                  description: Restrict results to content published within this window.
+                country:
+                  type: string
+                  enum:
+                  - af
+                  - al
+                  - dz
+                  - as
+                  - ad
+                  - ao
+                  - ai
+                  - aq
+                  - ag
+                  - ar
+                  - am
+                  - aw
+                  - au
+                  - at
+                  - az
+                  - bs
+                  - bh
+                  - bd
+                  - bb
+                  - by
+                  - be
+                  - bz
+                  - bj
+                  - bm
+                  - bt
+                  - bo
+                  - ba
+                  - bw
+                  - bv
+                  - br
+                  - io
+                  - bn
+                  - bg
+                  - bf
+                  - bi
+                  - kh
+                  - cm
+                  - ca
+                  - cv
+                  - ky
+                  - cf
+                  - td
+                  - cl
+                  - cn
+                  - cx
+                  - cc
+                  - co
+                  - km
+                  - cg
+                  - cd
+                  - ck
+                  - cr
+                  - ci
+                  - hr
+                  - cu
+                  - cy
+                  - cz
+                  - dk
+                  - dj
+                  - dm
+                  - do
+                  - ec
+                  - eg
+                  - sv
+                  - gq
+                  - er
+                  - ee
+                  - et
+                  - fk
+                  - fo
+                  - fj
+                  - fi
+                  - fr
+                  - gf
+                  - pf
+                  - tf
+                  - ga
+                  - gm
+                  - ge
+                  - de
+                  - gh
+                  - gi
+                  - gr
+                  - gl
+                  - gd
+                  - gp
+                  - gu
+                  - gt
+                  - gn
+                  - gw
+                  - gy
+                  - ht
+                  - hm
+                  - va
+                  - hn
+                  - hk
+                  - hu
+                  - is
+                  - in
+                  - id
+                  - ir
+                  - iq
+                  - ie
+                  - il
+                  - it
+                  - jm
+                  - jp
+                  - jo
+                  - kz
+                  - ke
+                  - ki
+                  - kp
+                  - kr
+                  - kw
+                  - kg
+                  - la
+                  - lv
+                  - lb
+                  - ls
+                  - lr
+                  - ly
+                  - li
+                  - lt
+                  - lu
+                  - mo
+                  - mk
+                  - mg
+                  - mw
+                  - my
+                  - mv
+                  - ml
+                  - mt
+                  - mh
+                  - mq
+                  - mr
+                  - mu
+                  - yt
+                  - mx
+                  - fm
+                  - md
+                  - mc
+                  - mn
+                  - ms
+                  - ma
+                  - mz
+                  - mm
+                  - na
+                  - nr
+                  - np
+                  - nl
+                  - an
+                  - nc
+                  - nz
+                  - ni
+                  - ne
+                  - ng
+                  - nu
+                  - nf
+                  - mp
+                  - 'no'
+                  - om
+                  - pk
+                  - pw
+                  - ps
+                  - pa
+                  - pg
+                  - py
+                  - pe
+                  - ph
+                  - pn
+                  - pl
+                  - pt
+                  - pr
+                  - qa
+                  - re
+                  - ro
+                  - ru
+                  - rw
+                  - sh
+                  - kn
+                  - lc
+                  - pm
+                  - vc
+                  - ws
+                  - sm
+                  - st
+                  - sa
+                  - sn
+                  - rs
+                  - sc
+                  - sl
+                  - sg
+                  - sk
+                  - si
+                  - sb
+                  - so
+                  - za
+                  - gs
+                  - es
+                  - lk
+                  - sd
+                  - sr
+                  - sj
+                  - sz
+                  - se
+                  - ch
+                  - sy
+                  - tw
+                  - tj
+                  - tz
+                  - th
+                  - tl
+                  - tg
+                  - tk
+                  - to
+                  - tt
+                  - tn
+                  - tr
+                  - tm
+                  - tc
+                  - tv
+                  - ug
+                  - ua
+                  - ae
+                  - gb
+                  - us
+                  - um
+                  - uy
+                  - uz
+                  - vu
+                  - ve
+                  - vn
+                  - vg
+                  - vi
+                  - wf
+                  - eh
+                  - ye
+                  - zm
+                  - zw
+                  description: 'Two-letter ISO 3166-1 alpha-2 country code to localize results to a specific country (maps to Google''s `gl` parameter). Example: "us", "gb", "de".'
+                queryFanout:
+                  type: boolean
+                  description: Expand the query into multiple parallel variants for broader recall.
+                markdownOptions:
+                  type: object
+                  additionalProperties: false
+                  description: 'Inline Markdown scraping for each result. Set `enabled: true` to activate.'
+                  properties:
+                    enabled:
+                      type: boolean
+                      default: false
+                      description: Scrape each result to Markdown. Off by default to keep search cheap and fast.
+                    includeLinks:
+                      type: boolean
+                      default: true
+                      description: Keep hyperlinks in the Markdown.
+                    includeImages:
+                      type: boolean
+                      default: false
+                      description: Emit image references in the Markdown.
+                    shortenBase64Images:
+                      type: boolean
+                      default: true
+                      description: Truncate inline base64 image payloads to keep responses small.
+                    useMainContentOnly:
+                      type: boolean
+                      default: false
+                      description: Strip nav, header, footer, and sidebar — keep only the primary article content.
+                    pdf:
+                      type: object
+                      properties:
+                        shouldParse:
+                          type: boolean
+                          default: true
+                          description: Parse PDF URLs. When false, PDF results are skipped with WEBSITE_ACCESS_ERROR.
+                        start:
+                          type: integer
+                          minimum: 1
+                          description: First PDF page to parse (1-based, inclusive). Defaults to page 1.
+                        end:
+                          type: integer
+                          minimum: 1
+                          description: Last PDF page to parse (1-based, inclusive). Defaults to the final page. Must be >= start.
+                      additionalProperties: false
+                      default:
+                        shouldParse: true
+                      description: PDF handling. Use start/end to bound text extraction and OCR to a page range.
+                    includeFrames:
+                      type: boolean
+                      default: false
+                      description: Render iframe contents into the Markdown.
+                    maxAgeMs:
+                      type: integer
+                      minimum: 0
+                      maximum: 2592000000
+                      default: 86400000
+                      description: Cache TTL in ms for scraped Markdown keyed by URL + options. Default 1 day, max 30 days. Set to 0 to force a fresh scrape.
+                    waitForMs:
+                      type: integer
+                      minimum: 0
+                      maximum: 30000
+                      description: Extra wait after page load before rendering, in ms (0–30000). Useful for JS-heavy pages.
+                    timeoutMS:
+                      $ref: '#/components/schemas/TimeoutMS'
+                timeoutMS:
+                  $ref: '#/components/schemas/TimeoutMS'
+                tags:
+                  $ref: '#/components/schemas/RequestTags'
+              required:
+              - query
+              additionalProperties: false
+      security:
+      - bearerAuth: []
+      tags:
+      - Web Scraping
+      x-mint:
+        content: <Badge color="blue">1 Credit Per 10 Results</Badge>
+      responses:
+        '200':
+          description: Search succeeded. Results are ordered by relevance.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                          description: Canonical result URL.
+                        title:
+                          type: string
+                          description: Page title.
+                        description:
+                          type: string
+                          description: Snippet excerpt from the page.
+                        relevance:
+                          type: string
+                          enum:
+                          - high
+                          - medium
+                          - low
+                          description: Relevance to the original query.
+                        markdown:
+                          type: object
+                          properties:
+                            markdown:
+                              type:
+                              - string
+                              - 'null'
+                              description: GFM Markdown of the page. Null unless markdownOptions.enabled is true and scraping succeeded.
+                            code:
+                              type: string
+                              enum:
+                              - SUCCESS
+                              - NOT_REQUESTED
+                              - TIMEOUT
+                              - WEBSITE_ACCESS_ERROR
+                              - ERROR
+                              description: Per-result scrape outcome. Inspect this before reading `markdown`.
+                          required:
+                          - markdown
+                          - code
+                          additionalProperties: false
+                          description: Markdown scrape status and content for this result.
+                      required:
+                      - url
+                      - title
+                      - description
+                      - relevance
+                      - markdown
+                  query:
+                    type: string
+                    description: Echo of the original query (useful when fanout was enabled).
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - results
+                - query
+        '400':
+          description: Bad request - Invalid parameters
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message describing the issue
+                  error_code:
+                    type: string
+                    enum:
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - message
+                - error_code
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - UNAUTHORIZED
+                    description: Error code indicating unauthorized access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Insufficient permissions or usage limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '408':
+          description: Request timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.search({ query: 'x' });\n\nconsole.log(response.query);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.search(\n    query=\"x\",\n)\nprint(response.query)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.Search(context.TODO(), contextdev.WebSearchParams{\n\t\tQuery: \"x\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Query)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.web.search(query: "x")
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->search(\n    query: 'x',\n    country: 'af',\n    excludeDomains: ['string'],\n    freshness: 'last_24_hours',\n    includeDomains: ['string'],\n    markdownOptions: [\n      'enabled' => true,\n      'includeFrames' => true,\n      'includeImages' => true,\n      'includeLinks' => true,\n      'maxAgeMs' => 0,\n      'pdf' => ['end' => 1, 'shouldParse' => true, 'start' => 1],\n      'shortenBase64Images' => true,\n      'timeoutMs' => 1000,\n      'useMainContentOnly' => true,\n      'waitForMs' => 0,\n    ],\n    numResults: 10,\n    queryFanout: true,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev web search \\\n  --api-key 'My API Key' \\\n  --query x"
+  /web/screenshot:
+    get:
+      summary: Scrape Screenshot
+      description: Capture a screenshot of a website.
+      x-oneOf-query:
+      - title: By Domain
+        required:
+        - domain
+        properties:
+          domain:
+            type: string
+            description: Domain name to take screenshot of (e.g., 'example.com', 'google.com').
+          fullScreenshot:
+            type: string
+            enum:
+            - 'true'
+            - 'false'
+          handleCookiePopup:
+            type: string
+            enum:
+            - 'true'
+            - 'false'
+            default: 'false'
+            description: 'Optional parameter to control cookie/consent popup handling. If ''true'', the browser service dismisses cookie consent before capture. If ''false'' or omitted, captures without that step. '
+          colorScheme:
+            type: string
+            enum:
+            - light
+            - dark
+            description: Optional parameter to choose the site's visual theme in the screenshot. Use 'light' or 'dark' when the site offers both appearances.
+          viewport:
+            type: object
+            additionalProperties: false
+            default:
+              width: 1920
+              height: 1080
+            properties:
+              width:
+                type: integer
+                minimum: 240
+                maximum: 7680
+                default: 1920
+                description: Viewport width in pixels.
+              height:
+                type: integer
+                minimum: 240
+                maximum: 4320
+                default: 1080
+                description: Viewport height in pixels.
+            description: Optional browser viewport dimensions for the screenshot. Defaults to 1920x1080.
+          maxAgeMs:
+            type: integer
+            minimum: 0
+            maximum: 2592000000
+            default: 86400000
+            description: Return a cached screenshot if a prior screenshot for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always capture fresh.
+          page:
+            type: string
+            enum:
+            - login
+            - signup
+            - blog
+            - careers
+            - pricing
+            - terms
+            - privacy
+            - contact
+          waitForMs:
+            type: integer
+            minimum: 0
+            maximum: 30000
+            default: 3000
+            description: 'Optional browser wait time in milliseconds after initial page load before taking the screenshot. Min: 0. Max: 30000 (30 seconds).  Defaults to 3000 ms when omitted.'
+          country:
+            $ref: '#/components/schemas/BrowserCountryCode'
+          timeoutMS:
+            $ref: '#/components/schemas/TimeoutMS'
+      - title: By Direct URL
+        required:
+        - directUrl
+        properties:
+          directUrl:
+            type: string
+            format: uri
+            description: A specific URL to screenshot directly, bypassing domain resolution.
+          fullScreenshot:
+            type: string
+            enum:
+            - 'true'
+            - 'false'
+          handleCookiePopup:
+            type: string
+            enum:
+            - 'true'
+            - 'false'
+            default: 'false'
+            description: 'Optional parameter to control cookie/consent popup handling. If ''true'', the browser service dismisses cookie consent before capture. If ''false'' or omitted, captures without that step. '
+          colorScheme:
+            type: string
+            enum:
+            - light
+            - dark
+            description: Optional parameter to choose the site's visual theme in the screenshot. Use 'light' or 'dark' when the site offers both appearances.
+          viewport:
+            type: object
+            additionalProperties: false
+            default:
+              width: 1920
+              height: 1080
+            properties:
+              width:
+                type: integer
+                minimum: 240
+                maximum: 7680
+                default: 1920
+                description: Viewport width in pixels.
+              height:
+                type: integer
+                minimum: 240
+                maximum: 4320
+                default: 1080
+                description: Viewport height in pixels.
+            description: Optional browser viewport dimensions for the screenshot. Defaults to 1920x1080.
+          maxAgeMs:
+            type: integer
+            minimum: 0
+            maximum: 2592000000
+            default: 86400000
+            description: Return a cached screenshot if a prior screenshot for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always capture fresh.
+          waitForMs:
+            type: integer
+            minimum: 0
+            maximum: 30000
+            default: 3000
+            description: 'Optional browser wait time in milliseconds after initial page load before taking the screenshot. Min: 0. Max: 30000 (30 seconds).  Defaults to 3000 ms when omitted.'
+          country:
+            $ref: '#/components/schemas/BrowserCountryCode'
+          timeoutMS:
+            $ref: '#/components/schemas/TimeoutMS'
+      security:
+      - bearerAuth: []
+      tags:
+      - Web Scraping
+      x-mint:
+        content: <Badge color="orange">5 Credits</Badge>
+        title: Scrape Screenshot
+        sidebarTitle: Scrape screenshot
+        description: Capture a screenshot of a website.
+      parameters:
+      - schema:
+          type: string
+          minLength: 3
+          description: Domain name to take screenshot of (e.g., 'example.com', 'google.com'). The domain will be automatically normalized and validated. You must provide either 'domain' or 'directUrl', but not both.
+        required: false
+        description: Domain name to take screenshot of (e.g., 'example.com', 'google.com'). The domain will be automatically normalized and validated. You must provide either 'domain' or 'directUrl', but not both.
+        name: domain
+        in: query
+      - schema:
+          type: string
+          format: uri
+          description: A specific URL to screenshot directly, bypassing domain resolution (e.g., 'https://example.com/pricing'). When provided, the screenshot is taken of this exact URL. You must provide either 'domain' or 'directUrl', but not both.
+        required: false
+        description: A specific URL to screenshot directly, bypassing domain resolution (e.g., 'https://example.com/pricing'). When provided, the screenshot is taken of this exact URL. You must provide either 'domain' or 'directUrl', but not both.
+        name: directUrl
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          description: Optional parameter to determine screenshot type. If 'true', takes a full page screenshot capturing all content. If 'false' or not provided, takes a viewport screenshot (standard browser view).
+        required: false
+        description: Optional parameter to determine screenshot type. If 'true', takes a full page screenshot capturing all content. If 'false' or not provided, takes a viewport screenshot (standard browser view).
+        name: fullScreenshot
+        in: query
+      - schema:
+          type: string
+          enum:
+          - login
+          - signup
+          - blog
+          - careers
+          - pricing
+          - terms
+          - privacy
+          - contact
+          description: Optional parameter to specify which page type to screenshot. If provided, the system will scrape the domain's links and use heuristics to find the most appropriate URL for the specified page type (30 supported languages). If not provided, screenshots the main domain landing page. Only applicable when using 'domain', not 'directUrl'.
+        required: false
+        description: Optional parameter to specify which page type to screenshot. If provided, the system will scrape the domain's links and use heuristics to find the most appropriate URL for the specified page type (30 supported languages). If not provided, screenshots the main domain landing page. Only applicable when using 'domain', not 'directUrl'.
+        name: page
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 30000
+          default: 3000
+          description: 'Optional browser wait time in milliseconds after initial page load before taking the screenshot. Min: 0. Max: 30000 (30 seconds). Defaults to 3000 ms when omitted.'
+        required: false
+        description: 'Optional browser wait time in milliseconds after initial page load before taking the screenshot. Min: 0. Max: 30000 (30 seconds). Defaults to 3000 ms when omitted.'
+        name: waitForMs
+        in: query
+      - schema:
+          type: object
+          properties:
+            width:
+              type: integer
+              minimum: 240
+              maximum: 7680
+              default: 1920
+              description: Viewport width in pixels.
+            height:
+              type: integer
+              minimum: 240
+              maximum: 4320
+              default: 1080
+              description: Viewport height in pixels.
+          default:
+            width: 1920
+            height: 1080
+          description: Optional browser viewport dimensions for the screenshot. Defaults to 1920x1080.
+        required: false
+        description: Optional browser viewport dimensions for the screenshot. Defaults to 1920x1080.
+        name: viewport
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Optional parameter to control cookie/consent popup handling. If 'true', we dismiss cookie banner before capture. If 'false' or not provided, captures the page without that step.
+        required: false
+        description: Optional parameter to control cookie/consent popup handling. If 'true', we dismiss cookie banner before capture. If 'false' or not provided, captures the page without that step.
+        name: handleCookiePopup
+        in: query
+      - schema:
+          type: string
+          enum:
+          - light
+          - dark
+          description: Optional parameter to choose the site's visual theme in the screenshot. Use 'light' or 'dark' when the site offers both appearances.
+        required: false
+        description: Optional parameter to choose the site's visual theme in the screenshot. Use 'light' or 'dark' when the site offers both appearances.
+        name: colorScheme
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 100000
+          description: 'Optional vertical scroll offset in pixels for capturing a long page in viewport-sized chunks. When provided, the full page is captured once and the returned image is the viewport-sized slice that begins at this Y offset (e.g. request scrollOffset=0, then 1080, then 2160 to walk a 1920x1080 landing page top to bottom). The final slice may be shorter than the viewport height. Takes precedence over fullScreenshot. Max: 100000.'
+        required: false
+        description: 'Optional vertical scroll offset in pixels for capturing a long page in viewport-sized chunks. When provided, the full page is captured once and the returned image is the viewport-sized slice that begins at this Y offset (e.g. request scrollOffset=0, then 1080, then 2160 to walk a 1920x1080 landing page top to bottom). The final slice may be shorter than the viewport height. Takes precedence over fullScreenshot. Max: 100000.'
+        name: scrollOffset
+        in: query
+      - schema:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 2592000000
+          default: 86400000
+          description: Return a cached screenshot if a prior screenshot for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always capture fresh.
+        required: false
+        description: Return a cached screenshot if a prior screenshot for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always capture fresh.
+        name: maxAgeMs
+        in: query
+      - schema:
+          $ref: '#/components/schemas/BrowserCountryCode'
+        required: false
+        description: Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country.
+        name: country
+        in: query
+      - schema:
+          $ref: '#/components/schemas/LenientTimeoutMS'
+        required: false
+        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        name: timeoutMS
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'ok'
+                  domain:
+                    type: string
+                    description: The normalized domain that was processed
+                  screenshot:
+                    type: string
+                    description: Public URL of the uploaded screenshot image
+                  screenshotType:
+                    type: string
+                    enum:
+                    - viewport
+                    - fullPage
+                    description: Type of screenshot that was captured
+                  width:
+                    type: integer
+                    description: Width in pixels of the returned screenshot image
+                  height:
+                    type: integer
+                    description: Height in pixels of the returned screenshot image
+                  code:
+                    type: integer
+                    description: HTTP status code
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '400':
+          description: Bad Request
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '401':
+          description: Unauthorized
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.screenshot();\n\nconsole.log(response.width);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.screenshot()\nprint(response.width)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.Screenshot(context.TODO(), contextdev.WebScreenshotParams{})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Width)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.web.screenshot
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->screenshot(\n    colorScheme: 'light',\n    country: 'de',\n    directURL: 'https://example.com',\n    domain: 'xxx',\n    fullScreenshot: 'true',\n    handleCookiePopup: 'true',\n    maxAgeMs: 0,\n    page: 'login',\n    scrollOffset: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    viewport: ['height' => 240, 'width' => 240],\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev web screenshot \\\n  --api-key 'My API Key'"
+components:
+  schemas:
+    PageMetadataAlternate:
+      type: object
+      properties:
+        href:
+          type: string
+          description: Resolved alternate URL.
+        hreflang:
+          type: string
+          description: Language or locale for the alternate URL, when present.
+        type:
+          type: string
+          description: Alternate resource MIME type, when present.
+        title:
+          type: string
+          description: Alternate resource title, when present.
+      required:
+      - href
+      additionalProperties: false
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    PageMetadataValue:
+      oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+    LenientTimeoutMS:
+      type: integer
+      minimum: 1
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    BrowserCountryCode:
+      type: string
+      enum:
+      - ad
+      - ae
+      - af
+      - ag
+      - ai
+      - al
+      - am
+      - ao
+      - ar
+      - at
+      - au
+      - aw
+      - az
+      - ba
+      - bb
+      - bd
+      - be
+      - bf
+      - bg
+      - bh
+      - bi
+      - bj
+      - bm
+      - bn
+      - bo
+      - bq
+      - br
+      - bs
+      - bw
+      - by
+      - bz
+      - ca
+      - cd
+      - cf
+      - cg
+      - ch
+      - ci
+      - cl
+      - cm
+      - cn
+      - co
+      - cr
+      - cv
+      - cw
+      - cy
+      - cz
+      - de
+      - dj
+      - dk
+      - dm
+      - do
+      - dz
+      - ec
+      - ee
+      - eg
+      - es
+      - et
+      - fi
+      - fj
+      - fr
+      - ga
+      - gb
+      - gd
+      - ge
+      - gf
+      - gg
+      - gh
+      - gm
+      - gn
+      - gp
+      - gq
+      - gr
+      - gt
+      - gu
+      - gw
+      - gy
+      - hk
+      - hn
+      - hr
+      - ht
+      - hu
+      - id
+      - ie
+      - il
+      - im
+      - in
+      - iq
+      - ir
+      - is
+      - it
+      - je
+      - jm
+      - jo
+      - jp
+      - ke
+      - kg
+      - kh
+      - kn
+      - kr
+      - kw
+      - ky
+      - kz
+      - la
+      - lb
+      - lc
+      - lk
+      - lr
+      - ls
+      - lt
+      - lu
+      - lv
+      - ly
+      - ma
+      - mc
+      - md
+      - me
+      - mf
+      - mg
+      - mk
+      - ml
+      - mm
+      - mn
+      - mo
+      - mq
+      - mr
+      - mt
+      - mu
+      - mv
+      - mw
+      - mx
+      - my
+      - mz
+      - na
+      - nc
+      - ne
+      - ng
+      - ni
+      - nl
+      - 'no'
+      - np
+      - nz
+      - om
+      - pa
+      - pe
+      - pf
+      - pg
+      - ph
+      - pk
+      - pl
+      - pr
+      - ps
+      - pt
+      - py
+      - qa
+      - re
+      - ro
+      - rs
+      - ru
+      - rw
+      - sa
+      - sc
+      - sd
+      - se
+      - sg
+      - si
+      - sk
+      - sl
+      - sm
+      - sn
+      - so
+      - sr
+      - ss
+      - st
+      - sv
+      - sx
+      - sy
+      - sz
+      - tc
+      - td
+      - tg
+      - th
+      - tj
+      - tl
+      - tm
+      - tn
+      - tr
+      - tt
+      - tw
+      - tz
+      - ua
+      - ug
+      - us
+      - uy
+      - uz
+      - vc
+      - ve
+      - vg
+      - vi
+      - vn
+      - ye
+      - yt
+      - za
+      - zm
+      - zw
+      example: de
+      description: Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country.
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    PageMetadata:
+      type: object
+      properties:
+        sourceUrl:
+          type: string
+          description: Original URL requested by the caller.
+        finalUrl:
+          type: string
+          description: Final URL scraped after redirects or scraper fallback, when known. Falls back to sourceUrl when unavailable.
+        title:
+          type: string
+          description: Best title extracted from the page.
+        description:
+          type: string
+          description: Best description extracted from standard, Open Graph, or Twitter metadata.
+        language:
+          type: string
+          description: Language extracted from html lang or language meta tags.
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Keywords extracted from the page's keywords meta tag.
+        canonicalUrl:
+          type: string
+          description: Resolved canonical URL, when present.
+        author:
+          type: string
+          description: Author metadata, when present.
+        siteName:
+          type: string
+          description: Site or application name from page metadata.
+        image:
+          type: string
+          description: Primary resolved preview image from Open Graph, Twitter, or image metadata.
+        favicon:
+          type: string
+          description: Resolved favicon URL, when present.
+        publishedTime:
+          type: string
+          description: Published timestamp/date from page metadata, when present.
+        modifiedTime:
+          type: string
+          description: Modified timestamp/date from page metadata, when present.
+        robots:
+          type: string
+          description: Robots meta directive, when present.
+        openGraph:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: 'Open Graph metadata with the og: prefix removed and keys camel-cased.'
+        twitter:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: 'Twitter card metadata with the twitter: prefix removed and keys camel-cased.'
+        alternates:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageMetadataAlternate'
+          description: Resolved alternate links from link rel=alternate tags.
+        jsonLd:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: JSON-LD structured data blocks parsed from the page.
+        additionalMeta:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: Additional non-social meta tags not promoted to top-level metadata fields.
+      required:
+      - sourceUrl
+      - finalUrl
+      description: Metadata extracted from the scraped page HTML.
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+  headers:
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          description: Seconds until the per-minute rate limit window resets
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message
+              error_code:
+                type: string
+                enum:
+                - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+            required:
+            - message
+            - error_code
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

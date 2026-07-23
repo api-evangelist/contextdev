@@ -1,0 +1,491 @@
+openapi: 3.1.0
+info:
+  title: Context Brand Intelligence People API
+  description: API for retrieving context data from any website
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: People
+paths:
+  /people/retrieve:
+    post:
+      x-hidden: true
+      summary: Retrieve Person
+      description: Retrieve and normalize a person profile from identifiers.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonRetrieveRequest'
+            example:
+              identifiers:
+                linkedinUrl: https://www.linkedin.com/in/yahia-bakour/
+      security:
+      - bearerAuth: []
+      tags:
+      - People
+      x-mint:
+        content: <Badge color="blue">50 Credits</Badge> <Badge color="purple">Private Alpha</Badge>
+        title: Retrieve Person
+        sidebarTitle: Retrieve person
+        description: Normalize a person profile from LinkedIn and personal website sources.
+      responses:
+        '200':
+          description: Person retrieval succeeded.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonRetrieveResponse'
+        '400':
+          description: Bad request - Invalid identifiers
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Invalid or missing API key
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Insufficient permissions or usage limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: External provider error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    PersonDateRange:
+      type: object
+      properties:
+        startDate:
+          allOf:
+          - $ref: '#/components/schemas/PersonDate'
+          description: Start date, when known.
+        endDate:
+          allOf:
+          - $ref: '#/components/schemas/PersonDate'
+          description: End date, when known.
+        isCurrent:
+          type: boolean
+          description: Whether the entry is current.
+      additionalProperties: false
+    PersonEducation:
+      type: object
+      properties:
+        institution:
+          allOf:
+          - $ref: '#/components/schemas/PersonNormalizedName'
+          description: School or institution name.
+        qualification:
+          type: string
+          description: Degree, certificate, or credential.
+        fieldOfStudy:
+          type: string
+          description: Area of study.
+        description:
+          type: string
+          description: Additional education details.
+        dates:
+          allOf:
+          - $ref: '#/components/schemas/PersonDateRange'
+          description: Education dates.
+      additionalProperties: false
+      required:
+      - institution
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    PersonRetrieveResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+          description: Response status.
+        code:
+          type: integer
+          enum:
+          - 200
+          description: HTTP status code.
+        person:
+          allOf:
+          - $ref: '#/components/schemas/Person'
+          description: Retrieved person profile.
+        metadata:
+          type: object
+          properties:
+            identifiers:
+              type: object
+              properties:
+                linkedinUrl:
+                  type: string
+                  format: uri
+                  description: LinkedIn profile URL.
+              additionalProperties: false
+              description: Identifiers returned for the person.
+            personalWebsiteUrl:
+              type: string
+              format: uri
+              description: Personal website URL, when found.
+            urlsAnalyzed:
+              type: array
+              items:
+                type: string
+                format: uri
+              description: URLs reviewed for this profile.
+            sourcesAttempted:
+              type: array
+              items:
+                type: string
+                enum:
+                - linkedin
+                - cv
+                - manual
+                - github
+                - other
+              description: Source categories checked.
+            sourcesSucceeded:
+              type: array
+              items:
+                type: string
+                enum:
+                - linkedin
+                - cv
+                - manual
+                - github
+                - other
+              description: Source categories with data.
+          required:
+          - identifiers
+          - urlsAnalyzed
+          - sourcesAttempted
+          - sourcesSucceeded
+          additionalProperties: false
+          description: Additional response details.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+      required:
+      - status
+      - code
+      - person
+      - metadata
+      additionalProperties: false
+    PersonSkill:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Skill name.
+        normalized:
+          type: string
+          description: Standardized skill name, when available.
+        proficiency:
+          type: string
+          description: Skill proficiency, when available.
+      required:
+      - name
+      additionalProperties: false
+    PersonNormalizedName:
+      type: object
+      properties:
+        display:
+          type: string
+          description: Display name.
+        normalized:
+          type: string
+          description: Standardized name, when available.
+      required:
+      - display
+      additionalProperties: false
+    PersonProfile:
+      type: object
+      properties:
+        fullName:
+          type: string
+          description: Person's full name.
+        headline:
+          type: string
+          description: Short professional headline.
+        location:
+          type: string
+          description: Person's listed location.
+        summary:
+          type: string
+          description: Brief profile summary.
+        profilePictureUrl:
+          type: string
+          format: uri
+          description: Profile image URL.
+      additionalProperties: false
+    PersonExperience:
+      type: object
+      properties:
+        company:
+          allOf:
+          - $ref: '#/components/schemas/PersonNormalizedName'
+          description: Company or organization name.
+        title:
+          type: string
+          description: Role or job title.
+        description:
+          type: string
+          description: Role description.
+        dates:
+          allOf:
+          - $ref: '#/components/schemas/PersonDateRange'
+          description: Role dates.
+      required:
+      - company
+      - title
+      additionalProperties: false
+    PersonDate:
+      type: object
+      properties:
+        year:
+          type: integer
+          description: Year value.
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: Month value, when known.
+        day:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Day value, when known.
+      required:
+      - year
+      additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        error_code:
+          type: string
+          enum:
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - WEBSITE_ACCESS_ERROR
+          - EXTERNAL_PROVIDER_ERROR
+          - INPUT_VALIDATION_ERROR
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - UNSUPPORTED_CONTENT
+          - MONITOR_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          description: Error code indicating the type of error
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    PersonRetrieveRequest:
+      type: object
+      properties:
+        identifiers:
+          type: object
+          properties:
+            linkedinUrl:
+              type: string
+              format: uri
+              description: LinkedIn profile URL, e.g. https://www.linkedin.com/in/yahia-bakour/.
+          additionalProperties: false
+          description: Known identifiers for the person. At least one identifier is required.
+        timeoutMS:
+          $ref: '#/components/schemas/TimeoutMS'
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      required:
+      - identifiers
+      additionalProperties: false
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    Person:
+      type: object
+      properties:
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/PersonProfile'
+          description: Core profile details.
+        education:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonEducation'
+          description: Education history.
+        experience:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonExperience'
+          description: Work history.
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonSkill'
+          description: Listed skills.
+      required:
+      - profile
+      - education
+      - experience
+      - skills
+      additionalProperties: false
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+  headers:
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          description: Seconds until the per-minute rate limit window resets
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message
+              error_code:
+                type: string
+                enum:
+                - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+            required:
+            - message
+            - error_code
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

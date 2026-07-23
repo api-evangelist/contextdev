@@ -1,0 +1,450 @@
+openapi: 3.1.0
+info:
+  title: Context Brand Intelligence Parsing API
+  description: API for retrieving context data from any website
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: Parsing
+paths:
+  /parse:
+    post:
+      summary: Parse Bytes
+      description: Converts raw text, source code, web/data, PDF, Microsoft Office, and image bytes into LLM-usable Markdown.
+      requestBody:
+        required: true
+        description: Raw file bytes. The request body must not exceed 25 MiB.
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+          '*/*':
+            schema:
+              type: string
+              format: binary
+      security:
+      - bearerAuth: []
+      tags:
+      - Parsing
+      x-mint:
+        content: <Badge color="blue">1 Credit</Badge>
+        title: Parse Bytes
+        sidebarTitle: Parse Bytes
+        description: Convert raw document bytes into Markdown
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - txt
+          - text
+          - md
+          - markdown
+          - html
+          - htm
+          - xhtml
+          - xml
+          - rss
+          - atom
+          - csv
+          - tsv
+          - yaml
+          - yml
+          - py
+          - java
+          - js
+          - jsx
+          - mjs
+          - cjs
+          - json
+          - jsonl
+          - ndjson
+          - php
+          - sh
+          - bash
+          - zsh
+          - fish
+          - rb
+          - ts
+          - tsx
+          - rtf
+          - srt
+          - css
+          - scss
+          - less
+          - styl
+          - sass
+          - svg
+          - pdf
+          - docx
+          - doc
+          - xlsx
+          - xlsm
+          - xlsb
+          - xltx
+          - xltm
+          - xls
+          - pptx
+          - pptm
+          - ppsx
+          - ppsm
+          - potx
+          - potm
+          - ppt
+          - pps
+          - pot
+          - jpg
+          - jpeg
+          - jpe
+          - png
+          - gif
+          - bmp
+          - tiff
+          - tif
+          - webp
+          - ppm
+          - pbm
+          - pgm
+          - pnm
+          description: Optional file extension hint, such as pdf, docx, xlsx, pptx, html, json, csv, md, py, rtf, jpg, png, or txt.
+        required: false
+        description: Optional file extension hint, such as pdf, docx, xlsx, pptx, html, json, csv, md, py, rtf, jpg, png, or txt.
+        name: extension
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: true
+          description: Preserve hyperlinks in Markdown output
+        required: false
+        description: Preserve hyperlinks in Markdown output
+        name: includeLinks
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Include image references in Markdown output
+        required: false
+        description: Include image references in Markdown output
+        name: includeImages
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: true
+          description: Shorten base64-encoded image data in the Markdown output
+        required: false
+        description: Shorten base64-encoded image data in the Markdown output
+        name: shortenBase64Images
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: Extract only the main content from HTML-like inputs
+        required: false
+        description: Extract only the main content from HTML-like inputs
+        name: useMainContentOnly
+        in: query
+      - schema:
+          anyOf:
+          - type: boolean
+          - type: string
+            enum:
+            - 'true'
+            - 'false'
+          default: false
+          description: When true for PDF inputs, detect and OCR images embedded in the selected pages, inserting recognized text at each image's position in page reading order while preserving the PDF text layer. pdf.start/pdf.end limit the inclusive page range. When false, all OCR is disabled, including the automatic scanned-PDF fallback.
+        required: false
+        description: When true for PDF inputs, detect and OCR images embedded in the selected pages, inserting recognized text at each image's position in page reading order while preserving the PDF text layer. pdf.start/pdf.end limit the inclusive page range. When false, all OCR is disabled, including the automatic scanned-PDF fallback.
+        name: ocr
+        in: query
+      - schema:
+          type: object
+          properties:
+            start:
+              type: integer
+              minimum: 1
+              description: First 1-based PDF page to parse. When omitted, parsing starts at the first page.
+            end:
+              type: integer
+              minimum: 1
+              description: Last 1-based PDF page to parse. When omitted, parsing ends at the last page. Must be greater than or equal to start when both are provided.
+          default: {}
+          additionalProperties: false
+          description: 'PDF page-range options as a JSON object, e.g. {"start": 2, "end": 5}.'
+        required: false
+        description: 'PDF page-range options as a JSON object, e.g. {"start": 2, "end": 5}.'
+        name: pdf
+        in: query
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Optional client identifier used for usage attribution.
+        required: false
+        description: Optional client identifier used for usage attribution.
+        name: client
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum:
+                    - true
+                    description: Indicates success
+                  markdown:
+                    type: string
+                    description: Input bytes converted to GitHub Flavored Markdown
+                  type:
+                    type: string
+                    enum:
+                    - html
+                    - xml
+                    - json
+                    - jsonl
+                    - text
+                    - csv
+                    - tsv
+                    - markdown
+                    - yaml
+                    - python
+                    - java
+                    - javascript
+                    - php
+                    - shell
+                    - ruby
+                    - typescript
+                    - rtf
+                    - srt
+                    - css
+                    - scss
+                    - less
+                    - stylus
+                    - sass
+                    - svg
+                    - pdf
+                    - docx
+                    - doc
+                    - xlsx
+                    - xls
+                    - pptx
+                    - ppt
+                    - jpg
+                    - png
+                    - gif
+                    - bmp
+                    - tiff
+                    - webp
+                    - ppm
+                    - pbm
+                    - pgm
+                    - pnm
+                    description: Detected content type used for parsing
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                required:
+                - success
+                - markdown
+                - type
+        '400':
+          description: Invalid input or no parseable content
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                    - INPUT_VALIDATION_ERROR
+                    - WEBSITE_ACCESS_ERROR
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '413':
+          description: Request body exceeds the 25 MiB upload limit
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                    - INPUT_VALIDATION_ERROR
+        '415':
+          description: Unsupported content type
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                    - UNSUPPORTED_CONTENT
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.parse.handle(fs.createReadStream('path/to/file'));\n\nconsole.log(response.markdown);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.parse.handle(\n    body=b\"Example data\",\n)\nprint(response.markdown)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"bytes\"\n\t\"context\"\n\t\"fmt\"\n\t\"io\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Parse.Handle(\n\t\tcontext.TODO(),\n\t\tio.Reader(bytes.NewBuffer([]byte(\"Example data\"))),\n\t\tcontextdev.ParseHandleParams{},\n\t)\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Markdown)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.parse.handle(body: StringIO.new("Example data"))
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\FileParam;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->parse->handle(\n    FileParam::fromString('Example data', filename: uniqid('file-upload-', true)),\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev parse handle \\\n  --api-key 'My API Key' \\\n  --body 'Example data'"
+components:
+  schemas:
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+  headers:
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

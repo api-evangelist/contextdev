@@ -1,0 +1,803 @@
+openapi: 3.1.0
+info:
+  title: Context Brand Intelligence Utility API
+  description: API for retrieving context data from any website
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: Utility
+paths:
+  /brand/prefetch:
+    post:
+      x-hidden: true
+      summary: Prefetch brand data for a domain
+      description: Signal that you may fetch brand data for a particular domain soon to improve latency.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - domain
+              properties:
+                domain:
+                  type: string
+                  description: Domain name to prefetch brand data for
+                timeoutMS:
+                  $ref: '#/components/schemas/TimeoutMS'
+                tags:
+                  $ref: '#/components/schemas/RequestTags'
+      security:
+      - bearerAuth: []
+      tags:
+      - Utility
+      x-mint:
+        content: <Badge color="green">0 Credits</Badge> <Badge color="purple">Only for Subscribers</Badge>
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'ok'
+                  message:
+                    type: string
+                    description: Success message
+                  domain:
+                    type: string
+                    description: The domain that was queued for prefetching
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '400':
+          description: Bad Request - validation error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '401':
+          description: Unauthorized
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Paid subscription required
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'error'
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+  /brand/prefetch-by-email:
+    post:
+      x-hidden: true
+      summary: Prefetch brand data by email
+      description: Signal that you may fetch brand data for a particular domain soon to improve latency. This endpoint accepts an email address, extracts the domain from it, validates that it's not a disposable or free email provider, and queues the domain for prefetching.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to prefetch brand data for. The domain will be extracted from the email. Free email providers (gmail.com, yahoo.com, etc.) and disposable email addresses are not allowed.
+                timeoutMS:
+                  $ref: '#/components/schemas/TimeoutMS'
+                tags:
+                  $ref: '#/components/schemas/RequestTags'
+      security:
+      - bearerAuth: []
+      tags:
+      - Utility
+      x-mint:
+        content: <Badge color="green">0 Credits</Badge> <Badge color="purple">Only for Subscribers</Badge>
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'ok'
+                  message:
+                    type: string
+                    description: Success message
+                  domain:
+                    type: string
+                    description: The domain that was queued for prefetching
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '400':
+          description: Bad Request - validation error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '401':
+          description: Unauthorized
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Paid subscription required
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'error'
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '422':
+          description: Unprocessable Entity - Free email or disposable email detected
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'error'
+                  error_code:
+                    type: string
+                    enum:
+                    - FREE_EMAIL_DETECTED
+                    - DISPOSABLE_EMAIL_DETECTED
+                    description: Error code indicating whether a free email provider or disposable email was detected
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+  /utility/prefetch:
+    post:
+      summary: Prefetch brand data
+      description: 'Signal that you may fetch brand data soon to improve latency. The type field selects what to prefetch (currently only ''brand'') and identifier carries exactly one lookup key: a domain, or an email whose domain is extracted and validated (free email providers and disposable email addresses are not allowed).'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - type
+              - identifier
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - brand
+                  description: What to prefetch. Currently only 'brand' is supported.
+                identifier:
+                  $ref: '#/components/schemas/UtilityPrefetchIdentifier'
+                timeoutMS:
+                  $ref: '#/components/schemas/TimeoutMS'
+                tags:
+                  $ref: '#/components/schemas/RequestTags'
+      security:
+      - bearerAuth: []
+      tags:
+      - Utility
+      x-mint:
+        content: <Badge color="green">0 Credits</Badge> <Badge color="purple">Only for Subscribers</Badge>
+      responses:
+        '200':
+          description: Successful response
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'ok'
+                  message:
+                    type: string
+                    description: Success message
+                  type:
+                    type: string
+                    enum:
+                    - brand
+                    description: The type of prefetch that was queued, echoed from the request (currently always 'brand')
+                  domain:
+                    type: string
+                    description: The domain that was queued for prefetching
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '400':
+          description: Bad Request - validation error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '401':
+          description: Unauthorized
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    - VALID
+                    - NOT_FOUND
+                    - FORBIDDEN
+                    - USAGE_EXCEEDED
+                    - RATE_LIMITED
+                    - UNAUTHORIZED
+                    - DISABLED
+                    - INSUFFICIENT_PERMISSIONS
+                    - TIMEOUT_EXCEEDS_MAXIMUM
+                    - WEBSITE_ACCESS_ERROR
+                    - INPUT_VALIDATION_ERROR
+                    description: Error code indicating the type of error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '403':
+          description: Forbidden - Paid subscription required
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'error'
+                  error_code:
+                    type: string
+                    enum:
+                    - FORBIDDEN
+                    description: Error code indicating forbidden access
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '408':
+          description: Request Timeout
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Timeout error message
+                  error_code:
+                    type: string
+                    enum:
+                    - REQUEST_TIMEOUT
+                    description: Error code indicating request timeout
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '422':
+          description: Unprocessable Entity - Free email or disposable email detected
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  status:
+                    type: string
+                    description: Status of the response, e.g., 'error'
+                  error_code:
+                    type: string
+                    enum:
+                    - FREE_EMAIL_DETECTED
+                    - DISPOSABLE_EMAIL_DETECTED
+                    description: Error code indicating whether a free email provider or disposable email was detected
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Internal server error
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                  error_code:
+                    type: string
+                    enum:
+                    - INTERNAL_ERROR
+                    description: Error code indicating internal server error
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+      x-codeSamples:
+      - lang: JavaScript
+        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.utility.prefetch({\n  identifier: { domain: 'xxx' },\n  type: 'brand',\n});\n\nconsole.log(response.domain);"
+      - lang: Python
+        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.utility.prefetch(\n    identifier={\n        \"domain\": \"xxx\"\n    },\n    type=\"brand\",\n)\nprint(response.domain)"
+      - lang: Go
+        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Utility.Prefetch(context.TODO(), contextdev.UtilityPrefetchParams{\n\t\tIdentifier: contextdev.UtilityPrefetchParamsIdentifierUnion{\n\t\t\tOfByDomain: &contextdev.UtilityPrefetchParamsIdentifierByDomain{\n\t\t\t\tDomain: \"xxx\",\n\t\t\t},\n\t\t},\n\t\tType: contextdev.UtilityPrefetchParamsTypeBrand,\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Domain)\n}\n"
+      - lang: Ruby
+        source: 'require "context_dev"
+
+
+          context_dev = ContextDev::Client.new(api_key: "My API Key")
+
+
+          response = context_dev.utility.prefetch(identifier: {domain: "xxx"}, type: :brand)
+
+
+          puts(response)'
+      - lang: PHP
+        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->utility->prefetch(\n    identifier: ['domain' => 'xxx'],\n    type: 'brand',\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
+      - lang: CLI
+        source: "context-dev utility prefetch \\\n  --api-key 'My API Key' \\\n  --identifier '{domain: xxx}' \\\n  --type brand"
+components:
+  schemas:
+    UtilityPrefetchEmailIdentifier:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 1
+          format: email
+          description: Email address to prefetch brand data for. The domain will be extracted from the email. Free email providers (gmail.com, yahoo.com, etc.) and disposable email addresses are not allowed.
+      required:
+      - email
+      additionalProperties: false
+      title: By email
+      description: Prefetch brand data by email. The domain will be extracted and validated.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    UtilityPrefetchIdentifier:
+      oneOf:
+      - $ref: '#/components/schemas/UtilityPrefetchDomainIdentifier'
+      - $ref: '#/components/schemas/UtilityPrefetchEmailIdentifier'
+      description: Identifier of the brand to prefetch. Provide exactly one of domain or email.
+    UtilityPrefetchDomainIdentifier:
+      type: object
+      properties:
+        domain:
+          type: string
+          minLength: 3
+          description: Domain name to prefetch brand data for
+      required:
+      - domain
+      additionalProperties: false
+      title: By domain
+      description: Prefetch brand data by domain.
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+  headers:
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          description: Seconds until the per-minute rate limit window resets
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message
+              error_code:
+                type: string
+                enum:
+                - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+            required:
+            - message
+            - error_code
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
