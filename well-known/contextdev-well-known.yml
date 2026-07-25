@@ -1,0 +1,36 @@
+generated: '2026-07-18'
+method: searched
+source: live probes of Context.dev hosts
+hosts:
+- host: https://www.context.dev
+  documents:
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: contextdev-oauth-authorization-server.json
+    note: RFC 8414 authorization-server metadata (scopes api.read/api.write, agent-auth block).
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: contextdev-oauth-protected-resource.json
+    note: RFC 9728 protected-resource metadata pointing at api.context.dev.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+- host: https://api.context.dev
+  documents:
+  - path: /.well-known/security.txt
+    status: 403
+  - path: /.well-known/openid-configuration
+    status: 403
+  - path: /.well-known/oauth-authorization-server
+    status: 403
+- host: https://docs.context.dev
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404

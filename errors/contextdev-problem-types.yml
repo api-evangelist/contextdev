@@ -1,0 +1,56 @@
+generated: '2026-07-18'
+method: searched
+source: >-
+  https://docs.context.dev/optimization/troubleshooting.md +
+  derived from openapi/contextdev-openapi.yml responses
+format: custom-json
+envelope:
+  fields:
+  - message
+  - status
+  - error_code
+  note: >-
+    Not RFC 9457 (no application/problem+json). Flat JSON envelope. 429 responses
+    substitute `code` for `error_code`.
+statuses:
+- status: 400
+  meaning: Invalid input or unresolvable domain.
+  error_codes:
+  - INPUT_VALIDATION_ERROR
+  - WEBSITE_ACCESS_ERROR
+  - NOT_FOUND
+- status: 401
+  meaning: Missing, invalid, or expired API key.
+- status: 408
+  meaning: Timeout — cold-hit crawl or the custom timeoutMS budget exceeded.
+- status: 422
+  meaning: Invalid email (disposable, free provider, or malformed).
+  error_codes:
+  - FREE_EMAIL_DETECTED
+- status: 429
+  meaning: Rate limit exceeded (see Retry-After header).
+  error_codes:
+  - code
+- status: 500
+  meaning: Transient server error.
+error_codes:
+- code: INPUT_VALIDATION_ERROR
+  http: 400
+  meaning: The request itself is malformed.
+  action: Surface as user-facing validation; do not retry.
+- code: WEBSITE_ACCESS_ERROR
+  http: 400
+  meaning: Domain is well-formed but the resolver could not reach it.
+  action: Treat as a clean "not found".
+- code: NOT_FOUND
+  http: 400
+  meaning: No matching brand; the request is not billed.
+  action: Fall back to an alternate lookup or accept the miss.
+- code: FREE_EMAIL_DETECTED
+  http: 422
+  meaning: A free/disposable email provider was supplied to a by_email lookup.
+  action: Filter known free providers client-side before calling.
+recovery_patterns:
+- 408 timeouts — prefetch, raise timeoutMS (max 300000), or retry with exponential backoff.
+- 422 invalid emails — filter known providers client-side to skip round trips.
+- 500 errors — retry or fall back to an alternative lookup (e.g. extract domain from email).

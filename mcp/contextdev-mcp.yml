@@ -1,0 +1,30 @@
+generated: '2026-07-18'
+method: searched
+status: published
+source: https://docs.context.dev/install-mcp
+server:
+  name: context_dev_api
+  transport: http
+  url: https://context-dev.stlmcp.com
+  local_package: context.dev-mcp
+  local_transport: stdio
+  auth:
+    header: x-context-dev-api-key
+    alt_header: Authorization
+    key_prefix: ctxt_secret_
+install:
+  claude_code: >-
+    claude mcp add context_dev_api --transport http --header
+    "x-context-dev-api-key: ctxt_secret_..." https://context-dev.stlmcp.com
+  stdio: npx -y context.dev-mcp@latest
+tools:
+- name: search_docs
+  description: Query the Context.dev SDK documentation.
+- name: execute
+  description: >-
+    Code Mode — runs TypeScript against the Context.dev SDK in a sandbox, letting
+    the agent compose multiple API calls and return curated results in one call.
+notes: >-
+  Hosted MCP server generated and hosted by Stainless (stlmcp.com). Uses a
+  Code-Mode design (two meta-tools over the full SDK surface) rather than one
+  tool per operation.

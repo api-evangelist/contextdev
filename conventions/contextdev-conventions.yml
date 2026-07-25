@@ -1,0 +1,71 @@
+generated: '2026-07-18'
+method: searched
+source: >-
+  https://docs.context.dev (optimization/best-practices, rate-limits,
+  troubleshooting, tag-requests) + derived from openapi/contextdev-openapi.yml
+authentication:
+  style: bearer
+  header: Authorization
+  scheme: Bearer
+  key_prefix: ctxt_secret_
+  docs: https://www.context.dev/auth.md
+  cross_ref: authentication/contextdev-authentication.yml
+idempotency:
+  supported: false
+  note: >-
+    Context.dev does not document an Idempotency-Key header. Write operations are
+    limited to monitor CRUD; most endpoints are read/enrichment calls that are
+    naturally idempotent. Retries are guided by rate-limit headers and Retry-After
+    rather than an idempotency key.
+pagination:
+  style: cursor
+  request_params:
+  - cursor
+  - limit
+  response_fields:
+  - data
+  - next_cursor
+  - has_more
+  applies_to:
+  - listMonitors
+  - listMonitorRuns
+  - listMonitorChanges
+  - listAccountRuns
+  - listChanges
+rate_limiting:
+  scope: per-minute fixed window, per API key
+  request_headers: []
+  response_headers:
+  - X-RateLimit-Limit
+  - X-RateLimit-Remaining
+  - X-RateLimit-Reset
+  retry_after: Retry-After (1-60 seconds on 429)
+  status_code: 429
+  docs: https://docs.context.dev/optimization/rate-limits.md
+  cross_ref: rate-limits/
+request_tagging:
+  supported: true
+  param: tags
+  transport: JSON body on POST, comma-separated query param on GET
+  limit: up to 20 tags, 1-50 chars each
+  effect: usage-tracking only (no behavior/pricing/caching impact); Monitors excluded
+  docs: https://docs.context.dev/optimization/tag-requests.md
+compression:
+  supported: true
+  method: gzip (Accept-Encoding)
+  docs: https://docs.context.dev/optimization/compression.md
+versioning:
+  scheme: uri-path
+  current: v1
+  base_url: https://api.context.dev/v1
+error_envelope:
+  fields:
+  - message
+  - status
+  - error_code
+  note: 429 responses use `code` instead of `error_code`.
+  cross_ref: errors/contextdev-problem-types.yml
+metadata:
+  credits: >-
+    Every response reflects credit-based billing; some endpoints document a fixed
+    credit cost (e.g. /parse = 1 credit, +5 with OCR).

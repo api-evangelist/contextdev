@@ -1,0 +1,33 @@
+generated: '2026-07-18'
+method: searched
+source: >-
+  https://www.context.dev/.well-known/oauth-authorization-server and
+  https://www.context.dev/auth.md
+docs: https://www.context.dev/auth.md
+schemes:
+- name: AgentAuth
+  source: well-known/contextdev-oauth-authorization-server.json
+  authorization_server: https://www.context.dev
+  token_endpoint: https://www.context.dev/oauth2/token
+  revocation_endpoint: https://www.context.dev/oauth2/revoke
+  grant_types:
+  - urn:ietf:params:oauth:grant-type:jwt-bearer
+  - urn:workos:agent-auth:grant-type:claim
+scopes:
+- scope: api.read
+  description: >-
+    Read access to Context.dev API endpoints (brand lookup, web scrape/crawl,
+    search, enrichment, and related read operations).
+  sources:
+  - well-known/contextdev-oauth-authorization-server.json
+- scope: api.write
+  description: >-
+    Write access for mutating API operations (e.g. creating/updating/deleting
+    monitors). Agent credentials are issued with both api.read and api.write
+    after the claim ceremony.
+  sources:
+  - well-known/contextdev-oauth-authorization-server.json
+note: >-
+  Scopes are exposed via the OAuth2 agent-auth (service_auth) flow, not via the
+  static-API-key path. The OpenAPI declares only bearerAuth (http bearer); the
+  scope surface is documented in the well-known metadata and auth.md.

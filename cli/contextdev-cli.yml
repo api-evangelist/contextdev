@@ -1,0 +1,41 @@
+generated: '2026-07-18'
+method: searched
+source: https://docs.context.dev/install-cli.md
+name: context-dev
+repo: https://github.com/context-dot-dev/context-dev-cli
+language: go
+install:
+  go: go install github.com/context-dot-dev/context-dev-cli/cmd/context-dev@latest
+  macos: Download the release archive, unzip, move binary to /usr/local/bin/
+  linux: Install the .deb, .rpm, .apk, or .tar.gz from the releases page
+  windows: Extract the .zip and add the directory to PATH
+  releases: https://github.com/context-dot-dev/context-dev-cli/releases/latest
+authentication:
+  env: CONTEXT_DEV_API_KEY
+  key_prefix: ctxt_secret_
+  dashboard: https://context.dev/dashboard
+usage: context-dev [resource] <command> [flags...]
+resource_groups:
+- name: brand
+  description: Brand profiles and transaction identification.
+- name: web
+  description: Scraping, screenshots, styleguides, extraction.
+- name: ai
+  description: Product extraction and AI data queries.
+- name: industry
+  description: NAICS / SIC classification.
+- name: utility
+  description: Cache prefetching.
+output_flags:
+- flag: --format json
+  description: JSON output for piping.
+- flag: --format explore
+  description: Interactive browsing of responses.
+- flag: --transform 'path.to.field'
+  description: Extract specific fields with GJSON syntax.
+examples:
+- context-dev brand retrieve --domain stripe.com
+- context-dev web web-scrape-md --url https://stripe.com/pricing
+- context-dev web screenshot --direct-url https://stripe.com/pricing
+- context-dev web extract-styleguide --domain stripe.com
+- context-dev industry retrieve-naics --input stripe.com

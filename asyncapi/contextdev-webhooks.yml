@@ -1,0 +1,30 @@
+generated: '2026-07-18'
+method: searched
+type: Webhooks
+source: >-
+  openapi/contextdev-openapi.yml (webhooks) +
+  https://docs.context.dev/api-reference/monitors/webhook-payload.md,
+  https://docs.context.dev/api-reference/monitors/webhook-run-completed.md
+delivery:
+  transport: HTTP POST to a monitor's configured webhook URL
+  signing: signed webhooks (verify signature before trusting payload)
+  acknowledgement: return any 2xx response to acknowledge delivery
+  scope: per-monitor subscription (change.detected always; run.completed opt-in)
+events:
+- event: change.detected
+  openapi_webhook: monitorChangeDetected
+  description: >-
+    Sent when a monitor run detects a change on the watched page, sitemap, or
+    extracted dataset. Payload carries text diffs, added/removed URLs, semantic
+    evidence, confidence, and importance.
+  docs: https://docs.context.dev/api-reference/monitors/webhook-payload.md
+- event: run.completed
+  openapi_webhook: monitorRunCompleted
+  description: >-
+    Sent after every completed monitor run when subscribed — including runs that
+    detected no change (as confirmation the monitor ran). When a change was
+    detected it is embedded in the payload.
+  docs: https://docs.context.dev/api-reference/monitors/webhook-run-completed.md
+note: >-
+  No standalone AsyncAPI document is published; the event surface is defined via
+  OpenAPI 3.1 `webhooks`. This is the provider's real event surface.

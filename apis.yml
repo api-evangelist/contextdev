@@ -1,22 +1,240 @@
 aid: contextdev
-name: Contextdev
-description: Contextdev is a company surfaced as a portfolio company of y-combinator and added to the
-  API Evangelist network as a stub for enrichment. This profile is a lead awaiting the enrichment pipeline.
+name: Context.dev
+description: >-
+  Context.dev is the unified web-context API for software and AI agents — one API
+  that turns any domain or URL into structured, typed JSON. It covers brand
+  intelligence (logos, colors, fonts, socials, address, industry codes, stock
+  ticker / ISIN and transaction-descriptor resolution), web scraping and crawling
+  to clean Markdown or HTML, screenshots, sitemap discovery, web search, structured
+  data extraction against a JSON Schema, product extraction, document parsing to
+  Markdown, NAICS / SIC classification, and website change monitoring with signed
+  webhooks. Typed first-party SDKs ship for TypeScript, Python, Ruby, Go, and PHP,
+  alongside a CLI, a hosted MCP server, and a published Agent Skill. Founded in
+  2025 by Yahia Bakour and backed by Y Combinator (S26).
 url: https://raw.githubusercontent.com/api-evangelist/contextdev/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
 x-backed-by:
 - y-combinator
-x-tier: stub
-x-tier-reason: portfolio-lead
+x-tier: profiled
+x-tier-reason: enrichment-complete
+x-yc-batch: S26
+x-founder: Yahia Bakour
+accessModel:
+  pricing: unknown
+  onboarding: self-serve
+  trial: false
+  try_now: false
+  public: false
+  label: Self-serve signup
+  confidence: medium
+  source:
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://www.context.dev/logo.png
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-18'
 tags:
-- Company
-apis: []
+- Web Scraping
+- Brand Intelligence
+- Data Enrichment
+- AI Agents
+- Web Data
+- Classification
+- Website Monitoring
+- Company Data
+- Developer Tools
+- APIs
+apis:
+- aid: contextdev:contextdev-brand-intelligence-api
+  name: Context.dev Brand Intelligence API
+  description: The Brand Intelligence API from Context.dev — 7 operation(s) for brand intelligence.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Brand Intelligence
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-brand-intelligence-api-openapi.yml
+  - type: APIReference
+    url: https://docs.context.dev
+  - type: Documentation
+    url: https://docs.context.dev/introduction
+  - type: Webhooks
+    url: asyncapi/contextdev-webhooks.yml
+- aid: contextdev:contextdev-monitors-api
+  name: Context.dev Monitors API
+  description: >-
+    Monitor pages, sitemaps, and extracted website data for exact or semantic changes. Webhook payloads
+    are documented by the MonitorsChangeDetectedWebhookPayload and MonitorsRunCompletedWebhookPayload
+    schemas.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Monitors
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-monitors-api-openapi.yml
+  - type: APIReference
+    url: https://docs.context.dev
+  - type: Documentation
+    url: https://docs.context.dev/introduction
+  - type: Webhooks
+    url: asyncapi/contextdev-webhooks.yml
+- aid: contextdev:contextdev-parsing-api
+  name: Context.dev Parsing API
+  description: The Parsing API from Context.dev — 1 operation(s) for parsing.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Parsing
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-parsing-api-openapi.yml
+  - type: APIReference
+    url: https://docs.context.dev
+  - type: Documentation
+    url: https://docs.context.dev/introduction
+  - type: Webhooks
+    url: asyncapi/contextdev-webhooks.yml
+- aid: contextdev:contextdev-people-api
+  name: Context.dev People API
+  description: The People API from Context.dev — 1 operation(s) for people.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - People
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-people-api-openapi.yml
+  - type: APIReference
+    url: https://docs.context.dev
+  - type: Documentation
+    url: https://docs.context.dev/introduction
+  - type: Webhooks
+    url: asyncapi/contextdev-webhooks.yml
+- aid: contextdev:contextdev-utility-api
+  name: Context.dev Utility API
+  description: The Utility API from Context.dev — 3 operation(s) for utility.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Utility
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-utility-api-openapi.yml
+  - type: APIReference
+    url: https://docs.context.dev
+  - type: Documentation
+    url: https://docs.context.dev/introduction
+  - type: Webhooks
+    url: asyncapi/contextdev-webhooks.yml
+- aid: contextdev:contextdev-web-extraction-api
+  name: Context.dev Web Extraction API
+  description: The Web Extraction API from Context.dev — 9 operation(s) for web extraction.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Web Extraction
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-web-extraction-api-openapi.yml
+  - type: APIReference
+    url: https://docs.context.dev
+  - type: Documentation
+    url: https://docs.context.dev/introduction
+  - type: Webhooks
+    url: asyncapi/contextdev-webhooks.yml
+- aid: contextdev:contextdev-web-scraping-api
+  name: Context.dev Web Scraping API
+  description: The Web Scraping API from Context.dev — 7 operation(s) for web scraping.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Web Scraping
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-web-scraping-api-openapi.yml
+  - type: APIReference
+    url: https://docs.context.dev
+  - type: Documentation
+    url: https://docs.context.dev/introduction
+  - type: Webhooks
+    url: asyncapi/contextdev-webhooks.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
+common:
+- type: AgenticAccess
+  url: agentic-access/contextdev-agentic-access.yml
+- type: DomainSecurity
+  url: security/contextdev-domain-security.yml
+- type: Authentication
+  url: authentication/contextdev-authentication.yml
+- type: OAuthScopes
+  url: scopes/contextdev-scopes.yml
+- type: Packages
+  url: packages/contextdev-packages.yml
+- type: SDKs
+  url: packages/contextdev-packages.yml
+- type: CLI
+  url: cli/contextdev-cli.yml
+- type: MCPServer
+  url: mcp/contextdev-mcp.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: LLMsTxt
+  url: llms/contextdev-llms.txt
+- type: WellKnown
+  url: well-known/contextdev-well-known.yml
+- type: Conventions
+  url: conventions/contextdev-conventions.yml
+- type: ErrorCatalog
+  url: errors/contextdev-problem-types.yml
+- type: DataModel
+  url: data-model/contextdev-data-model.yml
+- type: Conformance
+  url: conformance/contextdev-conformance.yml
+- type: Lifecycle
+  url: lifecycle/contextdev-lifecycle.yml
+- type: StatusPage
+  url: https://status.context.dev
+- type: Webhooks
+  url: asyncapi/contextdev-webhooks.yml
+- type: ChangeLog
+  url: changelog/contextdev-changelog.yml
+- type: ChangeLog
+  url: https://docs.context.dev/changelog
+- type: DeveloperPortal
+  url: https://docs.context.dev
+- type: Documentation
+  url: https://docs.context.dev/introduction
+- type: APIReference
+  url: https://docs.context.dev
+- type: GettingStarted
+  url: https://docs.context.dev/quickstart
+- type: Blog
+  url: https://www.context.dev/blog
+- type: GitHubOrganization
+  url: https://github.com/context-dot-dev
+- type: Support
+  url: mailto:support@context.dev
+- type: Pricing
+  url: https://www.context.dev/pricing
+- type: SignUp
+  url: https://www.context.dev/signup
+- type: PrivacyPolicy
+  url: https://www.context.dev/privacy
+- type: X
+  url: https://x.com/getcontextdev
+- type: LinkedIn
+  url: https://www.linkedin.com/company/contextdev/
+x-enrichment:
+  date: '2026-07-19'
+  status: backfilled
+  pass: local-v1
+  note: backfilled from .gitignore signal + verified work evidence

@@ -1,0 +1,24 @@
+generated: '2026-07-18'
+method: searched
+skills:
+- file: contextdev-skill.md
+  name: context-dev
+  method: searched
+  source: https://docs.context.dev/skill.md
+  description: >-
+    Provider-published Agent Skill (v3.0, MIT) teaching agents when and how to call
+    the Context.dev API for brand data, web scraping, extraction, and classification.
+  api: openapi/contextdev-openapi.yml
+- file: contextdev-monitor-a-website.md
+  name: contextdev-monitor-a-website
+  method: generated
+  api: openapi/contextdev-openapi.yml
+  operations:
+  - createMonitor
+  - getMonitor
+  - listMonitorRuns
+  - listMonitorChanges
+  - getChange
+  - runMonitorNow
+  - updateMonitor
+  - deleteMonitor

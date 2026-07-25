@@ -1,0 +1,54 @@
+generated: '2026-07-18'
+method: searched
+source: https://docs.context.dev/changelog (docs.context.dev/changelog.md)
+scheme: dated month-by-month product log
+url: https://docs.context.dev/changelog
+window: recent
+entries:
+- date: '2026-07-17'
+  breaking: false
+  highlights:
+  - Faster web dashboard — ~30% quicker load times across pages.
+- date: '2026-07-12'
+  breaking: false
+  additions: true
+  highlights:
+  - Request tags for usage tracking — optional `tags` input (up to 20, 1-50 chars) on every endpoint except Monitors.
+  - New POST /parse endpoint — convert up to 25 MiB of file bytes to LLM-ready Markdown (no URL).
+- date: '2026-07-11'
+  breaking: false
+  additions: true
+  highlights:
+  - Rate-limit headers (X-RateLimit-Limit/Remaining/Reset) on every authenticated response, plus Retry-After on 429s.
+  - Cleaner useMainContentOnly Markdown; new contentLength field.
+  - Per-run monitor webhooks (run.completed) and monitor webhook health tracking.
+- date: '2026-07-09'
+  breaking: false
+  additions: true
+  highlights:
+  - Website Monitors API launched — create/list/update/delete monitors, runs, and change feeds.
+  - Sharper failure modes on the Product APIs.
+- date: '2026-07-05'
+  breaking: false
+  additions: true
+  highlights:
+  - Unified Brand Retrieval request (union type on POST /brand/retrieve).
+  - Unified Prefetch request; cleaner API reference navigation.
+- date: '2026-06-21'
+  breaking: false
+  additions: true
+  highlights:
+  - PHP SDK launch (fifth first-party SDK).
+- date: '2026-06-22'
+  breaking: false
+  additions: true
+  highlights:
+  - Agent Sign-Ups — OAuth2 agentic registration (service_auth) for autonomous key provisioning.
+- date: '2026-06-11'
+  breaking: false
+  additions: true
+  highlights:
+  - Official context-dev CLI released.
+note: >-
+  The live changelog is the source of truth and spans monthly entries back to
+  May 2025; only the recent window is captured here.

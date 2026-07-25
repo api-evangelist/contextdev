@@ -1,0 +1,26 @@
+{
+  "provider": "contextdev",
+  "sources": [
+    "contextdev-brand-intelligence-api-openapi.yml",
+    "contextdev-monitors-api-openapi.yml",
+    "contextdev-parsing-api-openapi.yml",
+    "contextdev-people-api-openapi.yml",
+    "contextdev-utility-api-openapi.yml",
+    "contextdev-web-extraction-api-openapi.yml",
+    "contextdev-web-scraping-api-openapi.yml"
+  ],
+  "outputs": [
+    "contextdev-brand-intelligence-api-openapi.yml",
+    "contextdev-monitors-api-openapi.yml",
+    "contextdev-parsing-api-openapi.yml",
+    "contextdev-people-api-openapi.yml",
+    "contextdev-utility-api-openapi.yml",
+    "contextdev-web-extraction-api-openapi.yml",
+    "contextdev-web-scraping-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}

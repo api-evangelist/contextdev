@@ -1,0 +1,54 @@
+generated: '2026-07-18'
+method: derived
+source: openapi/contextdev-openapi.yml
+note: >-
+  Context.dev is mostly a stateless enrichment/extraction API (Brand, Web, Person,
+  Classification responses are computed, not stored). The only persistent,
+  identified resource graph is the Monitors subsystem.
+entities:
+- name: Monitor
+  schema: MonitorsMonitor
+  id: id
+  description: A configured watch over a page, sitemap, or extracted dataset.
+- name: MonitorRun
+  schema: MonitorsRun
+  id: id
+  description: One execution of a monitor; may or may not produce a change.
+- name: MonitorChange
+  schema: MonitorsChange
+  id: id
+  description: A detected change (diff, evidence, confidence, importance).
+- name: Brand
+  schema: BrandData
+  id: domain
+  stateless: true
+  description: Computed brand profile (logos, colors, socials, industry) for a domain.
+- name: Person
+  schema: PeopleData
+  stateless: true
+  description: Computed person/contact enrichment.
+- name: Product
+  schema: ProductData
+  stateless: true
+  description: Structured product record extracted from a URL.
+relationships:
+- from: MonitorRun
+  to: Monitor
+  type: belongs_to
+  via: monitor_id
+- from: Monitor
+  to: MonitorRun
+  type: has_many
+  via: monitor_id
+- from: MonitorChange
+  to: Monitor
+  type: belongs_to
+  via: monitor_id
+- from: MonitorChange
+  to: MonitorRun
+  type: belongs_to
+  via: run_id
+- from: MonitorRun
+  to: MonitorChange
+  type: has_one
+  via: change_id

@@ -1,0 +1,24 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for Context.dev
+  version: 1.0.0
+extends: openapi/contextdev-openapi.yml
+actions:
+- target: $.info
+  update:
+    x-apievangelist-provider: contextdev
+    x-apievangelist-review-date: '2026-07-18'
+    x-agentic-access: agentic-access/contextdev-agentic-access.yml
+    x-context-conventions: conventions/contextdev-conventions.yml
+    x-context-errors: errors/contextdev-problem-types.yml
+- target: $.info
+  description: >-
+    Note captured by API Evangelist enrichment: non-Monitors operations in the
+    published spec lack operationIds and tag names beyond "Monitors" — a content
+    gap surfaced for a follow-up with the provider. Auth is bearer (ctxt_secret_
+    keys) with an OAuth2 agent-auth path documented at auth.md.
+  update:
+    x-apievangelist-notes:
+      operationid_coverage: only Monitors operations declare operationIds
+      auth: bearer + oauth2 agent-auth (service_auth)
+      webhooks: change.detected, run.completed (signed)

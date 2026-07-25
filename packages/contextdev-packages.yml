@@ -1,0 +1,54 @@
+generated: '2026-07-18'
+method: searched
+source: >-
+  https://docs.context.dev/quickstart.md and public package registries; SDK
+  repos under https://github.com/context-dot-dev
+packages:
+- language: typescript
+  registry: npm
+  name: context.dev
+  url: https://www.npmjs.com/package/context.dev
+  install: npm install context.dev
+  source: https://github.com/context-dot-dev/context-typescript-sdk
+  official: true
+- language: python
+  registry: pypi
+  name: context.dev
+  url: https://pypi.org/project/context.dev/
+  install: pip install context.dev
+  source: https://github.com/context-dot-dev/context-python-sdk
+  official: true
+- language: ruby
+  registry: rubygems
+  name: context.dev
+  url: https://rubygems.org/gems/context.dev
+  install: gem install context.dev
+  official: true
+- language: go
+  registry: pkg.go.dev
+  name: github.com/context-dot-dev/context-go-sdk
+  url: https://pkg.go.dev/github.com/context-dot-dev/context-go-sdk
+  install: go get github.com/context-dot-dev/context-go-sdk
+  source: https://github.com/context-dot-dev/context-go-sdk
+  official: true
+- language: php
+  registry: packagist
+  name: context-dev/context-dev-php
+  url: https://packagist.org/packages/context-dev/context-dev-php
+  install: composer require context-dev/context-dev-php
+  source: https://github.com/context-dot-dev/context-php-sdk
+  official: true
+- language: javascript
+  registry: npm
+  name: context.dev-mcp
+  url: https://www.npmjs.com/package/context.dev-mcp
+  install: npx -y context.dev-mcp@latest
+  description: Local stdio MCP server for the Context.dev API.
+  official: true
+- language: go
+  registry: github
+  name: context-dev CLI
+  url: https://github.com/context-dot-dev/context-dev-cli
+  install: go install github.com/context-dot-dev/context-dev-cli/cmd/context-dev@latest
+  description: First-party command-line interface (see cli/ artifact).
+  official: true

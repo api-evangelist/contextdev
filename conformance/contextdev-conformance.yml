@@ -1,0 +1,38 @@
+generated: '2026-07-18'
+method: derived
+source: >-
+  openapi/contextdev-openapi.yml, well-known/contextdev-oauth-authorization-server.json,
+  https://www.context.dev/auth.md
+standards:
+- id: oauth2
+  conforms: true
+  evidence: >-
+    Documented OAuth2 authorization server with token/revocation endpoints and
+    api.read/api.write scopes (well-known oauth-authorization-server).
+- id: rfc8414-oauth-metadata
+  conforms: true
+  evidence: /.well-known/oauth-authorization-server returns 200 with valid metadata.
+- id: rfc9728-protected-resource-metadata
+  conforms: true
+  evidence: /.well-known/oauth-protected-resource returns 200.
+- id: oidc
+  conforms: false
+  evidence: No /.well-known/openid-configuration (404).
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: Errors use a flat {message,status,error_code} envelope, not application/problem+json.
+- id: webhooks
+  conforms: true
+  evidence: OpenAPI declares monitorChangeDetected and monitorRunCompleted webhooks with signed delivery.
+- id: cursor-pagination
+  conforms: true
+  evidence: Monitor list endpoints use cursor/next_cursor/has_more.
+- id: rfc6750-bearer-token
+  conforms: true
+  evidence: bearerAuth (http bearer) securityScheme in OpenAPI.
+- id: fhir-r4
+  conforms: false
+- id: fapi
+  conforms: false
+- id: scim
+  conforms: false

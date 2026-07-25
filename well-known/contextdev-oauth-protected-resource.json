@@ -1,0 +1,1 @@
+{"resource":"https://api.context.dev/","resource_name":"Context.dev","resource_logo_uri":"https://www.context.dev/logo.png","authorization_servers":["https://www.context.dev/"],"scopes_supported":["api.read","api.write"],"bearer_methods_supported":["header"]}

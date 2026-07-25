@@ -1,0 +1,22 @@
+generated: '2026-07-18'
+method: searched
+source: >-
+  https://docs.context.dev, https://status.context.dev,
+  https://docs.context.dev/changelog + derived from openapi/contextdev-openapi.yml
+versioning:
+  scheme: uri-path
+  current: v1
+  base_url: https://api.context.dev/v1
+deprecation:
+  policy_url: null
+  sunset_header: false
+  note: >-
+    No formal published deprecation policy or RFC 8594 Sunset/Deprecation header
+    contract found. The changelog notes deprecated SDK repos (deprecated-brand-*)
+    superseded by the unified Stainless SDKs.
+status_page: https://status.context.dev
+changelog: https://docs.context.dev/changelog
+sla:
+  url: null
+  uptime_target: null
+deprecated_operations: []
