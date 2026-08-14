@@ -35,7 +35,7 @@ accessModel:
 image: https://www.context.dev/logo.png
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-18'
+modified: '2026-08-14'
 tags:
 - Web Scraping
 - Brand Intelligence
@@ -163,6 +163,33 @@ apis:
     url: https://docs.context.dev/introduction
   - type: Webhooks
     url: asyncapi/contextdev-webhooks.yml
+- aid: contextdev:contextdev-batch-api
+  name: Context.dev Batch API
+  description: >-
+    Submit up to 25,000 URLs or a whole-site crawl as a single asynchronous job and
+    collect the results as paginated JSON or gzipped NDJSON. One batch submission
+    counts as a single request against the per-minute rate limit however many pages
+    it covers, and POST /batch/submit is the only Context.dev operation that accepts
+    an Idempotency-Key header. 6 operation(s) for batch scraping and crawling.
+  humanURL: https://docs.context.dev/api-reference/batches/submit
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Batch
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-batch-api-openapi.yml
+  - type: Overlay
+    url: overlays/contextdev-batch-api-overlay.yaml
+  - type: APIReference
+    url: https://docs.context.dev/api-reference/batches/submit
+  - type: Documentation
+    url: https://docs.context.dev/guides/scrape-websites-in-batches
+  - type: AgentSkill
+    url: skills/contextdev-scrape-in-batches.md
+  - type: Idempotency
+    url: conventions/contextdev-conventions.yml
+  - type: RateLimits
+    url: rate-limits/contextdev-rate-limits.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -235,8 +262,26 @@ common:
   url: https://x.com/getcontextdev
 - type: LinkedIn
   url: https://www.linkedin.com/company/contextdev/
+- type: Idempotency
+  url: conventions/contextdev-conventions.yml
+- type: RateLimits
+  url: rate-limits/contextdev-rate-limits.yml
+- type: Plans
+  url: plans/contextdev-plans-pricing.yml
+- type: AgentCard
+  url: a2a/contextdev-a2a.yml
+- type: ToolCrosswalk
+  url: mcp/contextdev-tool-crosswalk.yml
+- type: TrustCenter
+  url: security/contextdev-trust-center.yml
+- type: Compliance
+  url: security/contextdev-trust-center.yml
+- type: Overlay
+  url: overlays/contextdev-batch-api-overlay.yaml
+- type: Login
+  url: https://www.context.dev/login
 x-enrichment:
-  date: '2026-07-19'
-  status: backfilled
+  date: '2026-08-14'
+  status: enriched
+  artifacts_added: 12
   pass: local-v1
-  note: backfilled from .gitignore signal + verified work evidence
