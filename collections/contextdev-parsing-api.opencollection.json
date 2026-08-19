@@ -1,0 +1,89 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Context Brand Intelligence Parsing API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Parsing",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Parse Bytes",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/parse",
+            "params": [
+              {
+                "name": "extension",
+                "value": "",
+                "type": "query",
+                "description": "Optional file extension hint, such as pdf, docx, xlsx, pptx, html, json, csv, md, py, rtf, jpg, png, or txt."
+              },
+              {
+                "name": "includeLinks",
+                "value": "",
+                "type": "query",
+                "description": "Preserve hyperlinks in Markdown output"
+              },
+              {
+                "name": "includeImages",
+                "value": "",
+                "type": "query",
+                "description": "Include image references in Markdown output"
+              },
+              {
+                "name": "shortenBase64Images",
+                "value": "",
+                "type": "query",
+                "description": "Shorten base64-encoded image data in the Markdown output"
+              },
+              {
+                "name": "useMainContentOnly",
+                "value": "",
+                "type": "query",
+                "description": "Extract only the main content from HTML-like inputs"
+              },
+              {
+                "name": "ocr",
+                "value": "",
+                "type": "query",
+                "description": "When true for PDF inputs, detect and OCR images embedded in the selected pages, inserting recognized text at each image's position in page reading order while preserving the PDF text layer. pdf.start/pdf.end limit the inclusive page range. When false, all OCR is disabled, including the automatic scanned-PDF fallback."
+              },
+              {
+                "name": "pdf",
+                "value": "",
+                "type": "query",
+                "description": "PDF page-range options as a JSON object, e.g. {\"start\": 2, \"end\": 5}."
+              },
+              {
+                "name": "client",
+                "value": "",
+                "type": "query",
+                "description": "Optional client identifier used for usage attribution."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Converts raw text, source code, web/data, PDF, Microsoft Office, and image bytes into LLM-usable Markdown."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

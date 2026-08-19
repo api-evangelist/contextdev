@@ -1,0 +1,134 @@
+generated: '2026-08-14'
+method: searched
+source: https://www.context.dev/pricing (read verbatim from https://www.context.dev/pricing.md)
+docs: https://www.context.dev/pricing
+secondary_source: https://docs.context.dev/optimization/rate-limits.md
+currency: USD
+billing_model: credit-based subscription
+billing_periods:
+- monthly
+- yearly
+yearly_discount: 2 months free on annual billing
+free_tier: true
+plan_count: 5
+note: >-
+  Context.dev bills in API credits. Credit cost varies by endpoint (for example
+  /parse is 1 credit, +5 with OCR) so the "included quota" below is a credit
+  allowance, not a call allowance; the pricing page restates each allowance in
+  product terms (pages scraped, brands retrieved, logos pulled). The pricing page
+  and the rate-limit reference in the docs do NOT agree on plan names or on two
+  of the numbers — the docs table lists Free / Hobby / Starter / Pro / Scale /
+  Enterprise while the pricing page lists Free / Developer / Pro / Scale /
+  Enterprise, and the docs give Scale 2,500,000 credits at 800 req/min where the
+  pricing page gives Scale 1,000,000 credits at 700 req/min. Both readings are
+  recorded here verbatim rather than reconciled; see the `discrepancies` block.
+plans:
+- name: Free
+  price: 0
+  currency: USD
+  period: month
+  audience: For testing out the API
+  included_credits: 500
+  credit_grant: one-time
+  overage: none
+  rate_limit: 30 requests/minute
+  concurrent_monitors: 2
+  concurrent_batches: 1
+  quotas:
+    pages_scraped: 500
+    brands_retrieved: 50
+    logos: 10000
+  support: Email support
+  credit_card_required: false
+- name: Developer
+  price: 25
+  currency: USD
+  period: month
+  audience: Building your first real workflow
+  included_credits: 10000
+  credit_grant: monthly
+  overage: $15 per 10K credits
+  rate_limit: 60 requests/minute
+  concurrent_monitors: 50
+  concurrent_batches: 2
+  quotas:
+    pages_scraped: 10000
+    brands_retrieved: 1000
+    structured_extracts: 1000
+    logos: 100000
+  support: Email support
+  features:
+  - Usage alerts
+  docs_alias: Hobby
+- name: Pro
+  price: 149
+  currency: USD
+  period: month
+  audience: Production apps with steady usage
+  recommended: true
+  included_credits: 200000
+  credit_grant: monthly
+  overage: $9 per 10K credits
+  rate_limit: 300 requests/minute
+  concurrent_monitors: 500
+  concurrent_batches: 5
+  quotas:
+    pages_scraped: 200000
+    brands_retrieved: 20000
+    structured_extracts: 20000
+    logos: 2500000
+  support: Email + Slack support
+  features:
+  - Spend controls
+- name: Scale
+  price: 499
+  currency: USD
+  period: month
+  audience: High-volume products and teams
+  included_credits: 1000000
+  credit_grant: monthly
+  overage: $7 per 10K credits
+  rate_limit: 700 requests/minute
+  concurrent_monitors: 10000
+  concurrent_batches: 20
+  quotas:
+    pages_scraped: 1000000
+    brands_retrieved: 100000
+    structured_extracts: 100000
+    logos: 10000000
+  support: Priority + Slack support
+  features:
+  - Custom usage alerts
+- name: Enterprise
+  price: null
+  price_model: contact sales
+  currency: USD
+  period: month
+  audience: Security, procurement, custom limits & volume
+  included_credits: 2000000
+  credit_grant: monthly minimum (2M+)
+  overage: volume discounts
+  rate_limit: custom
+  concurrent_monitors: custom
+  support: Custom support & implementation help; dedicated Slack channel
+  features:
+  - Volume discounts
+  - Custom rate & monitor limits
+  - SSO / SAML & SCIM provisioning
+  - 99.9% uptime SLA
+  - Annual invoicing, MSA / DPA
+  contact: https://cal.com/context-dev/30min
+discrepancies:
+- field: plan naming
+  pricing_page: Free, Developer, Pro, Scale, Enterprise
+  docs_rate_limit_table: Free, Hobby, Starter, Pro, Scale, Enterprise
+  note: >-
+    The docs table carries a "Starter" tier (30,000 credits, 120 req/min, $12 per
+    10K overage) that the pricing page does not show at all, and calls the $25
+    tier "Hobby" where the pricing page calls it "Developer".
+- field: Scale credits and rate limit
+  pricing_page: 1,000,000 credits per month at 700 requests/minute, $7 per 10K overage
+  docs_rate_limit_table: 2,500,000 credits per month at 800 requests/minute, $6 per 10K overage
+cross_ref:
+  rate_limits: rate-limits/contextdev-rate-limits.yml
+  conventions: conventions/contextdev-conventions.yml

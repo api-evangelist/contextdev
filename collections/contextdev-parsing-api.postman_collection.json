@@ -1,0 +1,617 @@
+{
+  "item": [
+    {
+      "id": "58d628ce-564e-40a6-9991-e35ec5264571",
+      "name": "Parsing",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "38a68528-729f-4176-976f-e6a39f7f3f3e",
+          "name": "Parse Bytes",
+          "request": {
+            "name": "Parse Bytes",
+            "description": {
+              "content": "Converts raw text, source code, web/data, PDF, Microsoft Office, and image bytes into LLM-usable Markdown.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "parse"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "extension",
+                  "value": "<string>",
+                  "description": "Optional file extension hint, such as pdf, docx, xlsx, pptx, html, json, csv, md, py, rtf, jpg, png, or txt."
+                },
+                {
+                  "disabled": false,
+                  "key": "includeLinks",
+                  "value": "<boolean>",
+                  "description": "Preserve hyperlinks in Markdown output"
+                },
+                {
+                  "disabled": false,
+                  "key": "includeImages",
+                  "value": "<boolean>",
+                  "description": "Include image references in Markdown output"
+                },
+                {
+                  "disabled": false,
+                  "key": "shortenBase64Images",
+                  "value": "<boolean>",
+                  "description": "Shorten base64-encoded image data in the Markdown output"
+                },
+                {
+                  "disabled": false,
+                  "key": "useMainContentOnly",
+                  "value": "<boolean>",
+                  "description": "Extract only the main content from HTML-like inputs"
+                },
+                {
+                  "disabled": false,
+                  "key": "ocr",
+                  "value": "<boolean>",
+                  "description": "When true for PDF inputs, detect and OCR images embedded in the selected pages, inserting recognized text at each image's position in page reading order while preserving the PDF text layer. pdf.start/pdf.end limit the inclusive page range. When false, all OCR is disabled, including the automatic scanned-PDF fallback."
+                },
+                {
+                  "disabled": false,
+                  "key": "client",
+                  "value": "<string>",
+                  "description": "Optional client identifier used for usage attribution."
+                },
+                {
+                  "disabled": false,
+                  "key": "tags",
+                  "value": "<string>,<string>",
+                  "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/octet-stream"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "<binary>"
+            }
+          },
+          "response": [
+            {
+              "id": "34f6c784-c53b-416b-adcf-97069367a167",
+              "name": "Successful response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "parse"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "extension",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "includeLinks",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "includeImages",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "shortenBase64Images",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "useMainContentOnly",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "ocr",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "client",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "string,string"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<binary>"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "8"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "2906"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "4566"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"markdown\": \"string\",\n  \"type\": \"ppt\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2590,\n    \"credits_remaining\": 7535\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5c88081a-4129-4b62-9f85-2ae806aaa607",
+              "name": "Invalid input or no parseable content",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "parse"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "extension",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "includeLinks",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "includeImages",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "shortenBase64Images",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "useMainContentOnly",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "ocr",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "client",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "string,string"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<binary>"
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "8"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "2906"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "4566"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"WEBSITE_ACCESS_ERROR\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2272,\n    \"credits_remaining\": 9079\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8185a376-9ad5-43d1-bcaf-4fa54a9d1eef",
+              "name": "Request body exceeds the 25 MiB upload limit",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "parse"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "extension",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "includeLinks",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "includeImages",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "shortenBase64Images",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "useMainContentOnly",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "ocr",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "client",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "string,string"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<binary>"
+                }
+              },
+              "status": "Request Entity Too Large",
+              "code": 413,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "8"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "2906"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "4566"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INPUT_VALIDATION_ERROR\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "24ce56c2-bd0f-4a9b-9a47-3b07a73ac008",
+              "name": "Unsupported content type",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "parse"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "extension",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "includeLinks",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "includeImages",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "shortenBase64Images",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "useMainContentOnly",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "ocr",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "client",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "string,string"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<binary>"
+                }
+              },
+              "status": "Unsupported Media Type",
+              "code": 415,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "8"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "2906"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "4566"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"UNSUPPORTED_CONTENT\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2363,\n    \"credits_remaining\": 1307\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "072b9c2e-e8fe-4870-9948-6a16edede9b6",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "parse"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "extension",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "includeLinks",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "includeImages",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "shortenBase64Images",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "useMainContentOnly",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "ocr",
+                      "value": "<boolean>"
+                    },
+                    {
+                      "key": "client",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "string,string"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "<binary>"
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "8"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "2906"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "4566"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INTERNAL_ERROR\",\n  \"key_metadata\": {\n    \"credits_consumed\": 7062,\n    \"credits_remaining\": 7193\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.context.dev/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "01cdc2e3-aa29-4f32-a0d8-26431c3f19d9",
+    "name": "Context Brand Intelligence Parsing API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API for retrieving context data from any website",
+      "type": "text/plain"
+    }
+  }
+}

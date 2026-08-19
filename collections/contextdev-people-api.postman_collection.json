@@ -1,0 +1,655 @@
+{
+  "item": [
+    {
+      "id": "ad61082c-bd41-4322-b36d-e60b189a15d4",
+      "name": "People",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "4d946990-aaf8-4d6a-b2cf-fd286661f01b",
+          "name": "Retrieve Person",
+          "request": {
+            "name": "Retrieve Person",
+            "description": {
+              "content": "Retrieve and normalize a person profile from identifiers.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "people",
+                "retrieve"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"<uri>\"\n  },\n  \"timeoutMS\": \"<integer>\",\n  \"tags\": [\n    \"<string>\",\n    \"<string>\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "ab0fde2f-9207-49af-8dc2-a0a58d8ad6bd",
+              "name": "Person retrieval succeeded.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "people",
+                    "retrieve"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"https://www.linkedin.com/in/yahia-bakour/\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "3451"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9652"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "2086"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"code\": 200,\n  \"person\": {\n    \"profile\": {\n      \"fullName\": \"string\",\n      \"headline\": \"string\",\n      \"location\": \"string\",\n      \"summary\": \"string\",\n      \"profilePictureUrl\": \"https://wDBwUbdbLeMAj.ocwbzOuv9LO+9xK04Qxf.k6lfWAo8fARevBuVKW\"\n    },\n    \"education\": [\n      {\n        \"institution\": {\n          \"display\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"normalized\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        \"qualification\": \"string\",\n        \"fieldOfStudy\": \"string\",\n        \"description\": \"string\",\n        \"dates\": {\n          \"startDate\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"endDate\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"isCurrent\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      },\n      {\n        \"institution\": {\n          \"display\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"normalized\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        \"qualification\": \"string\",\n        \"fieldOfStudy\": \"string\",\n        \"description\": \"string\",\n        \"dates\": {\n          \"startDate\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"endDate\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"isCurrent\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      }\n    ],\n    \"experience\": [\n      {\n        \"company\": {\n          \"display\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"normalized\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        \"title\": \"string\",\n        \"description\": \"string\",\n        \"dates\": {\n          \"startDate\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"endDate\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"isCurrent\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      },\n      {\n        \"company\": {\n          \"display\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"normalized\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        \"title\": \"string\",\n        \"description\": \"string\",\n        \"dates\": {\n          \"startDate\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"endDate\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          },\n          \"isCurrent\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      }\n    ],\n    \"skills\": [\n      {\n        \"name\": \"string\",\n        \"normalized\": \"string\",\n        \"proficiency\": \"string\"\n      },\n      {\n        \"name\": \"string\",\n        \"normalized\": \"string\",\n        \"proficiency\": \"string\"\n      }\n    ]\n  },\n  \"metadata\": {\n    \"identifiers\": {\n      \"linkedinUrl\": \"http://XwlZKzVjuiqVqDYcwOHIjgySdctVcelC.puxjMKEe-3E6.ZGoWhEMgKDwFbYPKxzK.kMkYGF3V6j8kraF\"\n    },\n    \"urlsAnalyzed\": [\n      \"https://xJEZFKOgbLfCcuGFohNCEoWp.lakeVygqj.oHC-Hj+gT50dLGQ+tF3vk6tTrYdV66NMCpgbw+pl\",\n      \"http://xrOcRDvgZGmcIkuVN.xgq8U+CtlCbB98mJ.\"\n    ],\n    \"sourcesAttempted\": [\n      \"cv\",\n      \"manual\"\n    ],\n    \"sourcesSucceeded\": [\n      \"github\",\n      \"linkedin\"\n    ],\n    \"personalWebsiteUrl\": \"https://N.tjrxUd83AQBv+GhWUXa8dHLLDJpxmR02-l3yCJ-awxvA7lS6WdAqz2bvS9OalV.zR04lbOu+t\"\n  },\n  \"key_metadata\": {\n    \"credits_consumed\": 3833,\n    \"credits_remaining\": 2965\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "46a77194-4985-4b1e-a268-d09caf08e18c",
+              "name": "Bad request - Invalid identifiers",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "people",
+                    "retrieve"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"https://www.linkedin.com/in/yahia-bakour/\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "3451"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9652"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "2086"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"MONITOR_PAUSED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9006,\n    \"credits_remaining\": 5018\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "cee46003-dbcd-448b-9b61-fed1e4fbe430",
+              "name": "Unauthorized - Invalid or missing API key",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "people",
+                    "retrieve"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"https://www.linkedin.com/in/yahia-bakour/\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "3451"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9652"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "2086"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"MONITOR_PAUSED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9006,\n    \"credits_remaining\": 5018\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0b8592c5-a540-4573-bdae-a202d1499ac1",
+              "name": "Forbidden - Insufficient permissions or usage limit exceeded",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "people",
+                    "retrieve"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"https://www.linkedin.com/in/yahia-bakour/\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "3451"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9652"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "2086"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"MONITOR_PAUSED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9006,\n    \"credits_remaining\": 5018\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a2399e8c-65fe-42d0-b6a5-467f671d3469",
+              "name": "Request timeout",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "people",
+                    "retrieve"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"https://www.linkedin.com/in/yahia-bakour/\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Request Timeout",
+              "code": 408,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "3451"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9652"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "2086"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"MONITOR_PAUSED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9006,\n    \"credits_remaining\": 5018\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4986ee96-fbb2-40b2-b9af-227344eded6d",
+              "name": "Rate limit exceeded",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "people",
+                    "retrieve"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"https://www.linkedin.com/in/yahia-bakour/\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "3451"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9652"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "2086"
+                },
+                {
+                  "disabled": false,
+                  "description": "Seconds until the per-minute rate limit window resets",
+                  "key": "Retry-After",
+                  "value": "5"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"RATE_LIMITED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2463,\n    \"credits_remaining\": 439\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "57e5a9a0-8c03-4bd5-a5d9-2eb484f84181",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "people",
+                    "retrieve"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"https://www.linkedin.com/in/yahia-bakour/\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "3451"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9652"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "2086"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"MONITOR_PAUSED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9006,\n    \"credits_remaining\": 5018\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "21d2cc1e-e663-4771-98c6-7d0c4366fc8a",
+              "name": "External provider error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "people",
+                    "retrieve"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifiers\": {\n    \"linkedinUrl\": \"https://www.linkedin.com/in/yahia-bakour/\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Gateway",
+              "code": 502,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "3451"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9652"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "2086"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"MONITOR_PAUSED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9006,\n    \"credits_remaining\": 5018\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.context.dev/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "5dcfd026-6ae8-4621-a843-3937d7801e51",
+    "name": "Context Brand Intelligence People API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API for retrieving context data from any website",
+      "type": "text/plain"
+    }
+  }
+}

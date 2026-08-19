@@ -1,0 +1,62 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the Context.dev Batch API
+  version: 1.0.0
+extends: openapi/contextdev-batch-api-openapi.yml
+actions:
+- target: $.info
+  update:
+    x-apievangelist-provider: contextdev
+    x-apievangelist-review-date: '2026-08-14'
+    x-apievangelist-harvest-source: >-
+      Merged verbatim from the per-operation OpenAPI 3.1.0 fragments Mintlify
+      publishes inside https://docs.context.dev/api-reference/batches/*.md. Six
+      operations, components pruned transitively to what the Batch paths actually
+      reference.
+    x-agentic-access: agentic-access/contextdev-agentic-access.yml
+    x-context-conventions: conventions/contextdev-conventions.yml
+    x-context-errors: errors/contextdev-problem-types.yml
+    x-context-rate-limits: rate-limits/contextdev-rate-limits.yml
+    x-context-plans: plans/contextdev-plans-pricing.yml
+- target: $.info
+  description: >-
+    Notes captured by API Evangelist enrichment on 2026-08-14. This surface is
+    absent from the July 2026 harvest of the Context.dev spec and appeared with no
+    deprecation or changelog handshake against the older surface.
+  update:
+    x-apievangelist-notes:
+      operationid_coverage: >-
+        All six Batch operations declare operationIds (submitBatch, listBatches,
+        getBatch, getBatchResults, cancelBatch, deleteBatch) — better than the
+        older non-Monitors surface, where only Monitors operations carry them.
+      idempotency: >-
+        POST /batch/submit is the only operation in the entire Context.dev API
+        that accepts an Idempotency-Key header, with a documented
+        409 / IDEMPOTENCY_KEY_CONFLICT contract.
+      rate_limit_posture: >-
+        One batch submission counts as ONE request against the per-minute cap no
+        matter how many URLs it carries, while an equivalent POST /web/crawl is a
+        weighted call costing 10. Polling GET /batch/{batch_id} and
+        GET /batch/{batch_id}/results are ordinary 1-request calls and DO count.
+      concurrency_limit: >-
+        Concurrent in-flight batches are capped per plan (1 Free / 2 Developer /
+        5 Pro / 20 Scale) and exhaustion returns 403 BATCH_LIMIT_EXCEEDED. This
+        binds before the per-minute rate limit does.
+      callbacks: >-
+        Submission accepts a webhookUrl so the caller can avoid polling entirely.
+      error_envelope: >-
+        Flat {message, status, error_code} JSON — not application/problem+json.
+        Batch-specific error codes: BATCH_LIMIT_EXCEEDED, BATCH_NOT_CANCELLABLE,
+        BATCH_NOT_COMPLETED, IDEMPOTENCY_KEY_CONFLICT.
+- target: $.paths['/batch/submit'].post
+  update:
+    x-apievangelist-cost: >-
+      1 credit per successfully scraped URL. One request against the per-minute
+      rate limit regardless of payload size (up to 25,000 URLs, or a crawl input).
+    x-apievangelist-idempotent: true
+- target: $.paths['/batch/{batch_id}/results'].get
+  update:
+    x-apievangelist-pagination: >-
+      Cursor pagination — limit (1-100) plus cursor taken from the previous page's
+      next_cursor. Gzipped NDJSON download links are available from
+      GET /batch/{batch_id} once the batch settles, and are cheaper than paging.

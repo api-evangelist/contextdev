@@ -1,10 +1,116 @@
-generated: '2026-07-18'
+generated: '2026-08-14'
 method: searched
 source: https://docs.context.dev/changelog (docs.context.dev/changelog.md)
 scheme: dated month-by-month product log
 url: https://docs.context.dev/changelog
 window: recent
 entries:
+- date: '2026-08-13'
+  breaking: false
+  additions: true
+  highlights:
+  - Context.dev listed in Eve's integration registry (`eve add connection/context`); the generated connection uses
+    the browser-based authorization flow so no API key is copied into the agent.
+- date: '2026-08-10'
+  breaking: false
+  additions: true
+  highlights:
+  - 'POST /utility/prefetch now accepts type: "styleguide" alongside "brand" — free, unlimited, fire-and-forget
+    cache warming for GET /web/styleguide.'
+- date: '2026-08-09'
+  breaking: false
+  additions: true
+  highlights:
+  - GET /web/scrape/markdown accepts includeHTML=true, returning an html field beside the Markdown and replacing
+    a scrape-twice pattern. Markdown batches accept the same flag as options.includeHTML.
+- date: '2026-08-07'
+  breaking: false
+  additions: true
+  highlights:
+  - Headings metadata and a preserved <main> landmark on scraped pages.
+- date: '2026-08-06'
+  breaking: false
+  additions: true
+  highlights:
+  - People Enrichment API — new POST /people/enrich turns identity clues into one normalized person profile with
+    a 0-100 identity match score, or a clean not_found.
+  - Employee counts added to brand data.
+  - Relevance search for sitemap crawls.
+  - Per-page OCR billing and clearer PDF errors.
+  - Cold lookups fail fast instead of timing out.
+  - YouTube pages become structured Markdown.
+- date: '2026-08-05'
+  breaking: false
+  additions: true
+  highlights:
+  - New error codes for oversized and unreachable content.
+- date: '2026-08-04'
+  breaking: false
+  additions: true
+  highlights:
+  - Brand Search — new GET /brand/search returns up to 10 lightweight matches (domain, name, logo) for autocomplete.
+    Free on Pro and Scale; 1 credit on Free and Starter. Ranking improved 2026-08-06.
+- date: '2026-08-03'
+  breaking: false
+  additions: true
+  highlights:
+  - Hosted MCP server live at https://mcp.context.dev/mcp with OAuth browser sign-in, for Claude, Claude Code, Cursor,
+    Codex, ChatGPT and VS Code.
+- date: '2026-08-02'
+  breaking: false
+  additions: true
+  highlights:
+  - Product-native usage charts.
+  - Monitors no longer die on one bad run.
+- date: '2026-08-01'
+  breaking: false
+  additions: true
+  highlights:
+  - Credit refills now land on your billing day.
+- date: '2026-07-30'
+  breaking: false
+  additions: true
+  highlights:
+  - Batch API launched — submit up to 25,000 URLs or a crawl asynchronously, results as Markdown or HTML. Reserves
+    credits for the accepted page budget and charges only successful pages. Supports itemId/meta join keys, an Idempotency-Key
+    for safe retries, and an optional completion webhook.
+  - Hosted MCP server moved to OAuth 2.0 authorization_code + PKCE at https://mcp.context.dev/mcp, issuing scoped
+    api.read / api.write tokens instead of requiring a pasted API key.
+- date: '2026-07-27'
+  breaking: false
+  additions: true
+  highlights:
+  - Goal-driven semantic detection for page monitors.
+- date: '2026-07-25'
+  breaking: false
+  additions: true
+  highlights:
+  - Usage alerts for overages.
+- date: '2026-07-22'
+  breaking: false
+  additions: true
+  highlights:
+  - Simpler monitor setup — creating a monitor now requires only name and target; change_detection and schedule
+    default sensibly, and the response carries initial_run_id.
+  - Monitor webhook signing secrets can be rotated in place via POST /monitors/{monitor_id}/webhook/rotate-secret;
+    rotation is immediate and the previous secret stops signing new deliveries.
+  - Browser actions before scraping.
+- date: '2026-07-21'
+  breaking: false
+  additions: true
+  highlights:
+  - 'Opt-in zero data retention on selected scraping and parsing endpoints — set zdr=enabled per request; successful
+    responses carry X-Context-ZDR: true.'
+- date: '2026-07-20'
+  breaking: false
+  additions: true
+  highlights:
+  - Default organization.
+- date: '2026-07-18'
+  breaking: false
+  additions: true
+  highlights:
+  - Layout-aware PDF parsing.
 - date: '2026-07-17'
   breaking: false
   highlights:
@@ -19,7 +125,8 @@ entries:
   breaking: false
   additions: true
   highlights:
-  - Rate-limit headers (X-RateLimit-Limit/Remaining/Reset) on every authenticated response, plus Retry-After on 429s.
+  - Rate-limit headers (X-RateLimit-Limit/Remaining/Reset) on every authenticated response, plus Retry-After on
+    429s.
   - Cleaner useMainContentOnly Markdown; new contentLength field.
   - Per-run monitor webhooks (run.completed) and monitor webhook health tracking.
 - date: '2026-07-09'
@@ -34,21 +141,23 @@ entries:
   highlights:
   - Unified Brand Retrieval request (union type on POST /brand/retrieve).
   - Unified Prefetch request; cleaner API reference navigation.
-- date: '2026-06-21'
-  breaking: false
-  additions: true
-  highlights:
-  - PHP SDK launch (fifth first-party SDK).
 - date: '2026-06-22'
   breaking: false
   additions: true
   highlights:
   - Agent Sign-Ups — OAuth2 agentic registration (service_auth) for autonomous key provisioning.
+- date: '2026-06-21'
+  breaking: false
+  additions: true
+  highlights:
+  - PHP SDK launch (fifth first-party SDK).
 - date: '2026-06-11'
   breaking: false
   additions: true
   highlights:
   - Official context-dev CLI released.
-note: >-
-  The live changelog is the source of truth and spans monthly entries back to
-  May 2025; only the recent window is captured here.
+note: 'No entry in the recent window is marked breaking. The log is additive and dense — 40 dated entries since
+  2026-07-04 — but it is a PRODUCT log, not a deprecation log: it announces new endpoints without ever retiring
+  old ones. POST /people/retrieve disappearing from the API reference the same week POST /people/enrich launched
+  is announced only as an addition.'
+current_period: August 2026 (ongoing)

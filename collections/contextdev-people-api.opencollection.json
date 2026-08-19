@@ -1,0 +1,37 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Context Brand Intelligence People API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "People",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Retrieve Person",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/people/retrieve",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve and normalize a person profile from identifiers."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

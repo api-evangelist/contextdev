@@ -1,0 +1,105 @@
+generated: '2026-08-14'
+method: probed
+source: https://docs.context.dev/.well-known/agent-card.json
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: docs.context.dev
+  note: >-
+    Served from Context.dev's own documentation host. The card self-identifies as
+    Context.dev (name, provider.organization, provider.url) and links its one skill
+    back to https://docs.context.dev/.well-known/agent-skills/context-dev/skill.md,
+    the same packaged Agent Skill captured in skills/contextdev-skill.md. The
+    apex/www host (www.context.dev) and the API host (api.context.dev) both MISS —
+    404 and 403 respectively — so this is the only agent-card surface Context.dev
+    serves.
+x-evidence:
+  fetched: '2026-08-14'
+  url: https://docs.context.dev/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json
+  negative_control:
+    url: https://docs.context.dev/.well-known/zzz-not-real.json
+    http_status: 404
+    note: >-
+      Control probe confirms the docs host is NOT an SPA catch-all answering 200
+      for every /.well-known/* path — the agent-card 200 is a real document.
+  other_hosts:
+  - url: https://www.context.dev/.well-known/agent-card.json
+    http_status: 404
+  - url: https://www.context.dev/.well-known/agent.json
+    http_status: 404
+  - url: https://api.context.dev/.well-known/agent-card.json
+    http_status: 403
+  - url: https://docs.context.dev/.well-known/agent.json
+    http_status: 404
+card:
+  file: contextdev-agent-card.json
+  name: Context.dev
+  url: https://docs.context.dev/
+  version: 1.0.0
+  protocol_version: '0.3'
+  preferred_transport: HTTP+JSON
+  provider:
+    organization: Context.dev
+    url: https://docs.context.dev/
+  documentation_url: https://docs.context.dev/
+  capabilities:
+    streaming: false
+    push_notifications: false
+  default_input_modes:
+  - text/plain
+  default_output_modes:
+  - text/plain
+  supported_interfaces:
+  - url: https://docs.context.dev/
+    protocol_binding: HTTP+JSON
+    protocol_version: '0.3'
+  skills:
+  - id: context-dev
+    name: context-dev
+    url: https://docs.context.dev/.well-known/agent-skills/context-dev/skill.md
+    note: >-
+      Single skill covering brand lookup, person enrichment, web scraping/crawl,
+      search, screenshot, styleguide, NAICS/SIC classification and JSON Schema
+      extraction. Requires a CONTEXT_DEV_API_KEY.
+grade:
+  level: conformant
+  spec: A2A 1.0.0
+  checks:
+  - check: capabilities is an object
+    result: pass
+  - check: protocolVersion present
+    result: pass
+    value: '0.3'
+  - check: skills is an array
+    result: pass
+    value: 1
+  - check: preferredTransport present (optional)
+    result: pass
+    value: HTTP+JSON
+  - check: defaultInputModes present (optional)
+    result: pass
+  - check: defaultOutputModes present (optional)
+    result: pass
+deviations:
+- field: protocolVersion
+  observed: '0.3'
+  note: >-
+    Declares A2A protocol 0.3 rather than 1.0.0. Not a hard failure — the card
+    satisfies every structural requirement — but consumers pinning 1.0.0 should
+    note the version gap.
+- field: url / supportedInterfaces[].url
+  observed: https://docs.context.dev/
+  note: >-
+    The card points at the documentation site rather than at an A2A JSON-RPC
+    endpoint, so there is no callable A2A agent behind it. It is a discovery and
+    skill-advertisement card. The genuinely callable agent surface for Context.dev
+    is the hosted MCP server at https://context-dev.stlmcp.com (see
+    mcp/contextdev-mcp.yml).
+- field: skills[].tags
+  observed: []
+  note: Skill carries an empty tags array, so the card is not tag-discoverable.
+cross_ref:
+  mcp: mcp/contextdev-mcp.yml
+  skills: skills/_index.yml

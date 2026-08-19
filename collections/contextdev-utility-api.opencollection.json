@@ -1,0 +1,75 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Context Brand Intelligence Utility API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Utility",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Prefetch brand data for a domain",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/brand/prefetch",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Signal that you may fetch brand data for a particular domain soon to improve latency."
+        },
+        {
+          "info": {
+            "name": "Prefetch brand data by email",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/brand/prefetch-by-email",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Signal that you may fetch brand data for a particular domain soon to improve latency. This endpoint accepts an email address, extracts the domain from it, validates that it's not a disposable or free email provider, and queues the domain for prefetching."
+        },
+        {
+          "info": {
+            "name": "Prefetch brand data",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/utility/prefetch",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Signal that you may fetch brand data soon to improve latency. The type field selects what to prefetch (currently only 'brand') and identifier carries exactly one lookup key: a domain, or an email whose domain is extracted and validated (free email providers and disposable email addresses are not allowed)."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

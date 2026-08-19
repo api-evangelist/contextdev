@@ -1,8 +1,11 @@
-generated: '2026-07-18'
+generated: '2026-08-14'
 method: searched
 source: >-
-  https://docs.context.dev/optimization/troubleshooting.md +
-  derived from openapi/contextdev-openapi.yml responses
+  https://docs.context.dev/optimization/troubleshooting.md,
+  https://docs.context.dev/optimization/rate-limits.md,
+  https://docs.context.dev/api-reference/batches/*.md +
+  derived from openapi/contextdev-openapi.yml and
+  openapi/contextdev-batch-api-openapi.yml responses
 format: custom-json
 envelope:
   fields:
@@ -50,6 +53,86 @@ error_codes:
   http: 422
   meaning: A free/disposable email provider was supplied to a by_email lookup.
   action: Filter known free providers client-side before calling.
+- code: BATCH_LIMIT_EXCEEDED
+  http: 403
+  meaning: >-
+    The account already has as many in-flight batches as its plan allows
+    (1 Free / 2 Developer / 5 Pro / 20 Scale).
+  action: >-
+    Wait for a running batch to settle before submitting another. This limit binds
+    long before the per-minute rate limit does.
+  source: https://docs.context.dev/optimization/rate-limits.md
+  added: '2026-08-14'
+- code: IDEMPOTENCY_KEY_CONFLICT
+  http: 409
+  meaning: >-
+    The same Idempotency-Key was reused on POST /batch/submit with a DIFFERENT
+    request body.
+  action: >-
+    Do not retry as-is. Either reuse the original key with the original body (which
+    returns the original batch) or mint a new key for the new body.
+  source: openapi/contextdev-batch-api-openapi.yml
+  added: '2026-08-14'
+- code: BATCH_NOT_CANCELLABLE
+  http: 409
+  meaning: The batch has already settled, so it cannot be cancelled.
+  action: Read GET /batch/{batch_id} for its terminal status.
+  source: openapi/contextdev-batch-api-openapi.yml
+  added: '2026-08-14'
+- code: BATCH_NOT_COMPLETED
+  http: 409
+  meaning: Results or deletion were requested before the batch finished.
+  action: >-
+    Poll GET /batch/{batch_id} until it settles, or pass webhookUrl at submission
+    and take the callback instead of polling.
+  source: openapi/contextdev-batch-api-openapi.yml
+  added: '2026-08-14'
+batch_statuses:
+  note: >-
+    Added 2026-08-14 from the Batch API operations harvested into
+    openapi/contextdev-batch-api-openapi.yml. Same flat envelope as the rest of
+    the API — no application/problem+json.
+  statuses:
+  - status: 400
+    operations:
+    - submitBatch
+    - getBatchResults
+    meaning: Malformed batch submission or result-page request.
+  - status: 401
+    operations:
+    - submitBatch
+    - listBatches
+    - getBatch
+    - getBatchResults
+    - cancelBatch
+    - deleteBatch
+    meaning: Missing, invalid, or expired API key. Declared on every Batch operation.
+  - status: 403
+    operations:
+    - submitBatch
+    meaning: Concurrent-batch limit reached (BATCH_LIMIT_EXCEEDED).
+  - status: 404
+    operations:
+    - getBatch
+    - getBatchResults
+    - cancelBatch
+    - deleteBatch
+    meaning: No batch with that batch_id on this account.
+  - status: 409
+    operations:
+    - submitBatch
+    - getBatchResults
+    - cancelBatch
+    - deleteBatch
+    meaning: >-
+      Batch is in a state that forbids the operation — results requested before
+      the batch settles, cancel on an already-settled batch, or delete on a batch
+      still active.
+    action: Poll GET /batch/{batch_id} until it settles, or take the webhook.
+  - status: 500
+    operations:
+    - submitBatch
+    meaning: Transient server error on submission.
 recovery_patterns:
 - 408 timeouts — prefetch, raise timeoutMS (max 300000), or retry with exponential backoff.
 - 422 invalid emails — filter known providers client-side to skip round trips.

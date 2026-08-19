@@ -1,14 +1,15 @@
-generated: '2026-07-18'
+generated: '2026-08-14'
 method: searched
 skills:
 - file: contextdev-skill.md
   name: context-dev
   method: searched
   source: https://docs.context.dev/skill.md
-  description: >-
-    Provider-published Agent Skill (v3.0, MIT) teaching agents when and how to call
-    the Context.dev API for brand data, web scraping, extraction, and classification.
+  description: Provider-published Agent Skill (v3.0, MIT) teaching agents when and how to call the Context.dev
+    API for brand data, web scraping, extraction, and classification.
   api: openapi/contextdev-openapi.yml
+  also_published_at: https://docs.context.dev/.well-known/agent-skills/context-dev/skill.md
+  advertised_in_agent_card: a2a/contextdev-agent-card.json
 - file: contextdev-monitor-a-website.md
   name: contextdev-monitor-a-website
   method: generated
@@ -22,3 +23,19 @@ skills:
   - runMonitorNow
   - updateMonitor
   - deleteMonitor
+- file: contextdev-scrape-in-batches.md
+  name: contextdev-scrape-in-batches
+  method: generated
+  api: openapi/contextdev-batch-api-openapi.yml
+  source: derived from openapi/contextdev-batch-api-openapi.yml + https://docs.context.dev/guides/scrape-websites-in-batches
+    + https://docs.context.dev/optimization/rate-limits
+  operations:
+  - submitBatch
+  - getBatch
+  - getBatchResults
+  - listBatches
+  - cancelBatch
+  - deleteBatch
+  description: Scrape many pages or crawl a whole site asynchronously with the Context.dev Batch API —
+    idempotent submission, webhook-over-polling, cursor-paged results, and the concurrency cap that binds
+    before the rate limit.

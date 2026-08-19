@@ -1,8 +1,10 @@
-generated: '2026-07-18'
+generated: '2026-08-14'
 method: searched
 source: >-
   https://docs.context.dev, https://status.context.dev,
-  https://docs.context.dev/changelog + derived from openapi/contextdev-openapi.yml
+  https://docs.context.dev/changelog, https://docs.context.dev/llms.txt,
+  https://docs.context.dev/api-reference/*.md + derived from
+  openapi/contextdev-openapi.yml
 versioning:
   scheme: uri-path
   current: v1
@@ -17,6 +19,87 @@ deprecation:
 status_page: https://status.context.dev
 changelog: https://docs.context.dev/changelog
 sla:
-  url: null
-  uptime_target: null
+  url: https://www.context.dev/pricing
+  uptime_target: 99.9%
+  scope: Enterprise plan only
+  note: >-
+    The 99.9% uptime SLA is listed as an Enterprise-tier commitment on the pricing
+    page. No SLA is published for Free, Developer, Pro or Scale, and there is no
+    standalone SLA document.
 deprecated_operations: []
+surface_drift:
+  checked: '2026-08-14'
+  method: >-
+    Reconciled the 41 api-reference pages listed in https://docs.context.dev/llms.txt
+    against openapi/_original/contextdev-openapi.yml (42 operations, harvested
+    2026-07-18). Mintlify publishes a real per-operation OpenAPI fragment inside
+    each api-reference .md, so both sides of this comparison are provider-published.
+  added:
+  - surface: Batch API
+    announced: '2026-07-30'
+    operations:
+    - submitBatch
+    - listBatches
+    - getBatch
+    - getBatchResults
+    - cancelBatch
+    - deleteBatch
+    note: >-
+      A six-operation asynchronous batch surface (up to 25,000 URLs or a whole
+      crawl per submission, results as paginated JSON or gzipped NDJSON, optional
+      webhookUrl on completion) that did not exist in the July harvest. Captured
+      this round as openapi/contextdev-batch-api-openapi.yml.
+  - surface: Monitors
+    operations:
+    - POST /monitors/{monitor_id}/webhook/rotate-secret
+    note: >-
+      Webhook secret rotation. Documented at
+      https://docs.context.dev/api-reference/monitors/rotate-webhook-secret.md but
+      absent from the refined monitors spec in this repo.
+  - surface: Brand Intelligence
+    operations:
+    - GET /brand/search
+    note: Present in the current docs; absent from the July harvest.
+  superseded:
+  - from: POST /people/retrieve
+    to: POST /people/enrich
+    announced: '2026-08-06'
+    announcement: https://docs.context.dev/changelog ("People Enrichment API", August 6th)
+    breaking: unclear
+    note: >-
+      The changelog announces POST /people/enrich as a NEW endpoint — identity
+      clues in, one normalized person profile plus a 0-100 identity match score
+      out — and does not mention /people/retrieve at all. The older path is still
+      in this repo's people spec and in the July original, but it no longer has an
+      api-reference page. Whether /people/retrieve was removed, silently aliased,
+      or simply undocumented is NOT stated anywhere: there is no deprecation
+      notice, no Sunset header, and no changelog line retiring it. This is exactly
+      the gap the absent deprecation policy above predicts.
+      openapi/contextdev-people-api-openapi.yml has been LEFT UNCHANGED rather
+      than rewritten on inference; confirming the disposition needs a live
+      authenticated call or a word from the provider.
+  no_longer_in_public_docs:
+    note: >-
+      These operations are in the July original spec but have no api-reference page
+      in the current docs index. Absence from the docs nav is NOT proof of removal —
+      the July spec was harvested from a fuller SDK-generated source — so they are
+      recorded as an observation, not as deprecations.
+    operations:
+    - GET /brand/retrieve-by-name
+    - GET /brand/retrieve-by-email
+    - GET /brand/retrieve-by-ticker
+    - GET /brand/retrieve-by-isin
+    - GET /brand/transaction_identifier
+    - GET /brand/retrieve-simplified
+    - POST /brand/ai/query
+    - POST /brand/prefetch
+    - POST /brand/prefetch-by-email
+    - GET /web/competitors
+    - GET /monitors/limits
+sdk_currency:
+  checked: '2026-08-14'
+  note: >-
+    TypeScript 2.10.0, Python 2.9.0, Ruby 2.9.0 and PHP v2.9.0 all shipped
+    2026-08-07. The Go SDK is still on v1.5.0 (2026-06-30) — a full major version
+    behind the rest of the fleet. The local-stdio MCP package context.dev-mcp last
+    published 1.23.0 on 2026-05-16. See packages/contextdev-packages.yml.

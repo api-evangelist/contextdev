@@ -1,6 +1,6 @@
-generated: '2026-07-18'
+generated: '2026-08-14'
 method: searched
-source: live probes of Context.dev hosts
+source: live probes of Context.dev hosts (www, api, docs, mcp)
 hosts:
 - host: https://www.context.dev
   documents:
@@ -34,3 +34,48 @@ hosts:
     status: 404
   - path: /.well-known/openid-configuration
     status: 404
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: ../a2a/contextdev-agent-card.json
+    note: A2A Agent Card — conformant. See a2a/contextdev-a2a.yml.
+  - path: /.well-known/agent.json
+    status: 404
+    note: Legacy pre-0.3 agent-card path. Not served.
+  - path: /.well-known/zzz-not-real.json
+    status: 404
+    note: Negative control — confirms this host is not an SPA catch-all answering 200 for every /.well-known/*
+      path.
+- host: https://mcp.context.dev
+  note: Hosted MCP server host, discovered 2026-08-14 from https://docs.context.dev/install-mcp.md. Serves
+    a complete OAuth discovery stack.
+  documents:
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: contextdev-mcp-oauth-authorization-server.json
+    note: RFC 8414 authorization-server metadata. issuer https://mcp.context.dev, scopes api.read/api.write,
+      authorization_code + refresh_token, PKCE S256, and a registration_endpoint (RFC 7591 dynamic client
+      registration).
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: contextdev-mcp-oauth-protected-resource.json
+    note: RFC 9728 protected-resource metadata for the host.
+  - path: /.well-known/oauth-protected-resource/mcp
+    status: 200
+    file: contextdev-mcp-oauth-protected-resource-mcp.json
+    note: RFC 9728 metadata for the /mcp resource specifically — the exact document the 401 WWW-Authenticate
+      header points at.
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: contextdev-mcp-openid-configuration.json
+    note: Served, but identical to the oauth-authorization-server document — no OIDC-specific claims (no
+      userinfo_endpoint, jwks_uri, id_token signing algs, or subject types). It is OAuth metadata at an
+      OIDC path, not an OIDC provider.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+summary:
+  checked: '2026-08-14'
+  hits: 6
+  note: 'Six real documents across two hosts: two OAuth documents on www.context.dev, four on mcp.context.dev,
+    plus the A2A agent card on docs.context.dev. No security.txt is served on any host.'

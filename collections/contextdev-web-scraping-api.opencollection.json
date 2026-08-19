@@ -1,0 +1,483 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Context Brand Intelligence Web Scraping API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Web Scraping",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Scrape HTML",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/scrape/html",
+            "params": [
+              {
+                "name": "url",
+                "value": "",
+                "type": "query",
+                "description": "Full URL to scrape (must include http:// or https:// protocol)"
+              },
+              {
+                "name": "pdf",
+                "value": "",
+                "type": "query",
+                "description": "PDF parsing controls. Use start/end to limit text extraction and embedded-image detection/OCR to an inclusive 1-based page range."
+              },
+              {
+                "name": "includeFrames",
+                "value": "",
+                "type": "query",
+                "description": "When true, iframes are rendered inline into the returned HTML."
+              },
+              {
+                "name": "useMainContentOnly",
+                "value": "",
+                "type": "query",
+                "description": "When true, return only the page's main content in the HTML response, excluding headers, footers, sidebars, and navigation when detectable."
+              },
+              {
+                "name": "includeSelectors",
+                "value": "",
+                "type": "query",
+                "description": "CSS selectors. When provided, only matching subtrees (and their descendants) are kept and everything else is dropped. When omitted, the entire document is kept. Examples: \"article.main\", \"#content\", \"[role=main]\"."
+              },
+              {
+                "name": "excludeSelectors",
+                "value": "",
+                "type": "query",
+                "description": "CSS selectors to remove from the result. Applied after includeSelectors. Exclusion takes precedence: an element matching both is removed. Examples: \"nav\", \"footer\", \".ad-banner\", \"[aria-hidden=true]\"."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh."
+              },
+              {
+                "name": "waitForMs",
+                "value": "",
+                "type": "query",
+                "description": "Optional browser wait time in milliseconds after initial page load. Min: 0. Max: 30000 (30 seconds)."
+              },
+              {
+                "name": "settleAnimations",
+                "value": "",
+                "type": "query",
+                "description": "When true, waits briefly for CSS and transition animations to settle before extracting HTML. Defaults to false. This adds a bit of latency in exchange for more stable output on animated pages."
+              },
+              {
+                "name": "headers",
+                "value": "",
+                "type": "query",
+                "description": "Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache."
+              },
+              {
+                "name": "country",
+                "value": "",
+                "type": "query",
+                "description": "Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Scrapes the given URL and returns the raw HTML content of the page."
+        },
+        {
+          "info": {
+            "name": "Scrape Markdown",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/scrape/markdown",
+            "params": [
+              {
+                "name": "url",
+                "value": "",
+                "type": "query",
+                "description": "Full URL to scrape into LLM usable Markdown (must include http:// or https:// protocol)"
+              },
+              {
+                "name": "includeLinks",
+                "value": "",
+                "type": "query",
+                "description": "Preserve hyperlinks in Markdown output"
+              },
+              {
+                "name": "includeImages",
+                "value": "",
+                "type": "query",
+                "description": "Include image references in Markdown output"
+              },
+              {
+                "name": "shortenBase64Images",
+                "value": "",
+                "type": "query",
+                "description": "Shorten base64-encoded image data in the Markdown output"
+              },
+              {
+                "name": "useMainContentOnly",
+                "value": "",
+                "type": "query",
+                "description": "Extract only the main content of the page, excluding headers, footers, sidebars, and navigation"
+              },
+              {
+                "name": "pdf",
+                "value": "",
+                "type": "query",
+                "description": "PDF parsing controls. Use start/end to limit text extraction and embedded-image detection/OCR to an inclusive 1-based page range."
+              },
+              {
+                "name": "includeFrames",
+                "value": "",
+                "type": "query",
+                "description": "When true, the contents of iframes are rendered to Markdown."
+              },
+              {
+                "name": "includeSelectors",
+                "value": "",
+                "type": "query",
+                "description": "CSS selectors. When provided, only matching HTML subtrees (and their descendants) are kept before conversion to Markdown. When omitted, the entire document is kept. Examples: \"article.main\", \"#content\", \"[role=main]\"."
+              },
+              {
+                "name": "excludeSelectors",
+                "value": "",
+                "type": "query",
+                "description": "CSS selectors to remove before conversion to Markdown. Applied after includeSelectors. Exclusion takes precedence: an element matching both is removed. Examples: \"nav\", \"footer\", \".ad-banner\", \"[aria-hidden=true]\"."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh."
+              },
+              {
+                "name": "waitForMs",
+                "value": "",
+                "type": "query",
+                "description": "Optional browser wait time in milliseconds after initial page load before converting the page to Markdown. Min: 0. Max: 30000 (30 seconds)."
+              },
+              {
+                "name": "settleAnimations",
+                "value": "",
+                "type": "query",
+                "description": "When true, waits briefly for CSS and transition animations to settle before converting to Markdown. Defaults to false. This adds a bit of latency in exchange for more stable output on animated pages."
+              },
+              {
+                "name": "headers",
+                "value": "",
+                "type": "query",
+                "description": "Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache."
+              },
+              {
+                "name": "country",
+                "value": "",
+                "type": "query",
+                "description": "Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Scrapes the given URL into LLM usable Markdown. Inspect key_metadata on JSON responses from a recognized API key; use error_code to distinguish stable failure categories.\n\n### Billing & errors\n\n| HTTP status | Billed? | Meaning |\n| --- | --- | --- |\n| 200 | Yes — 1 credit | Successful scrape, including a zero-length result when includeSelectors matched nothing |\n| 400 | No | Invalid input, skipped PDF, or the page could not be scraped |\n| 401 / 403 | No | Invalid/disabled key, insufficient permi"
+        },
+        {
+          "info": {
+            "name": "Scrape Images",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/scrape/images",
+            "params": [
+              {
+                "name": "url",
+                "value": "",
+                "type": "query",
+                "description": "Page URL to inspect. Must include http:// or https://."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Reuse a cached result this many milliseconds old or newer. Default: 86400000 (1 day). Set to 0 to bypass cache. Maximum: 2592000000 (30 days)."
+              },
+              {
+                "name": "enrichment",
+                "value": "",
+                "type": "query",
+                "description": "Optional per-image processing, sent as deep-object query params such as enrichment[resolution]=true."
+              },
+              {
+                "name": "dedupe",
+                "value": "",
+                "type": "query",
+                "description": "When true, visually duplicate images are removed: every image is loaded and perceptually hashed, and only the highest-resolution copy of each duplicate group is kept. Images that cannot be downloaded or hashed are kept. Default: false."
+              },
+              {
+                "name": "waitForMs",
+                "value": "",
+                "type": "query",
+                "description": "Optional browser wait time in milliseconds after initial page load before collecting images. Min: 0. Max: 30000 (30 seconds)."
+              },
+              {
+                "name": "headers",
+                "value": "",
+                "type": "query",
+                "description": "Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Extract image assets from a web page, including standard URLs, inline SVGs, data URIs, responsive image sources, metadata, CSS backgrounds, video posters, and embeds. The base request costs 1 credit. When enrichment is enabled, the entire call costs 5 credits."
+        },
+        {
+          "info": {
+            "name": "Crawl Sitemap",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/scrape/sitemap",
+            "params": [
+              {
+                "name": "domain",
+                "value": "",
+                "type": "query",
+                "description": "Domain to build a sitemap for"
+              },
+              {
+                "name": "maxLinks",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of links to return from the sitemap crawl. Defaults to 10,000. Minimum is 1, maximum is 100,000."
+              },
+              {
+                "name": "sitemapUrl",
+                "value": "",
+                "type": "query",
+                "description": "Optional explicit sitemap URL. When provided, exactly this sitemap is crawled instead of discovering the domain's sitemaps."
+              },
+              {
+                "name": "urlRegex",
+                "value": "",
+                "type": "query",
+                "description": "Optional RE2-compatible regex pattern. Only URLs matching this pattern are returned and counted against maxLinks."
+              },
+              {
+                "name": "headers",
+                "value": "",
+                "type": "query",
+                "description": "Optional outbound HTTP headers forwarded only to the target URL, sent as deep-object query params such as headers[X-Custom]=value. When provided, caching is bypassed: the result is neither read from nor written to cache."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Crawl an entire website's sitemap and return all discovered page URLs."
+        },
+        {
+          "info": {
+            "name": "Crawl Website & Scrape Markdown",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/web/crawl",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Performs a crawl starting from a given URL, extracts page content as Markdown, and returns results for all crawled pages."
+        },
+        {
+          "info": {
+            "name": "Web Search",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/web/search",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Search the web and optionally scrape each result to Markdown in one round-trip."
+        },
+        {
+          "info": {
+            "name": "Scrape Screenshot",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/screenshot",
+            "params": [
+              {
+                "name": "domain",
+                "value": "",
+                "type": "query",
+                "description": "Domain name to take screenshot of (e.g., 'example.com', 'google.com'). The domain will be automatically normalized and validated. You must provide either 'domain' or 'directUrl', but not both."
+              },
+              {
+                "name": "directUrl",
+                "value": "",
+                "type": "query",
+                "description": "A specific URL to screenshot directly, bypassing domain resolution (e.g., 'https://example.com/pricing'). When provided, the screenshot is taken of this exact URL. You must provide either 'domain' or 'directUrl', but not both."
+              },
+              {
+                "name": "fullScreenshot",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to determine screenshot type. If 'true', takes a full page screenshot capturing all content. If 'false' or not provided, takes a viewport screenshot (standard browser view)."
+              },
+              {
+                "name": "page",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to specify which page type to screenshot. If provided, the system will scrape the domain's links and use heuristics to find the most appropriate URL for the specified page type (30 supported languages). If not provided, screenshots the main domain landing page. Only applicable when using 'domain', not 'directUrl'."
+              },
+              {
+                "name": "waitForMs",
+                "value": "",
+                "type": "query",
+                "description": "Optional browser wait time in milliseconds after initial page load before taking the screenshot. Min: 0. Max: 30000 (30 seconds). Defaults to 3000 ms when omitted."
+              },
+              {
+                "name": "viewport",
+                "value": "",
+                "type": "query",
+                "description": "Optional browser viewport dimensions for the screenshot. Defaults to 1920x1080."
+              },
+              {
+                "name": "handleCookiePopup",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to control cookie/consent popup handling. If 'true', we dismiss cookie banner before capture. If 'false' or not provided, captures the page without that step."
+              },
+              {
+                "name": "colorScheme",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to choose the site's visual theme in the screenshot. Use 'light' or 'dark' when the site offers both appearances."
+              },
+              {
+                "name": "scrollOffset",
+                "value": "",
+                "type": "query",
+                "description": "Optional vertical scroll offset in pixels for capturing a long page in viewport-sized chunks. When provided, the full page is captured once and the returned image is the viewport-sized slice that begins at this Y offset (e.g. request scrollOffset=0, then 1080, then 2160 to walk a 1920x1080 landing page top to bottom). The final slice may be shorter than the viewport height. Takes precedence over fullScreenshot. Max: 100000."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Return a cached screenshot if a prior screenshot for the same parameters exists and is younger than this many milliseconds. Defaults to 1 day (86400000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always capture fresh."
+              },
+              {
+                "name": "country",
+                "value": "",
+                "type": "query",
+                "description": "Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Capture a screenshot of a website."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

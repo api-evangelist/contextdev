@@ -1,0 +1,335 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Context Brand Intelligence Web Extraction API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Web Extraction",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Extract Structured Website Data",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/web/extract",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Crawl a website, use the provided JSON Schema and instructions to prioritize relevant internal links, and extract structured data from the selected pages."
+        },
+        {
+          "info": {
+            "name": "Find website competitors",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/competitors",
+            "params": [
+              {
+                "name": "domain",
+                "value": "",
+                "type": "query",
+                "description": "Company domain to analyze, such as `stripe.com`. Full http(s) URLs are accepted and normalized to their domain."
+              },
+              {
+                "name": "numCompetitors",
+                "value": "",
+                "type": "query",
+                "description": "Exact number of direct competitors to return. Defaults to 5."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Analyze a company's landing page and web search evidence to return direct competitors for the same product or market."
+        },
+        {
+          "info": {
+            "name": "Scrape Styleguide",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/styleguide",
+            "params": [
+              {
+                "name": "domain",
+                "value": "",
+                "type": "query",
+                "description": "Domain name to extract styleguide from (e.g., 'example.com', 'google.com'). The domain will be automatically normalized and validated. You must provide either 'domain' or 'directUrl', but not both."
+              },
+              {
+                "name": "directUrl",
+                "value": "",
+                "type": "query",
+                "description": "A specific URL to fetch the styleguide from directly, bypassing domain resolution (e.g., 'https://example.com/design-system'). When provided, the styleguide is extracted from this exact URL. You must provide either 'domain' or 'directUrl', but not both."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "colorScheme",
+                "value": "",
+                "type": "query",
+                "description": "Optional browser color scheme to emulate for websites that respond to prefers-color-scheme. This value is part of the styleguide cache key."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Extract a comprehensive design system from a website including colors, typography, spacing, shadows, and UI components."
+        },
+        {
+          "info": {
+            "name": "Scrape Fonts",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/fonts",
+            "params": [
+              {
+                "name": "directUrl",
+                "value": "",
+                "type": "query",
+                "description": "A specific URL to fetch fonts from directly, bypassing domain resolution (e.g., 'https://example.com/design-system'). When provided, fonts are extracted from this exact URL. You must provide either 'domain' or 'directUrl', but not both."
+              },
+              {
+                "name": "domain",
+                "value": "",
+                "type": "query",
+                "description": "Domain name to extract fonts from (e.g., 'example.com', 'google.com'). The domain will be automatically normalized and validated. You must provide either 'domain' or 'directUrl', but not both."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Scrape font information from a website including font families, usage statistics, fallbacks, and element/word counts."
+        },
+        {
+          "info": {
+            "name": "Classify NAICS industries",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/naics",
+            "params": [
+              {
+                "name": "input",
+                "value": "",
+                "type": "query",
+                "description": "Brand domain or title to retrieve NAICS code for. If a valid domain is provided, it will be used for classification, otherwise, we will search for the brand using the provided title."
+              },
+              {
+                "name": "minResults",
+                "value": "",
+                "type": "query",
+                "description": "Minimum number of NAICS codes to return. Must be at least 1. Defaults to 1."
+              },
+              {
+                "name": "maxResults",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of NAICS codes to return. Must be between 1 and 10. Defaults to 5."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Classify any brand into 2022 NAICS industry codes from its domain or name."
+        },
+        {
+          "info": {
+            "name": "Classify SIC industries",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/web/sic",
+            "params": [
+              {
+                "name": "input",
+                "value": "",
+                "type": "query",
+                "description": "Brand domain or title to retrieve SIC code for. If a valid domain is provided, it will be used for classification, otherwise, we will search for the brand using the provided title."
+              },
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Which SIC dataset to classify against. `original_sic` uses the 1987 Standard Industrial Classification system; `latest_sec` uses the current SIC list as published by the SEC. Defaults to `original_sic`."
+              },
+              {
+                "name": "minResults",
+                "value": "",
+                "type": "query",
+                "description": "Minimum number of SIC codes to return. Must be at least 1. Defaults to 1."
+              },
+              {
+                "name": "maxResults",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of SIC codes to return. Must be between 1 and 10. Defaults to 5."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Classify any brand into Standard Industrial Classification (SIC) codes from its domain or name. Choose between the original SIC system (`original_sic`) or the latest SIC list maintained by the SEC (`latest_sec`)."
+        },
+        {
+          "info": {
+            "name": "Query website data using AI",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/brand/ai/query",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Use AI to extract specific data points from a brand's website. The AI will crawl the website and extract the requested information based on the provided data points."
+        },
+        {
+          "info": {
+            "name": "Extract a single product from a URL",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/brand/ai/product",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Given a single URL, determines if it is a product page and extracts the product information."
+        },
+        {
+          "info": {
+            "name": "Extract products from a brand's website",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/brand/ai/products",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Extract product information from a brand's website. We will analyze the website and return a list of products with details such as name, description, image, pricing, features, and more."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

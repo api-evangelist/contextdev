@@ -1,8 +1,20 @@
-generated: '2026-07-18'
-method: derived
+generated: '2026-08-14'
+method: searched
 source: >-
   openapi/contextdev-openapi.yml, well-known/contextdev-oauth-authorization-server.json,
-  https://www.context.dev/auth.md
+  https://www.context.dev/auth.md, https://trust.context.dev,
+  https://www.context.dev/pricing, https://docs.context.dev/.well-known/agent-card.json
+compliance_programs:
+  trust_center: https://trust.context.dev
+  cross_ref: security/contextdev-trust-center.yml
+  certifications:
+  - name: SOC 2 Type 1
+    status: compliant
+  - name: SOC 2 Type 2
+    status: in-progress
+  frameworks_active: 2
+  policies_published: 25
+  controls_monitored: 47
 standards:
 - id: oauth2
   conforms: true
@@ -17,7 +29,34 @@ standards:
   evidence: /.well-known/oauth-protected-resource returns 200.
 - id: oidc
   conforms: false
-  evidence: No /.well-known/openid-configuration (404).
+  evidence: >-
+    www.context.dev serves no /.well-known/openid-configuration (404).
+    mcp.context.dev DOES serve one (200), but it is byte-identical to that host's
+    oauth-authorization-server document — no userinfo_endpoint, no jwks_uri, no
+    id_token signing algorithms, no subject types. It is OAuth metadata published
+    at an OIDC path, not an OpenID Connect provider.
+  checked: '2026-08-14'
+- id: rfc7591-dynamic-client-registration
+  conforms: true
+  evidence: >-
+    https://mcp.context.dev/.well-known/oauth-authorization-server advertises
+    registration_endpoint https://mcp.context.dev/register, and the Claude
+    connector instructions tell users to leave client ID and secret empty — the
+    client registers itself.
+  checked: '2026-08-14'
+- id: rfc7636-pkce
+  conforms: true
+  evidence: code_challenge_methods_supported = ["S256"] on the MCP authorization server.
+  checked: '2026-08-14'
+- id: rfc9728-mcp-protected-resource
+  conforms: true
+  evidence: >-
+    An anonymous tools/list against https://mcp.context.dev/mcp returns 401 with
+    WWW-Authenticate: Bearer ... resource_metadata=
+    "https://mcp.context.dev/.well-known/oauth-protected-resource/mcp", and that
+    document resolves 200 with a matching resource value. A textbook RFC 9728
+    challenge-and-discovery round trip.
+  checked: '2026-08-14'
 - id: rfc9457-problem-details
   conforms: false
   evidence: Errors use a flat {message,status,error_code} envelope, not application/problem+json.
@@ -36,3 +75,46 @@ standards:
   conforms: false
 - id: scim
   conforms: false
+  evidence: >-
+    The Enterprise tier on https://www.context.dev/pricing advertises "SSO / SAML
+    & SCIM provisioning", but no SCIM endpoints appear in any published OpenAPI
+    and no SCIM reference exists in the public docs. Recorded as non-conformant
+    for the public surface; provisioning is an enterprise-contract feature we
+    cannot verify.
+  checked: '2026-08-14'
+- id: soc2
+  conforms: true
+  evidence: >-
+    https://trust.context.dev publishes SOC 2 Type 1 as compliant and SOC 2 Type 2
+    as in progress, alongside 25 policies, 47 monitored controls and 8 named
+    subprocessors. Policy documents and the security questionnaire are behind a
+    Request Access gate; the framework status and subprocessor list are public.
+  checked: '2026-08-14'
+- id: a2a-agent-card
+  conforms: true
+  evidence: >-
+    https://docs.context.dev/.well-known/agent-card.json returns HTTP 200 with a
+    structurally conformant A2A card (capabilities object, protocolVersion, skills
+    array, preferredTransport, default input/output modes). Declares protocol 0.3
+    rather than 1.0.0, and points at the docs site rather than a callable A2A
+    endpoint. See a2a/contextdev-a2a.yml.
+  checked: '2026-08-14'
+- id: mcp
+  conforms: true
+  evidence: >-
+    Hosted MCP server at https://context-dev.stlmcp.com answered an anonymous
+    tools/list with HTTP 200 and SSE framing, returning 2 tools with full
+    inputSchema. A local-stdio distribution ships as npm context.dev-mcp.
+  checked: '2026-08-14'
+- id: rfc8594-sunset-header
+  conforms: false
+  evidence: >-
+    No published deprecation policy and no Sunset/Deprecation header contract
+    found. See lifecycle/contextdev-lifecycle.yml.
+- id: idempotency-key
+  conforms: false
+  evidence: >-
+    No Idempotency-Key header is documented anywhere in the API reference or the
+    optimization guides. Write surface is monitor CRUD plus batch submit/cancel/
+    delete; batch submission has no documented dedupe key.
+  checked: '2026-08-14'

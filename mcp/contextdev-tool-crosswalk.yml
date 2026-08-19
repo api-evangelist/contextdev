@@ -1,0 +1,195 @@
+generated: '2026-08-14'
+method: derived
+source: >-
+  live tools/list against https://context-dev.stlmcp.com (HTTP 200, 2026-08-14) +
+  openapi/*.yml in this repo
+provenance_caveat: >-
+  Context.dev runs TWO hosted MCP endpoints. The canonical one the docs now name,
+  https://mcp.context.dev/mcp, gates discovery behind OAuth (401 + RFC 9728
+  challenge), so its tool list could not be read anonymously. Every tool
+  definition in this crosswalk was read live from the legacy Stainless endpoint
+  https://context-dev.stlmcp.com, which still answers tools/list without auth.
+  Both serve the same product and the docs describe the same Code-Mode design, but
+  the canonical server's tool list has NOT been independently verified and could
+  differ. Confirming it requires an authenticated OAuth introspection pass.
+note: >-
+  Context.dev's hosted MCP server is a CODE-MODE server, not an operation-per-tool
+  server. Stainless generates exactly two meta-tools over the whole TypeScript SDK
+  rather than one tool per REST operation, so this crosswalk is deliberately NOT a
+  1:1 table. `execute` binds to the ENTIRE OpenAPI surface indirectly — it runs
+  agent-authored TypeScript against an initialized SDK client inside a sandbox —
+  and `search_docs` binds to no REST operation at all. Recording a per-operation
+  crosswalk here would fabricate a tool surface the provider does not expose.
+surfaces:
+  openapi:
+  - openapi/contextdev-batch-api-openapi.yml
+  - openapi/contextdev-brand-intelligence-api-openapi.yml
+  - openapi/contextdev-monitors-api-openapi.yml
+  - openapi/contextdev-parsing-api-openapi.yml
+  - openapi/contextdev-people-api-openapi.yml
+  - openapi/contextdev-utility-api-openapi.yml
+  - openapi/contextdev-web-extraction-api-openapi.yml
+  - openapi/contextdev-web-scraping-api-openapi.yml
+  graphql: null
+  mcp:
+    url: https://mcp.context.dev/mcp
+    transport: http
+    gated: true
+    auth: oauth2 (authorization_code + PKCE, dynamic client registration)
+    note: >-
+      The CANONICAL endpoint per https://docs.context.dev/install-mcp.md. tools/list
+      returns HTTP 401 with an RFC 9728 WWW-Authenticate challenge, so discovery is
+      gated and its live tool list could not be read anonymously.
+  mcp_legacy:
+    url: https://context-dev.stlmcp.com
+    transport: http
+    gated: false
+    note: >-
+      The Stainless-hosted endpoint recorded in earlier rounds. Still live; answers
+      tools/list anonymously (HTTP 200, SSE framed) with both tools and their full
+      inputSchema. THE TOOL DEFINITIONS BELOW WERE READ FROM THIS ENDPOINT, not
+      from the canonical one — see `provenance_caveat`.
+  a2a:
+    url: https://docs.context.dev/.well-known/agent-card.json
+    note: Discovery card only — no callable A2A endpoint. See a2a/contextdev-a2a.yml.
+crosswalk:
+- tool: execute
+  category: code-mode
+  rest:
+  - '*'
+  binding: indirect-sdk
+  confidence: high
+  input_schema:
+    code:
+      type: string
+      required: true
+      description: Code to execute.
+    intent:
+      type: string
+      required: false
+      description: Task you are trying to perform. Used for improving the service.
+  note: >-
+    Runs an agent-authored async `run(client)` TypeScript function against an
+    initialized Context.dev SDK client in a network-isolated container. Every REST
+    operation in this repo's OpenAPI files is reachable through it via the SDK
+    method that wraps it (the tool's own example calls
+    `client.brand.retrieve({ domain, type: 'by_domain' })`, which wraps
+    GET/POST /brand/retrieve). The tool's declared inputSchema is `code` + `intent`
+    — it does NOT inherit any single operation's parameters, which is exactly why
+    the binding is `indirect-sdk` and not `direct`.
+- tool: search_docs
+  category: discovery
+  rest: []
+  binding: none
+  confidence: high
+  read_only: true
+  input_schema:
+    query:
+      type: string
+      required: true
+    language:
+      type: string
+      required: true
+      enum:
+      - http
+      - python
+      - go
+      - typescript
+      - javascript
+      - terraform
+      - ruby
+      - java
+      - kotlin
+    detail:
+      type: string
+      required: false
+      enum:
+      - default
+      - verbose
+  note: >-
+    Searches the Context.dev SDK documentation to find methods, parameters and
+    usage examples. Backed by the docs site, not by the REST API. Carries
+    annotations.readOnlyHint = true.
+mcp_only:
+- tool: search_docs
+  reason: >-
+    Documentation search. There is no public REST operation behind it; it reads
+    the SDK reference that Stainless generates alongside the server.
+rest_only:
+  note: >-
+    Because `execute` is a code-mode passthrough, no REST operation is strictly
+    unreachable from MCP. Listed below are the operations an agent cannot invoke
+    as a NAMED tool — i.e. every operation in the repo — because the server
+    publishes no per-operation tool. They are reachable only by the agent writing
+    correct SDK TypeScript, which shifts schema validation from the protocol to
+    the model.
+  operations:
+  - listBatches
+  - submitBatch
+  - getBatch
+  - deleteBatch
+  - cancelBatch
+  - getBatchResults
+  - createMonitor
+  - listMonitors
+  - getMonitor
+  - updateMonitor
+  - deleteMonitor
+  - listMonitorRuns
+  - listMonitorChanges
+  - listAccountRuns
+  - listMonitorCreditUsage
+  - getMonitorLimits
+  - listChanges
+  - getChange
+  - runMonitorNow
+  - GET /brand/retrieve
+  - POST /brand/retrieve
+  - GET /brand/retrieve-by-name
+  - GET /brand/retrieve-by-email
+  - GET /brand/retrieve-by-ticker
+  - GET /brand/retrieve-by-isin
+  - GET /brand/transaction_identifier
+  - GET /brand/retrieve-simplified
+  - POST /brand/ai/query
+  - POST /brand/ai/product
+  - POST /brand/ai/products
+  - POST /brand/prefetch
+  - POST /brand/prefetch-by-email
+  - POST /utility/prefetch
+  - POST /parse
+  - POST /people/retrieve
+  - GET /web/scrape/html
+  - GET /web/scrape/markdown
+  - GET /web/scrape/images
+  - GET /web/scrape/sitemap
+  - POST /web/crawl
+  - POST /web/extract
+  - POST /web/search
+  - GET /web/competitors
+  - GET /web/styleguide
+  - GET /web/fonts
+  - GET /web/screenshot
+  - GET /web/naics
+  - GET /web/sic
+coverage:
+  mcp_tools: 2
+  mcp_tools_bound_to_rest: 1
+  mcp_tools_unbound: 1
+  rest_operations_total: 49
+  rest_operations_with_named_tool: 0
+  rest_operations_reachable_via_code_mode: 49
+  binding_style: code-mode (2 meta-tools over the full SDK)
+assessment: >-
+  Two tools cover a 49-operation API. That is a real, live, anonymous-discoverable
+  agent surface and it is genuinely more capable than a thin tool list — an agent
+  can compose several calls in one round trip. The trade-off worth recording: no
+  operation-level inputSchema reaches the client, so the protocol cannot validate
+  arguments and the model must get the SDK types right on its own. Agents that
+  select tools by schema matching will see two generic tools rather than 49
+  typed ones.
+cross_ref:
+  mcp: mcp/contextdev-mcp.yml
+  a2a: a2a/contextdev-a2a.yml
+  skills: skills/_index.yml
+  packages: packages/contextdev-packages.yml

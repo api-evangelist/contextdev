@@ -1,8 +1,7 @@
-generated: '2026-07-18'
+generated: '2026-08-14'
 method: searched
-source: >-
-  https://www.context.dev/.well-known/oauth-authorization-server and
-  https://www.context.dev/auth.md
+source: https://www.context.dev/.well-known/oauth-authorization-server, https://www.context.dev/auth.md,
+  https://mcp.context.dev/.well-known/oauth-authorization-server, https://mcp.context.dev/.well-known/oauth-protected-resource/mcp
 docs: https://www.context.dev/auth.md
 schemes:
 - name: AgentAuth
@@ -13,21 +12,56 @@ schemes:
   grant_types:
   - urn:ietf:params:oauth:grant-type:jwt-bearer
   - urn:workos:agent-auth:grant-type:claim
+- name: MCP OAuth (hosted MCP server)
+  source: well-known/contextdev-mcp-oauth-authorization-server.json
+  authorization_server: https://mcp.context.dev
+  issuer: https://mcp.context.dev
+  authorization_endpoint: https://mcp.context.dev/authorize
+  token_endpoint: https://mcp.context.dev/token
+  registration_endpoint: https://mcp.context.dev/register
+  grant_types:
+  - authorization_code
+  - refresh_token
+  response_types:
+  - code
+  code_challenge_methods:
+  - S256
+  token_endpoint_auth_methods:
+  - client_secret_post
+  - none
+  dynamic_client_registration: true
+  protected_resource: https://mcp.context.dev/mcp
+  bearer_methods:
+  - header
+  added: '2026-08-14'
+  note: Discovered 2026-08-14. This is the browser sign-in flow an MCP client uses to reach https://mcp.context.dev/mcp
+    — distinct from the AgentAuth JWT-bearer/claim ceremony on www.context.dev, and distinct again from
+    the static ctxt_secret_ API key. Same two scopes across all three.
 scopes:
 - scope: api.read
-  description: >-
-    Read access to Context.dev API endpoints (brand lookup, web scrape/crawl,
-    search, enrichment, and related read operations).
+  description: Read access to Context.dev API endpoints (brand lookup, web scrape/crawl, search, enrichment,
+    and related read operations).
   sources:
   - well-known/contextdev-oauth-authorization-server.json
+  - well-known/contextdev-mcp-oauth-authorization-server.json
+  - well-known/contextdev-mcp-oauth-protected-resource-mcp.json
+  granted_by:
+  - AgentAuth (www.context.dev)
+  - MCP OAuth (mcp.context.dev)
 - scope: api.write
-  description: >-
-    Write access for mutating API operations (e.g. creating/updating/deleting
-    monitors). Agent credentials are issued with both api.read and api.write
-    after the claim ceremony.
+  description: Write access for mutating API operations (e.g. creating/updating/deleting monitors). Agent
+    credentials are issued with both api.read and api.write after the claim ceremony.
   sources:
   - well-known/contextdev-oauth-authorization-server.json
-note: >-
-  Scopes are exposed via the OAuth2 agent-auth (service_auth) flow, not via the
-  static-API-key path. The OpenAPI declares only bearerAuth (http bearer); the
-  scope surface is documented in the well-known metadata and auth.md.
+  - well-known/contextdev-mcp-oauth-authorization-server.json
+  - well-known/contextdev-mcp-oauth-protected-resource-mcp.json
+  granted_by:
+  - AgentAuth (www.context.dev)
+  - MCP OAuth (mcp.context.dev)
+note: 'Context.dev exposes the SAME two scopes (api.read, api.write) through three different credential
+  paths: a static ctxt_secret_ API key (no scopes attached, full key privilege), the AgentAuth JWT-bearer/claim
+  ceremony on www.context.dev, and OAuth authorization_code + PKCE on mcp.context.dev for the hosted MCP
+  server. The OpenAPI declares only bearerAuth (http bearer); the scope surface lives entirely in the
+  well-known metadata and auth.md, so a consumer reading the spec alone would not know scopes exist. Only
+  two scopes cover a 49-operation API, so the granularity is coarse — an api.write token can delete every
+  monitor and every batch.'

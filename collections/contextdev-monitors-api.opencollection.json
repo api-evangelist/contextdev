@@ -1,0 +1,464 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Context Brand Intelligence Monitors API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Monitors",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List monitors",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors",
+            "params": [
+              {
+                "name": "q",
+                "value": "",
+                "type": "query",
+                "description": "Free-text search term, matched against the fields named in `search_by`."
+              },
+              {
+                "name": "search_by",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated fields to search with `q`. Defaults to all of them. Note `instructions` only exists on extract monitors."
+              },
+              {
+                "name": "search_type",
+                "value": "",
+                "type": "query",
+                "description": "`prefix` for as-you-type prefix matching (default), `exact` for full-token matching."
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Filter monitors by lifecycle status."
+              },
+              {
+                "name": "target_type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by target type."
+              },
+              {
+                "name": "change_detection_type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by change detection type."
+              },
+              {
+                "name": "tags",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of tags to filter by (matches monitors having any of them)."
+              },
+              {
+                "name": "tag",
+                "value": "",
+                "type": "query",
+                "description": "Filter to items that have this tag."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+              },
+              {
+                "name": "cursor",
+                "value": "",
+                "type": "query",
+                "description": "Opaque pagination cursor from a previous response."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Lists monitors for the authenticated organization. Supports free-text search (`q` over `search_by` fields, `prefix` or `exact` via `search_type`) plus status/type/tag filters. Results are paginated via the opaque `cursor`."
+        },
+        {
+          "info": {
+            "name": "Create a monitor",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/monitors",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates a monitor. The request body is a union of the supported target/change detection combinations. The monitor runs immediately after creation to create its initial baseline."
+        },
+        {
+          "info": {
+            "name": "Get a monitor",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors/:monitor_id",
+            "params": [
+              {
+                "name": "monitor_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Get a monitor"
+        },
+        {
+          "info": {
+            "name": "Update a monitor",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "https://api.context.dev/v1/monitors/:monitor_id",
+            "params": [
+              {
+                "name": "monitor_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates a monitor. If `target` or `change_detection` changes, the monitor creates a new baseline. Unsupported target/change detection combinations are rejected."
+        },
+        {
+          "info": {
+            "name": "Delete a monitor",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.context.dev/v1/monitors/:monitor_id",
+            "params": [
+              {
+                "name": "monitor_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Delete a monitor"
+        },
+        {
+          "info": {
+            "name": "List monitor runs",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors/:monitor_id/runs",
+            "params": [
+              {
+                "name": "monitor_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Filter runs by lifecycle status."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+              },
+              {
+                "name": "cursor",
+                "value": "",
+                "type": "query",
+                "description": "Opaque pagination cursor from a previous response."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "List monitor runs"
+        },
+        {
+          "info": {
+            "name": "List changes for a monitor",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors/:monitor_id/changes",
+            "params": [
+              {
+                "name": "monitor_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "tag",
+                "value": "",
+                "type": "query",
+                "description": "Filter to items that have this tag."
+              },
+              {
+                "name": "since",
+                "value": "",
+                "type": "query",
+                "description": "Only include items at or after this ISO 8601 timestamp."
+              },
+              {
+                "name": "until",
+                "value": "",
+                "type": "query",
+                "description": "Only include items before this ISO 8601 timestamp."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+              },
+              {
+                "name": "cursor",
+                "value": "",
+                "type": "query",
+                "description": "Opaque pagination cursor from a previous response."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "List changes for a monitor"
+        },
+        {
+          "info": {
+            "name": "List runs",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors/runs",
+            "params": [
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Filter runs by lifecycle status."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+              },
+              {
+                "name": "cursor",
+                "value": "",
+                "type": "query",
+                "description": "Opaque pagination cursor from a previous response."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns an account-wide feed of monitor runs across all monitors."
+        },
+        {
+          "info": {
+            "name": "Monitor credit usage",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors/credit-usage",
+            "params": [
+              {
+                "name": "since",
+                "value": "",
+                "type": "query",
+                "description": "Only include items at or after this ISO 8601 timestamp."
+              },
+              {
+                "name": "until",
+                "value": "",
+                "type": "query",
+                "description": "Only include items before this ISO 8601 timestamp."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns credits charged per monitor over an optional [since, until] window, newest spenders first."
+        },
+        {
+          "info": {
+            "name": "Monitor limits",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors/limits",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns how many monitors the account has and the maximum it allows."
+        },
+        {
+          "info": {
+            "name": "List changes",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors/changes",
+            "params": [
+              {
+                "name": "monitor_id",
+                "value": "",
+                "type": "query",
+                "description": "Filter changes to a single monitor."
+              },
+              {
+                "name": "target_type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by target type."
+              },
+              {
+                "name": "change_detection_type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by change detection type."
+              },
+              {
+                "name": "tag",
+                "value": "",
+                "type": "query",
+                "description": "Filter to items that have this tag."
+              },
+              {
+                "name": "since",
+                "value": "",
+                "type": "query",
+                "description": "Only include items at or after this ISO 8601 timestamp."
+              },
+              {
+                "name": "until",
+                "value": "",
+                "type": "query",
+                "description": "Only include items before this ISO 8601 timestamp."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+              },
+              {
+                "name": "cursor",
+                "value": "",
+                "type": "query",
+                "description": "Opaque pagination cursor from a previous response."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns an account-wide feed of detected changes across monitors."
+        },
+        {
+          "info": {
+            "name": "Get a change",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/monitors/changes/:change_id",
+            "params": [
+              {
+                "name": "change_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Get a change"
+        },
+        {
+          "info": {
+            "name": "Run a monitor now",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/monitors/:monitor_id/run",
+            "params": [
+              {
+                "name": "monitor_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Triggers an immediate run of the monitor outside its normal schedule. The run is queued and processed asynchronously."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

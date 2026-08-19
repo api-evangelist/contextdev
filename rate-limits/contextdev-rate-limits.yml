@@ -1,0 +1,136 @@
+generated: '2026-08-14'
+method: searched
+source: https://docs.context.dev/optimization/rate-limits.md
+docs: https://docs.context.dev/optimization/rate-limits
+secondary_source: https://www.context.dev/pricing
+limit_count: 8
+default_scope: per API key
+window: fixed one-minute window
+exhaustion_status: 429
+dashboard: https://www.context.dev/dashboard
+response_headers:
+- name: X-RateLimit-Limit
+  meaning: Maximum requests allowed in the current fixed one-minute window.
+- name: X-RateLimit-Remaining
+  meaning: >-
+    Requests remaining in the current window. Reflects the POST-WEIGHT count — a
+    successful POST /web/crawl on a fresh 300/min window drops it from 300 to 290.
+- name: X-RateLimit-Reset
+  meaning: Unix timestamp (seconds) at which the window resets.
+- name: Retry-After
+  meaning: Seconds to wait after a 429. Documented range 1-60 seconds.
+  emitted_on: '429'
+headers_note: >-
+  The three X-RateLimit-* headers are returned on EVERY response to an
+  authenticated request, not only on 429s, so a client can pace proactively.
+limits:
+- id: plan-free
+  scope: per-api-key
+  window: 1 minute
+  limit: 30
+  unit: requests
+  applies_to: Free plan
+  overage: none
+  credits_per_month: 500 (one-time grant, not monthly)
+- id: plan-hobby
+  scope: per-api-key
+  window: 1 minute
+  limit: 60
+  unit: requests
+  applies_to: Hobby plan (called "Developer" on the pricing page, $25/month)
+  overage: $15 per 10K credits
+  credits_per_month: 10000
+- id: plan-starter
+  scope: per-api-key
+  window: 1 minute
+  limit: 120
+  unit: requests
+  applies_to: Starter plan
+  overage: $12 per 10K credits
+  credits_per_month: 30000
+  note: >-
+    Present in the docs rate-limit table only; the public pricing page does not
+    list a Starter tier.
+- id: plan-pro
+  scope: per-api-key
+  window: 1 minute
+  limit: 300
+  unit: requests
+  applies_to: Pro plan ($149/month)
+  overage: $9 per 10K credits
+  credits_per_month: 200000
+- id: plan-scale
+  scope: per-api-key
+  window: 1 minute
+  limit: 800
+  unit: requests
+  applies_to: Scale plan ($499/month)
+  overage: $6 per 10K credits
+  credits_per_month: 2500000
+  note: >-
+    Docs table value. The pricing page states 700 requests/minute, 1,000,000
+    credits and $7 per 10K overage for the same tier — see
+    plans/contextdev-plans-pricing.yml discrepancies.
+- id: plan-enterprise
+  scope: per-api-key
+  window: 1 minute
+  limit: custom
+  unit: requests
+  applies_to: Enterprise plan
+  overage: contact sales
+- id: monitors-bucket
+  scope: per-organization
+  window: 1 minute
+  limit: 1000
+  unit: requests
+  applies_to: /v1/monitors/* (create, list, update, delete, runs, changes)
+  flat_across_plans: true
+  note: >-
+    A separate, isolated bucket. Monitors traffic never draws on the per-plan data
+    budget and vice versa. The 1000/min ceiling is flat on every plan, including
+    Free.
+- id: concurrent-batches
+  scope: per-account
+  window: concurrent
+  limit: 1 (Free) / 2 (Developer) / 5 (Pro) / 20 (Scale)
+  unit: in-flight batches
+  applies_to: POST /batch/submit
+  exhaustion_status: 403
+  exhaustion_code: BATCH_LIMIT_EXCEEDED
+  note: >-
+    For batch throughput the concurrent-batch limit binds long before the
+    per-minute rate limit does.
+weighted_endpoints:
+  note: >-
+    Two endpoints cost more than one unit against the per-minute budget. Every
+    other endpoint counts as 1.
+  endpoints:
+  - path: POST /web/crawl
+    weight: 10
+  - path: POST /brand/ai/products
+    weight: 10
+  rejected_requests_refunded: true
+  rejected_note: >-
+    A throttled weighted call charges none of its 10 units, and other requests in
+    the same window are unaffected.
+exemptions:
+- endpoint: Logo Link (/guides/get-logo-from-url)
+  note: No rate limit.
+- endpoint: Prefetch (/optimization/prefetching)
+  note: No rate limit.
+- endpoint: pages scraped inside a batch
+  note: >-
+    Only the POST /batch/submit call itself counts. A batch carrying 25,000 URLs
+    is 1 request. Polling GET /batch/{batch_id} and GET /batch/{batch_id}/results
+    are ordinary 1-request calls and DO count.
+guidance:
+  documented_patterns:
+  - Client-side caching for hot domains.
+  - Exponential backoff on 429, honoring the Retry-After header.
+  - Prefetch to shift slow work ahead of bursts.
+  - Tier-aware fallbacks when the limit holds.
+  - Prefer the Batch API over per-URL calls; pass webhookUrl to avoid polling cost.
+cross_ref:
+  plans: plans/contextdev-plans-pricing.yml
+  conventions: conventions/contextdev-conventions.yml
+  errors: errors/contextdev-problem-types.yml

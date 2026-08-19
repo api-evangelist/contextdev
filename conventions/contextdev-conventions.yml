@@ -1,8 +1,10 @@
-generated: '2026-07-18'
+generated: '2026-08-14'
 method: searched
 source: >-
   https://docs.context.dev (optimization/best-practices, rate-limits,
-  troubleshooting, tag-requests) + derived from openapi/contextdev-openapi.yml
+  troubleshooting, tag-requests, compression),
+  https://docs.context.dev/api-reference/batches/submit.md + derived from
+  openapi/contextdev-openapi.yml and openapi/contextdev-batch-api-openapi.yml
 authentication:
   style: bearer
   header: Authorization
@@ -11,12 +13,36 @@ authentication:
   docs: https://www.context.dev/auth.md
   cross_ref: authentication/contextdev-authentication.yml
 idempotency:
-  supported: false
-  note: >-
-    Context.dev does not document an Idempotency-Key header. Write operations are
-    limited to monitor CRUD; most endpoints are read/enrichment calls that are
-    naturally idempotent. Retries are guided by rate-limit headers and Retry-After
-    rather than an idempotency key.
+  supported: true
+  header: Idempotency-Key
+  transport: request header
+  max_length: 200
+  required: false
+  scope: POST /batch/submit (submitBatch)
+  semantics: >-
+    Any string unique to this submission. A retry carrying the same key returns
+    the ORIGINAL batch rather than creating a second one.
+  conflict:
+    status: 409
+    error_code: IDEMPOTENCY_KEY_CONFLICT
+    meaning: The same Idempotency-Key was reused with a different request body.
+  retention: not documented
+  sdk_support: >-
+    Exposed as a first-class SDK argument (`idempotencyKey` in the PHP example on
+    the submit reference page), so it is not a raw-header-only affordance.
+  docs: https://docs.context.dev/api-reference/batches/submit
+  source: openapi/contextdev-batch-api-openapi.yml
+  corrected: '2026-08-14'
+  correction_note: >-
+    This field previously read `supported: false`. That was correct for the
+    surface captured in July, which had no batch endpoints. The Batch API
+    harvested on 2026-08-14 does implement Idempotency-Key with a documented
+    409/IDEMPOTENCY_KEY_CONFLICT contract on its one expensive write.
+  coverage_caveat: >-
+    Idempotency is scoped to batch submission ONLY. Monitor CRUD (createMonitor,
+    updateMonitor, deleteMonitor, runMonitorNow) and the cancel/delete batch
+    operations accept no idempotency key. Retries elsewhere are still guided by
+    rate-limit headers and Retry-After.
 pagination:
   style: cursor
   request_params:

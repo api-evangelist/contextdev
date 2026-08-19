@@ -1,0 +1,68 @@
+generated: '2026-08-14'
+method: searched
+source: https://trust.context.dev
+x-evidence:
+  fetched: '2026-08-14'
+  url: https://trust.context.dev
+  http_status: 200
+name: Context.dev Trust Center
+url: https://trust.context.dev
+platform: Comp AI
+verified_badge: true
+summary: >-
+  A hosted trust center covering security, compliance, governance and trust
+  documentation, with a security questionnaire available on request.
+certifications:
+- name: SOC 2 Type 1
+  status: compliant
+  source: https://trust.context.dev
+- name: SOC 2 Type 2
+  status: in-progress
+  source: https://trust.context.dev
+frameworks_active: 2
+policies_published: 25
+policy_examples:
+- Sanctions & Disciplinary
+- Background Screening & On/Off-boarding
+- Information Security & Privacy Governance
+- Data Classification & Handling
+- Information Sharing & Transfer
+- Privacy & Data-Subject Rights
+- Retention & Secure Disposal
+- Access Control & Least Privilege
+controls_monitored: 47
+control_examples:
+- Acceptable Use
+- Access Rights
+- Asset Inventory
+- Automated Decision-Making Safeguards
+- Change management
+- Configuration & Patch Management
+- Credential Management
+- Data Inventory and Mapping
+subprocessors_count: 8
+subprocessors:
+- name: Cloudflare
+  role: CDN, internet security, distributed DNS
+- name: Firebase
+  role: Google platform for mobile and web application development
+- name: Google
+  role: Google Workspace — cloud productivity and collaboration
+- name: Google Cloud
+  role: Cloud compute infrastructure
+- name: Hetzner
+  role: Hosting, dedicated servers and cloud services
+documents_public: 0
+document_access: >-
+  Policy and control detail plus the security questionnaire are behind a "Request
+  Access" gate; the summary counts, framework status, and subprocessor list are
+  public without authentication.
+questionnaire_available: true
+enterprise_commitments:
+  note: >-
+    The Enterprise plan on https://www.context.dev/pricing separately commits to
+    SSO / SAML & SCIM provisioning, a 99.9% uptime SLA, and MSA / DPA contracting.
+cross_ref:
+  domain_security: security/contextdev-domain-security.yml
+  vulnerability_disclosure: security/contextdev-vulnerability-disclosure.yml
+  plans: plans/contextdev-plans-pricing.yml

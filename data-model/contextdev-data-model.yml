@@ -1,10 +1,10 @@
-generated: '2026-07-18'
+generated: '2026-08-14'
 method: derived
-source: openapi/contextdev-openapi.yml
-note: >-
-  Context.dev is mostly a stateless enrichment/extraction API (Brand, Web, Person,
-  Classification responses are computed, not stored). The only persistent,
-  identified resource graph is the Monitors subsystem.
+source: openapi/contextdev-openapi.yml, openapi/contextdev-batch-api-openapi.yml
+note: 'Context.dev is mostly a stateless enrichment/extraction API (Brand, Web, Person, Classification
+  responses are computed, not stored). Two persistent, identified resource graphs exist: the Monitors
+  subsystem, and — added 2026-08-14 — the Batch subsystem. They are entirely disjoint: no field links
+  a Batch to a Monitor or vice versa, and they are even rate-limited from separate buckets.'
 entities:
 - name: Monitor
   schema: MonitorsMonitor
@@ -31,6 +31,30 @@ entities:
   schema: ProductData
   stateless: true
   description: Structured product record extracted from a URL.
+- name: Batch
+  schema: Batch
+  id: id
+  id_prefix: batch_
+  description: An asynchronous scrape or crawl job over up to 25,000 URLs. Carries status (queued, running,
+    cancelling, completed, cancelled, failed — the last three terminal), mode (scrape | crawl), format
+    (markdown | html), and tags stored at submission.
+  added: '2026-08-14'
+- name: BatchDetail
+  schema: BatchDetail
+  id: id
+  description: The expanded batch record returned by getBatch, including progress counters, per-page error
+    counts and download links once the batch settles.
+  added: '2026-08-14'
+- name: BatchResultRecord
+  schema: BatchResultRecord
+  description: One scraped page inside a finished batch — content plus PageMetadata. Retrieved page-by-page
+    via getBatchResults, or in bulk as gzipped NDJSON.
+  added: '2026-08-14'
+- name: PageMetadata
+  schema: PageMetadata
+  stateless: true
+  description: Per-page metadata (headings, alternates, values) attached to a batch result record.
+  added: '2026-08-14'
 relationships:
 - from: MonitorRun
   to: Monitor
@@ -52,3 +76,52 @@ relationships:
   to: MonitorChange
   type: has_one
   via: change_id
+- from: BatchResultRecord
+  to: Batch
+  type: belongs_to
+  via: batch_id
+  added: '2026-08-14'
+- from: Batch
+  to: BatchResultRecord
+  type: has_many
+  via: batch_id
+  added: '2026-08-14'
+- from: BatchDetail
+  to: Batch
+  type: has_one
+  via: id
+  note: Same resource; BatchDetail is the expanded read projection.
+  added: '2026-08-14'
+- from: BatchResultRecord
+  to: PageMetadata
+  type: has_one
+  via: metadata
+  added: '2026-08-14'
+id_prefixes:
+  Batch: batch_ (example batch_9f2c8a)
+  note: Only the Batch entity documents a typed id prefix in the spec; Monitor, MonitorRun and MonitorChange
+    ids carry no documented prefix.
+subsystems:
+- name: Monitors
+  entities:
+  - Monitor
+  - MonitorRun
+  - MonitorChange
+  persistent: true
+  rate_limit_bucket: per-organization, 1000 req/min, flat across plans
+- name: Batch
+  entities:
+  - Batch
+  - BatchDetail
+  - BatchResultRecord
+  - PageMetadata
+  persistent: true
+  rate_limit_bucket: per-plan per-minute cap; submission costs 1 request regardless of size
+  retention: Results are stored until deleted via deleteBatch; no automatic retention window is documented.
+- name: Enrichment / extraction
+  entities:
+  - Brand
+  - Person
+  - Product
+  persistent: false
+  note: Computed per call, not stored, not addressable by id.

@@ -1,0 +1,1831 @@
+{
+  "item": [
+    {
+      "id": "9f355aae-a621-4975-9f76-4f70df606b40",
+      "name": "Utility",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "09e6c85a-4798-4b65-973b-0af658c24f5d",
+          "name": "Prefetch brand data for a domain",
+          "request": {
+            "name": "Prefetch brand data for a domain",
+            "description": {
+              "content": "Signal that you may fetch brand data for a particular domain soon to improve latency.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "brand",
+                "prefetch"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": \"<string>\",\n  \"timeoutMS\": \"<integer>\",\n  \"tags\": [\n    \"<string>\",\n    \"<string>\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "725b4bba-fa1d-4a80-80a1-13d2ae4e4371",
+              "name": "Successful response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"<string>\",\n  \"timeoutMS\": 231861,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"string\",\n  \"message\": \"string\",\n  \"domain\": \"string\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2423,\n    \"credits_remaining\": 9056\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "886cf2a1-806d-4778-82a2-17e93ccea039",
+              "name": "Bad Request - validation error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"<string>\",\n  \"timeoutMS\": 231861,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"RATE_LIMITED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 1695,\n    \"credits_remaining\": 3650\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a28fa1b5-db19-4be8-82b7-6659b3ab6367",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"<string>\",\n  \"timeoutMS\": 231861,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": \"INTERNAL_ERROR\",\n  \"key_metadata\": {\n    \"credits_consumed\": 3923,\n    \"credits_remaining\": 8870\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "335705c4-3997-4c56-adae-f73ba34333ca",
+              "name": "Forbidden - Paid subscription required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"<string>\",\n  \"timeoutMS\": 231861,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"status\": \"string\",\n  \"error_code\": \"FORBIDDEN\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9337,\n    \"credits_remaining\": 2003\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8ae1366e-5a86-44dd-a8c4-335ee492c8f8",
+              "name": "Request Timeout",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"<string>\",\n  \"timeoutMS\": 231861,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Request Timeout",
+              "code": 408,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"REQUEST_TIMEOUT\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2613,\n    \"credits_remaining\": 7829\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b31cd6bb-6b02-419a-8ce9-af48697edd54",
+              "name": "Rate limit exceeded",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"<string>\",\n  \"timeoutMS\": 231861,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "disabled": false,
+                  "description": "Seconds until the per-minute rate limit window resets",
+                  "key": "Retry-After",
+                  "value": "57"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"RATE_LIMITED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 1037,\n    \"credits_remaining\": 1107\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d31ee466-9f3c-4c4b-9845-20c66d117d29",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"domain\": \"<string>\",\n  \"timeoutMS\": 231861,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INTERNAL_ERROR\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2349,\n    \"credits_remaining\": 4922\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "63ab9658-ea6f-4d2e-a812-221203e10d1d",
+          "name": "Prefetch brand data by email",
+          "request": {
+            "name": "Prefetch brand data by email",
+            "description": {
+              "content": "Signal that you may fetch brand data for a particular domain soon to improve latency. This endpoint accepts an email address, extracts the domain from it, validates that it's not a disposable or free email provider, and queues the domain for prefetching.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "brand",
+                "prefetch-by-email"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": \"<integer>\",\n  \"tags\": [\n    \"<string>\",\n    \"<string>\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "a6987708-c525-473f-91c3-586a8b58f382",
+              "name": "Successful response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch-by-email"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": 292280,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"string\",\n  \"message\": \"string\",\n  \"domain\": \"string\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2423,\n    \"credits_remaining\": 9056\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c75b64f5-6f96-46fc-86f2-12a7b305f5f0",
+              "name": "Bad Request - validation error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch-by-email"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": 292280,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"RATE_LIMITED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 1695,\n    \"credits_remaining\": 3650\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d0f1cb3a-65ee-44cf-b69d-403b66c421da",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch-by-email"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": 292280,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": \"INTERNAL_ERROR\",\n  \"key_metadata\": {\n    \"credits_consumed\": 3923,\n    \"credits_remaining\": 8870\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a159eb1a-488f-4367-8da3-354720adf152",
+              "name": "Forbidden - Paid subscription required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch-by-email"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": 292280,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"status\": \"string\",\n  \"error_code\": \"FORBIDDEN\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9337,\n    \"credits_remaining\": 2003\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "93b0a47a-6349-41b1-8233-181e59a8e09b",
+              "name": "Request Timeout",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch-by-email"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": 292280,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Request Timeout",
+              "code": 408,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"REQUEST_TIMEOUT\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2613,\n    \"credits_remaining\": 7829\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8680c1d3-6c12-45dd-a731-caa6a88e7536",
+              "name": "Unprocessable Entity - Free email or disposable email detected",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch-by-email"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": 292280,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"status\": \"string\",\n  \"error_code\": \"DISPOSABLE_EMAIL_DETECTED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 4199,\n    \"credits_remaining\": 5512\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "16a61169-cec3-4251-ac37-84ef0ab6bf67",
+              "name": "Rate limit exceeded",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch-by-email"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": 292280,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "disabled": false,
+                  "description": "Seconds until the per-minute rate limit window resets",
+                  "key": "Retry-After",
+                  "value": "57"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"RATE_LIMITED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 1037,\n    \"credits_remaining\": 1107\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "33b74682-94f5-4ac5-83cb-357afa862c48",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "brand",
+                    "prefetch-by-email"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"<email>\",\n  \"timeoutMS\": 292280,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INTERNAL_ERROR\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2349,\n    \"credits_remaining\": 4922\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "304748f9-ee13-45d4-979f-26b08433ca9c",
+          "name": "Prefetch brand data",
+          "request": {
+            "name": "Prefetch brand data",
+            "description": {
+              "content": "Signal that you may fetch brand data soon to improve latency. The type field selects what to prefetch (currently only 'brand') and identifier carries exactly one lookup key: a domain, or an email whose domain is extracted and validated (free email providers and disposable email addresses are not allowed).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "utility",
+                "prefetch"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"<string>\"\n  },\n  \"timeoutMS\": \"<integer>\",\n  \"tags\": [\n    \"<string>\",\n    \"<string>\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "85488dc2-c47a-48e1-abdd-a79ff85541ee",
+              "name": "Successful response",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "utility",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"string\"\n  },\n  \"timeoutMS\": 238566,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"string\",\n  \"message\": \"string\",\n  \"type\": \"brand\",\n  \"domain\": \"string\",\n  \"key_metadata\": {\n    \"credits_consumed\": 3424,\n    \"credits_remaining\": 4810\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "220d7078-4953-4882-8d89-566c23f0d064",
+              "name": "Bad Request - validation error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "utility",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"string\"\n  },\n  \"timeoutMS\": 238566,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"RATE_LIMITED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 1695,\n    \"credits_remaining\": 3650\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "be93527e-1f26-46d0-a9ee-608e4d4f5e68",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "utility",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"string\"\n  },\n  \"timeoutMS\": 238566,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": \"INTERNAL_ERROR\",\n  \"key_metadata\": {\n    \"credits_consumed\": 3923,\n    \"credits_remaining\": 8870\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0acfa3de-d697-4338-a278-68fc25b3ce1a",
+              "name": "Forbidden - Paid subscription required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "utility",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"string\"\n  },\n  \"timeoutMS\": 238566,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"status\": \"string\",\n  \"error_code\": \"FORBIDDEN\",\n  \"key_metadata\": {\n    \"credits_consumed\": 9337,\n    \"credits_remaining\": 2003\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "bcb3c34e-1f4a-426b-81be-c74feac53721",
+              "name": "Request Timeout",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "utility",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"string\"\n  },\n  \"timeoutMS\": 238566,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Request Timeout",
+              "code": 408,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"REQUEST_TIMEOUT\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2613,\n    \"credits_remaining\": 7829\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2955d729-8f63-4e32-94d1-2a37c919a5a0",
+              "name": "Unprocessable Entity - Free email or disposable email detected",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "utility",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"string\"\n  },\n  \"timeoutMS\": 238566,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+              "code": 422,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"status\": \"string\",\n  \"error_code\": \"DISPOSABLE_EMAIL_DETECTED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 4199,\n    \"credits_remaining\": 5512\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2e4422e9-d40e-495d-b821-4b1d1a98bd5e",
+              "name": "Rate limit exceeded",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "utility",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"string\"\n  },\n  \"timeoutMS\": 238566,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "disabled": false,
+                  "description": "Seconds until the per-minute rate limit window resets",
+                  "key": "Retry-After",
+                  "value": "57"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"RATE_LIMITED\",\n  \"key_metadata\": {\n    \"credits_consumed\": 1037,\n    \"credits_remaining\": 1107\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1f6b65c0-eb2f-4f15-809b-12811b4a75c8",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "utility",
+                    "prefetch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"<string>\",\n  \"identifier\": {\n    \"domain\": \"string\"\n  },\n  \"timeoutMS\": 238566,\n  \"tags\": [\n    \"production\",\n    \"team-alpha\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "4740"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "9099"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "9262"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INTERNAL_ERROR\",\n  \"key_metadata\": {\n    \"credits_consumed\": 2349,\n    \"credits_remaining\": 4922\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.context.dev/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "01f6e83e-3fd4-4590-a8cf-9589bfc5954f",
+    "name": "Context Brand Intelligence Utility API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API for retrieving context data from any website",
+      "type": "text/plain"
+    }
+  }
+}

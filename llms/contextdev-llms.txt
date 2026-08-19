@@ -2,68 +2,82 @@
 
 ## Docs
 
+- [Introduction](https://docs.context.dev/introduction.md): What Context.dev is, the APIs it offers, and how it performs.
+- [Quickstart](https://docs.context.dev/quickstart.md): Get a Context.dev API key, install an SDK in TypeScript, Python, Ruby, Go, or PHP, and make your first brand or web scraping call in under five minutes.
+- [Fair Use](https://docs.context.dev/optimization/fair-use.md): Guidance on fair use of brand data and responsible practices.
 - [Agent Quickstart](https://docs.context.dev/agent-quickstart.md): Give your coding agent a single prompt that installs the Context.dev SDK, wires up authentication, and integrates brand and scraping endpoints in your app.
-- [Retrieve Brand Data](https://docs.context.dev/api-reference/brand-intelligence/brand.md): Enrich signups, CRM records, and transactions with logos, colors, descriptions, socials, and industry data.
-- [Scrape Fonts](https://docs.context.dev/api-reference/brand-intelligence/fonts.md): Detect the fonts a site uses so your app can match brand typography without manual inspection.
-- [Extract Styleguide](https://docs.context.dev/api-reference/brand-intelligence/styleguide.md): Extract colors, typography, spacing, shadows, and UI cues from any site to build on-brand experiences faster.
-- [List Account Changes](https://docs.context.dev/api-reference/monitors/account-changes.md): Get an account-wide feed of detected changes across all monitors, filterable by monitor, type, time, and tag.
-- [List Account Runs](https://docs.context.dev/api-reference/monitors/account-runs.md): Get an account-wide feed of monitor runs across all monitors in your organization.
-- [Retrieve a Change](https://docs.context.dev/api-reference/monitors/change.md): Fetch full change details: text diffs, added and removed URLs, semantic evidence, confidence, and importance.
-- [List Monitor Changes](https://docs.context.dev/api-reference/monitors/changes.md): List the changes a monitor has detected, filterable by time window and tag.
-- [Create a Monitor](https://docs.context.dev/api-reference/monitors/create.md): Creates a monitor. The request body is a union of the supported target/change detection combinations. The monitor runs immediately after creation to create its initial baseline.
-- [Retrieve Monitor Credit Usage](https://docs.context.dev/api-reference/monitors/credit-usage.md): See credits charged per monitor over a time window so you always know what your monitors cost.
-- [Delete a Monitor](https://docs.context.dev/api-reference/monitors/delete.md): Permanently remove a monitor and stop all of its scheduled runs.
-- [List Monitors](https://docs.context.dev/api-reference/monitors/list.md): List your organization's monitors with free-text search plus status, target type, and tag filters.
-- [Retrieve a Monitor](https://docs.context.dev/api-reference/monitors/retrieve.md): Fetch a monitor's full configuration, status, schedule, and current baseline by ID.
-- [Run a Monitor Now](https://docs.context.dev/api-reference/monitors/run.md): Queue an immediate run outside the monitor's normal schedule. The run is processed asynchronously.
-- [List Monitor Runs](https://docs.context.dev/api-reference/monitors/runs.md): List a monitor's run history with status, timing, credits charged, and any detected change per run.
-- [Update a Monitor](https://docs.context.dev/api-reference/monitors/update.md): Updates a monitor. If `target` or `change_detection` changes, the monitor creates a new baseline. Unsupported target/change detection combinations are rejected.
-- [Receive change.detected webhooks](https://docs.context.dev/api-reference/monitors/webhook-payload.md): Sent to a monitor's configured webhook URL when a run detects a change. Return any 2xx response to acknowledge the delivery.
-- [Receive run.completed webhooks](https://docs.context.dev/api-reference/monitors/webhook-run-completed.md): Sent to a monitor's configured webhook URL after every completed run when the webhook subscribes to the run.completed event — including runs that detected no change, as confirmation the monitor ran. When a change was detected it is embedded in the payload. Return any 2xx response to acknowledge the…
-- [Parse File Bytes to Markdown](https://docs.context.dev/api-reference/utility/parse.md): Converts raw text, source code, web/data, PDF, Microsoft Office, and image bytes into LLM-usable Markdown. The base request costs 1 credit. When OCR runs (requires ocr=true), the entire call costs 5 credits; ocr=true requests where no OCR ends up running still cost 1 credit.
-- [Prefetch Brand Data](https://docs.context.dev/api-reference/utility/prefetch.md): Warm the brand cache before users need it so onboarding and enrichment flows return faster.
-- [Extract Structured Data](https://docs.context.dev/api-reference/web-extraction/extract.md): Crawl a website and return schema-shaped data you can drop directly into products, agents, and workflows.
-- [Classify NAICS Industries](https://docs.context.dev/api-reference/web-extraction/naics.md): Map any brand to NAICS industry codes for cleaner segmentation, routing, and analytics.
-- [Extract Product Data](https://docs.context.dev/api-reference/web-extraction/product.md): Turn a product page into structured pricing, features, imagery, and metadata your app can use immediately.
-- [Extract Products](https://docs.context.dev/api-reference/web-extraction/products.md): Build a structured product catalog from any brand website — names, prices, images, and descriptions — without writing custom scrapers.
-- [Classify SIC Industries](https://docs.context.dev/api-reference/web-extraction/sic.md): Map brands to SIC codes for finance, compliance, segmentation, and industry analysis.
-- [Crawl Website Content](https://docs.context.dev/api-reference/web-scraping/crawl.md): Crawl a website and return clean, LLM-ready Markdown pages that are ready to use in RAG pipelines, search indexes, and other content workflows.
-- [Scrape HTML](https://docs.context.dev/api-reference/web-scraping/html.md): Fetch raw page HTML for extraction, archiving, QA, and custom parsing workflows.
-- [Scrape Images](https://docs.context.dev/api-reference/web-scraping/images.md): Find the images on any page and enrich them with metadata for brand, catalog, and content workflows.
-- [Scrape Markdown](https://docs.context.dev/api-reference/web-scraping/markdown.md): Convert any page into clean Markdown optimized for agents, RAG, search, and analysis.
-- [Capture Screenshot](https://docs.context.dev/api-reference/web-scraping/screenshot.md): Capture production-ready website screenshots for previews, audits, brand libraries, and visual QA.
-- [Search the Web](https://docs.context.dev/api-reference/web-scraping/search.md): Search the web and optionally scrape results in one call so your product gets answers faster.
-- [Crawl Sitemap](https://docs.context.dev/api-reference/web-scraping/sitemap.md): Discover every URL in a sitemap so your crawler, index, or enrichment job starts with complete coverage.
+- [Install the Context.dev skill](https://docs.context.dev/install-skill.md): Install the Context.dev skill so your coding agent knows when and how to use the correct APIs.
+- [Connect the Context.dev MCP server](https://docs.context.dev/install-mcp.md): Give Claude, Cursor, Codex, ChatGPT, VS Code, and other AI agents secure access to Context.dev through OAuth.
+- [Install the CLI](https://docs.context.dev/install-cli.md): Install the context-dev CLI to call brand lookups, web scraping, screenshots, and every Context.dev API endpoint straight from your terminal or agent.
+- [Scrape Websites](https://docs.context.dev/guides/scrape-websites-to-markdown.md): Scrape any URL to clean Markdown or HTML, crawl a whole domain, list sitemap URLs, or extract images. Handles PDF, DOCX, XLSX, PPTX, and CSV natively.
+- [Submit Batch Jobs](https://docs.context.dev/guides/scrape-websites-in-batches.md): Submit up to 25,000 URLs or crawl a site asynchronously, track progress, and consume results as paginated JSON or gzipped NDJSON.
+- [Parse Documents](https://docs.context.dev/guides/parse-documents.md): Use the Context.dev Parse API to convert uploaded PDFs, Office docs, spreadsheets, presentations, images, code, and data files into LLM-ready Markdown.
+- [Extract Structured Data](https://docs.context.dev/guides/extract-structured-data-from-websites.md): Crawl any website and get typed data matching your JSON Schema. Use the Context.dev Extract API for lead enrichment, pricing, and hiring signals.
+- [Create Monitors](https://docs.context.dev/guides/monitor-website-changes.md): Watch any page, sitemap, or extracted dataset on a schedule. Get signed webhooks when changes are detected or after every completed run.
+- [Get Brand Data](https://docs.context.dev/guides/get-brand-data.md): Turn a domain, name, work email, ticker, ISIN, transaction descriptor, or direct URL into a full brand profile with logos, colors, socials, and industry.
+- [Extract Styleguides](https://docs.context.dev/guides/extract-design-system-from-website.md): Pull colors, typography, spacing, shadows, and component styles from a single API call
+- [Get Logos from a Domain](https://docs.context.dev/guides/get-logo-from-url.md): Embed any company logo in your app with Logo Link — a fast, cached CDN endpoint that returns a logo image for any domain you request.
+- [Capture Screenshots](https://docs.context.dev/guides/take-webpage-screenshot.md): Get a screenshot PNG of a webpage in a desktop viewport or as a full-page capture
+- [Extract Product](https://docs.context.dev/guides/extract-product-from-websites.md): Detect product pages and extract a normalized product record with name, price, billing frequency, pricing model, features, images, and SKU.
+- [Transaction Enrichment](https://docs.context.dev/guides/enrich-transaction-codes.md): Turn raw card and bank statement descriptors into a structured company profile with logos, colors, industry codes, and socials using the Brand API.
+- [Overview](https://docs.context.dev/guides/classification/overview.md): Pick the right classification scheme for Context.dev's Classification APIs.
 - [EIC (Easy Industry Classification)](https://docs.context.dev/guides/classification/EIC.md): Read industry tags from Context.dev's EIC taxonomy — 24 top-level industries and 220 subindustries returned inline on every brand response.
 - [NAICS](https://docs.context.dev/guides/classification/NAICS.md): Classify brands using the 2022 NAICS taxonomy via the /web/naics endpoint
 - [SIC](https://docs.context.dev/guides/classification/SIC.md): Classify brands using the Standard Industrial Classification (SIC) taxonomy via the /web/sic endpoint
-- [Overview](https://docs.context.dev/guides/classification/overview.md): Pick the right classification scheme for Context.dev's Classification APIs.
-- [Transaction Enrichment](https://docs.context.dev/guides/enrich-transaction-codes.md): Turn raw card and bank statement descriptors into a structured company profile with logos, colors, industry codes, and socials using the Brand API.
-- [Extract a Website's Design System](https://docs.context.dev/guides/extract-design-system-from-website.md): Pull colors, typography, spacing, shadows, and component styles from a single API call
-- [Extract Product Data from Webpages](https://docs.context.dev/guides/extract-product-from-websites.md): Detect product pages and extract a normalized product record with name, price, billing frequency, pricing model, features, images, and SKU.
-- [Extract Structured Data from Websites](https://docs.context.dev/guides/extract-structured-data-from-websites.md): Crawl any website and get typed data matching your JSON Schema. Use the Context.dev Extract API for lead enrichment, pricing, and hiring signals.
-- [Get Brand Data](https://docs.context.dev/guides/get-brand-data.md): Turn a domain, name, work email, ticker, ISIN, transaction descriptor, or direct URL into a full brand profile with logos, colors, socials, and industry.
-- [Get Logos from a Domain](https://docs.context.dev/guides/get-logo-from-url.md): Embed any company logo in your app with Logo Link — a fast, cached CDN endpoint that returns a logo image for any domain you request.
-- [Monitor Websites for Changes](https://docs.context.dev/guides/monitor-website-changes.md): Watch any page, sitemap, or extracted dataset on a schedule. Get signed webhooks when changes are detected or after every completed run.
-- [Parse Documents](https://docs.context.dev/guides/parse-documents.md): Use the Context.dev Parse API to convert uploaded PDFs, Office docs, spreadsheets, presentations, images, code, and data files into LLM-ready Markdown.
-- [Scrape Websites](https://docs.context.dev/guides/scrape-websites-to-markdown.md): Scrape any URL to clean Markdown or HTML, crawl a whole domain, list sitemap URLs, or extract images. Handles PDF, DOCX, XLSX, PPTX, and CSV natively.
-- [Capture Webpage Screenshots](https://docs.context.dev/guides/take-webpage-screenshot.md): Get a screenshot PNG of a webpage in a desktop viewport or as a full-page capture
-- [Install the CLI](https://docs.context.dev/install-cli.md): Install the context-dev CLI to call brand lookups, web scraping, screenshots, and every Context.dev API endpoint straight from your terminal or agent.
-- [Install MCP](https://docs.context.dev/install-mcp.md): Connect Claude Code, Cursor, VS Code, or any MCP client to Context.dev's MCP server.
-- [Install the Context.dev skill](https://docs.context.dev/install-skill.md): Install the Context.dev skill so your coding agent knows when and how to use the correct APIs.
-- [Introduction](https://docs.context.dev/introduction.md): What Context.dev is, the APIs it offers, and how it performs.
-- [Google Sheets](https://docs.context.dev/nocode/google-sheets.md): Drop company logos into Google Sheets cells with Logo Link and the built-in IMAGE() formula. No code, no scripts.
-- [Make](https://docs.context.dev/nocode/make.md): Add Context.dev brand lookups, screenshots, styleguide, and product extraction to any Make scenario via the native integration or an HTTP module.
-- [Microsoft Excel](https://docs.context.dev/nocode/microsoft-excel.md): Drop company logos into Excel cells with Logo Link and the IMAGE() function. Works in Excel for Microsoft 365 and Excel for the web.
-- [Use Context.dev in Zapier Workflows](https://docs.context.dev/nocode/zapier.md): Connect Context.dev's brand data, NAICS classification, transaction enrichment, screenshots, and styleguide endpoints to 8,000+ Zapier apps. No code.
-- [Integration Best Practices](https://docs.context.dev/optimization/best-practices.md): Integration patterns for Context.dev: caching, prefetching, retries, choosing endpoints, filtering emails, and staying within plan rate limits.
-- [Compression](https://docs.context.dev/optimization/compression.md): Use gzip response compression to reduce transfer size and improve latency on large Context.dev responses.
-- [Fair Use](https://docs.context.dev/optimization/fair-use.md): Guidance on fair use of brand data and responsible practices.
 - [Prefetch for Faster Response](https://docs.context.dev/optimization/prefetching.md): Warm the Context.dev brand cache with POST /utility/prefetch so the next /brand/retrieve lookup returns in under a second instead of ~7s cold.
+- [Compression](https://docs.context.dev/optimization/compression.md): Use gzip response compression to reduce transfer size and improve latency on large Context.dev responses.
 - [Handle Rate Limits](https://docs.context.dev/optimization/rate-limits.md): Stay under your plan's per-minute request cap on the Context.dev API with client-side caching, exponential backoff on 429s, and prefetching.
-- [Tag Requests for Usage Reporting](https://docs.context.dev/optimization/tag-requests.md): Attach caller-defined tags to any Context.dev API request so you can filter and attribute credit usage by environment, team, or feature on the dashboard.
+- [Tag Requests](https://docs.context.dev/optimization/tag-requests.md): Attach caller-defined tags to any Context.dev API request so you can filter and attribute credit usage by environment, team, or feature on the dashboard.
+- [Zero Data Retention](https://docs.context.dev/optimization/zero-data-retention.md): Opt individual requests out of Context.dev's shared caches and content logs so request and response bytes are never persisted.
+- [Best Practices](https://docs.context.dev/optimization/best-practices.md): Integration patterns for Context.dev: caching, prefetching, retries, choosing endpoints, filtering emails, and staying within plan rate limits.
 - [Troubleshooting](https://docs.context.dev/optimization/troubleshooting.md): HTTP status codes, error_code values, common failures, and copy-paste recovery patterns (retries, fallbacks, email filtering) for the Context.dev API.
-- [Quickstart](https://docs.context.dev/quickstart.md): Get a Context.dev API key, install an SDK in TypeScript, Python, Ruby, Go, or PHP, and make your first brand or web scraping call in under five minutes.
+- [Make](https://docs.context.dev/nocode/make.md): Add Context.dev brand lookups, screenshots, styleguide, and product extraction to any Make scenario via the native integration or an HTTP module.
+- [Zapier Integration](https://docs.context.dev/nocode/zapier.md): Connect Context.dev's brand data, NAICS classification, transaction enrichment, screenshots, and styleguide endpoints to 8,000+ Zapier apps. No code.
+- [Google Sheets](https://docs.context.dev/nocode/google-sheets.md): Drop company logos into Google Sheets cells with Logo Link and the built-in IMAGE() formula. No code, no scripts.
+- [Microsoft Excel](https://docs.context.dev/nocode/microsoft-excel.md): Drop company logos into Excel cells with Logo Link and the IMAGE() function. Works in Excel for Microsoft 365 and Excel for the web.
+- [Eve](https://docs.context.dev/integrations/eve.md)
+- [Convex](https://docs.context.dev/integrations/convex.md)
+- [Scrape Markdown](https://docs.context.dev/api-reference/web-scraping/markdown.md): Convert any page into clean Markdown optimized for agents, RAG, search, and analysis.
+- [Scrape HTML](https://docs.context.dev/api-reference/web-scraping/html.md): Fetch raw page HTML for extraction, archiving, QA, and custom parsing workflows.
+- [Scrape Images](https://docs.context.dev/api-reference/web-scraping/images.md): Find the images on any page and enrich them with metadata for brand, catalog, and content workflows.
+- [Capture Screenshot](https://docs.context.dev/api-reference/web-scraping/screenshot.md): Capture production-ready website screenshots for previews, audits, brand libraries, and visual QA.
+- [Crawl Sitemap](https://docs.context.dev/api-reference/web-scraping/sitemap.md): Discover every URL in a sitemap so your crawler, index, or enrichment job starts with complete coverage.
+- [Crawl Website Content](https://docs.context.dev/api-reference/web-scraping/crawl.md): Crawl a website and return clean, LLM-ready Markdown pages that are ready to use in RAG pipelines, search indexes, and other content workflows.
+- [Search the Web](https://docs.context.dev/api-reference/web-scraping/search.md): Search the web and optionally scrape results in one call so your product gets answers faster.
+- [Extract Structured Data](https://docs.context.dev/api-reference/web-extraction/extract.md): Crawl a website and return schema-shaped data you can drop directly into products, agents, and workflows.
+- [Parse File Bytes to Markdown](https://docs.context.dev/api-reference/utility/parse.md): Converts raw text, source code, web/data, PDF, Microsoft Office, and image bytes into LLM-usable Markdown.
+- [Submit a Batch](https://docs.context.dev/api-reference/batches/submit.md): Scrape 25K URLs or crawl large websites asynchronously.
+- [List Batches](https://docs.context.dev/api-reference/batches/list.md): List your batches from newest to oldest. Filter by status or continue with a cursor.
+- [Retrieve a Batch](https://docs.context.dev/api-reference/batches/retrieve.md): Check progress, and get download links once the batch finishes.
+- [List Batch Results](https://docs.context.dev/api-reference/batches/results.md): Page through a finished batch's results as JSON instead of downloading the NDJSON files.
+- [Cancel a Batch](https://docs.context.dev/api-reference/batches/cancel.md): Stop a batch from starting new pages. In-progress pages finish, and unused credits are refunded.
+- [Delete a Batch](https://docs.context.dev/api-reference/batches/delete.md): Permanently delete a finished batch and its stored results. Active batches must settle first.
+- [Retrieve Brand Data](https://docs.context.dev/api-reference/brand-intelligence/brand.md): Enrich signups, CRM records, and transactions with logos, colors, descriptions, socials, and industry data.
+- [Search Brands](https://docs.context.dev/api-reference/brand-intelligence/search.md): Search indexed brands by name or domain and return up to 10 lightweight prefix matches for autocomplete.
+- [Extract Styleguide](https://docs.context.dev/api-reference/brand-intelligence/styleguide.md): Extract colors, typography, spacing, shadows, and UI cues from any site to build on-brand experiences faster.
+- [Scrape Fonts](https://docs.context.dev/api-reference/brand-intelligence/fonts.md): Detect the fonts a site uses so your app can match brand typography without manual inspection.
+- [Prefetch Brand Data](https://docs.context.dev/api-reference/utility/prefetch.md): Warm the brand cache before users need it so onboarding and enrichment flows return faster.
+- [Enrich Person](https://docs.context.dev/api-reference/people/enrich.md): Enrich a person from combined identity clues and receive an identity match score.
+- [Extract Product Data](https://docs.context.dev/api-reference/web-extraction/product.md): Turn a product page into structured pricing, features, imagery, and metadata your app can use immediately.
+- [Extract Products](https://docs.context.dev/api-reference/web-extraction/products.md): Build a structured product catalog from any brand website — names, prices, images, and descriptions — without writing custom scrapers.
+- [Classify NAICS Industries](https://docs.context.dev/api-reference/web-extraction/naics.md): Map any brand to NAICS industry codes for cleaner segmentation, routing, and analytics.
+- [Classify SIC Industries](https://docs.context.dev/api-reference/web-extraction/sic.md): Map brands to SIC codes for finance, compliance, segmentation, and industry analysis.
+- [Create a Monitor](https://docs.context.dev/api-reference/monitors/create.md): Creates a monitor. The request body is a union of the supported target/change detection combinations. The monitor runs immediately after creation to create its initial baseline.
+- [List Monitors](https://docs.context.dev/api-reference/monitors/list.md): List your organization's monitors with free-text search plus status, target type, and tag filters.
+- [Retrieve a Monitor](https://docs.context.dev/api-reference/monitors/retrieve.md): Fetch a monitor's full configuration, status, schedule, and current baseline by ID.
+- [Update a Monitor](https://docs.context.dev/api-reference/monitors/update.md): Updates a monitor. If `target` or `change_detection` changes, the monitor creates a new baseline. Unsupported target/change detection combinations are rejected.
+- [Delete a Monitor](https://docs.context.dev/api-reference/monitors/delete.md): Permanently remove a monitor and stop all of its scheduled runs.
+- [Run a Monitor Now](https://docs.context.dev/api-reference/monitors/run.md): Queue an immediate run outside the monitor's normal schedule. The run is processed asynchronously.
+- [List Monitor Runs](https://docs.context.dev/api-reference/monitors/runs.md): List a monitor's run history with status, timing, credits charged, and any detected change per run.
+- [Retrieve a Monitor Run](https://docs.context.dev/api-reference/monitors/retrieve-run.md): Fetch a single run by id, including its lifecycle status, timing, credits charged, and any change detected.
+- [List Account Runs](https://docs.context.dev/api-reference/monitors/account-runs.md): Get an account-wide feed of monitor runs across all monitors in your organization.
+- [List Monitor Changes](https://docs.context.dev/api-reference/monitors/changes.md): List the changes a monitor has detected, filterable by time window and tag.
+- [Retrieve a Change](https://docs.context.dev/api-reference/monitors/change.md): Fetch full change details: text diffs, added and removed URLs, semantic evidence, confidence, and importance.
+- [List Account Changes](https://docs.context.dev/api-reference/monitors/account-changes.md): Get an account-wide feed of detected changes across all monitors, filterable by monitor, type, time, and tag.
+- [Receive change.detected webhooks](https://docs.context.dev/api-reference/monitors/webhook-payload.md): Sent to a monitor's configured webhook URL when a run detects a change. Return any 2xx response to acknowledge the delivery.
+- [Receive run.completed webhooks](https://docs.context.dev/api-reference/monitors/webhook-run-completed.md): Sent to a monitor's configured webhook URL after every completed run when the webhook subscribes to the run.completed event — including runs that detected no change, as confirmation the monitor ran. When a change was detected it is embedded in the payload. Return any 2xx response to acknowledge the…
+- [Rotate a Monitor Webhook Secret](https://docs.context.dev/api-reference/monitors/rotate-webhook-secret.md): Generate a new signing secret for a monitor's webhook. The previous secret stops signing deliveries immediately.
+- [Retrieve Monitor Credit Usage](https://docs.context.dev/api-reference/monitors/credit-usage.md): See credits charged per monitor over a time window so you always know what your monitors cost.
 
 ## OpenAPI Specs
 

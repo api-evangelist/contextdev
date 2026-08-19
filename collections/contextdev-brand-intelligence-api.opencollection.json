@@ -1,0 +1,456 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Context Brand Intelligence API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Brand Intelligence",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Retrieve brand data by domain",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/brand/retrieve",
+            "params": [
+              {
+                "name": "domain",
+                "value": "",
+                "type": "query",
+                "description": "Domain name to retrieve brand data for (e.g., 'example.com', 'google.com'). Cannot be used with name or ticker parameters."
+              },
+              {
+                "name": "name",
+                "value": "",
+                "type": "query",
+                "description": "Company name to retrieve brand data for (e.g., 'Apple Inc'). Cannot be used with domain or ticker parameters."
+              },
+              {
+                "name": "ticker",
+                "value": "",
+                "type": "query",
+                "description": "Stock ticker symbol to retrieve brand data for (e.g., 'AAPL'). Cannot be used with domain or name parameters."
+              },
+              {
+                "name": "ticker_exchange",
+                "value": "",
+                "type": "query",
+                "description": "Stock exchange code."
+              },
+              {
+                "name": "force_language",
+                "value": "",
+                "type": "query",
+                "description": "Language to force for the retrieved brand data."
+              },
+              {
+                "name": "maxSpeed",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data. Works with all three lookup methods."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve logos, backdrops, colors, industry, description, and more from any domain"
+        },
+        {
+          "info": {
+            "name": "Retrieve brand data",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.context.dev/v1/brand/retrieve",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve logos, backdrops, colors, industry, description, and more. Provide exactly one lookup identifier in the request body: a domain, company name, email address, stock ticker, transaction descriptor, or direct URL. Note: `by_direct_url` fetches brand data only from the provided URL — not from the entire internet."
+        },
+        {
+          "info": {
+            "name": "Retrieve brand data by company name",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/brand/retrieve-by-name",
+            "params": [
+              {
+                "name": "name",
+                "value": "",
+                "type": "query",
+                "description": "Company name to retrieve brand data for (e.g., 'Apple Inc', 'Microsoft Corporation'). Must be 3-30 characters."
+              },
+              {
+                "name": "force_language",
+                "value": "",
+                "type": "query",
+                "description": "Language to force for the retrieved brand data."
+              },
+              {
+                "name": "maxSpeed",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data."
+              },
+              {
+                "name": "country_gl",
+                "value": "",
+                "type": "query",
+                "description": "Two-letter ISO 3166-1 alpha-2 country code (GL parameter) used to localize search."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve brand information using a company name."
+        },
+        {
+          "info": {
+            "name": "Retrieve brand data by email address",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/brand/retrieve-by-email",
+            "params": [
+              {
+                "name": "email",
+                "value": "",
+                "type": "query",
+                "description": "Email address to retrieve brand data for (e.g., 'contact@example.com'). The domain will be extracted from the email. Free email providers (gmail.com, yahoo.com, etc.) and disposable email addresses are not allowed."
+              },
+              {
+                "name": "force_language",
+                "value": "",
+                "type": "query",
+                "description": "Language to force for the retrieved brand data."
+              },
+              {
+                "name": "maxSpeed",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve brand information using an email address while detecting disposable and free email addresses. Disposable and free email addresses (like gmail.com, yahoo.com) will throw a 422 error."
+        },
+        {
+          "info": {
+            "name": "Retrieve brand data by stock ticker",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/brand/retrieve-by-ticker",
+            "params": [
+              {
+                "name": "ticker",
+                "value": "",
+                "type": "query",
+                "description": "Stock ticker symbol to retrieve brand data for (e.g., 'AAPL', 'GOOGL', 'BRK.A'). Must be 1-15 characters, letters/numbers/dots only."
+              },
+              {
+                "name": "ticker_exchange",
+                "value": "",
+                "type": "query",
+                "description": "Stock exchange code."
+              },
+              {
+                "name": "force_language",
+                "value": "",
+                "type": "query",
+                "description": "Language to force for the retrieved brand data."
+              },
+              {
+                "name": "maxSpeed",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve brand information using a stock ticker symbol."
+        },
+        {
+          "info": {
+            "name": "Retrieve brand data by ISIN",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/brand/retrieve-by-isin",
+            "params": [
+              {
+                "name": "isin",
+                "value": "",
+                "type": "query",
+                "description": "ISIN (International Securities Identification Number) to retrieve brand data for (e.g., 'AU000000IMD5', 'US0378331005'). Must be exactly 12 characters: 2 letters followed by 9 alphanumeric characters and ending with a digit."
+              },
+              {
+                "name": "force_language",
+                "value": "",
+                "type": "query",
+                "description": "Language to force for the retrieved brand data."
+              },
+              {
+                "name": "maxSpeed",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data."
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve brand information using an ISIN (International Securities Identification Number). "
+        },
+        {
+          "info": {
+            "name": "Identify brand from transaction data",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/brand/transaction_identifier",
+            "params": [
+              {
+                "name": "transaction_info",
+                "value": "",
+                "type": "query",
+                "description": "Transaction information to identify the brand"
+              },
+              {
+                "name": "force_language",
+                "value": "",
+                "type": "query",
+                "description": "Language to force for the retrieved brand data."
+              },
+              {
+                "name": "maxSpeed",
+                "value": "",
+                "type": "query",
+                "description": "Optional parameter to optimize the API call for maximum speed. When set to true, the API will skip time-consuming operations for faster response at the cost of less comprehensive data."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "country_gl",
+                "value": "",
+                "type": "query",
+                "description": "Two-letter ISO 3166-1 alpha-2 country code (GL parameter) used to localize search."
+              },
+              {
+                "name": "city",
+                "value": "",
+                "type": "query",
+                "description": "Optional city name to prioritize when searching for the brand."
+              },
+              {
+                "name": "mcc",
+                "value": "",
+                "type": "query",
+                "description": "Optional Merchant Category Code (MCC) to help identify the business category/industry."
+              },
+              {
+                "name": "phone",
+                "value": "",
+                "type": "query",
+                "description": "Optional phone number from the transaction to help verify brand match."
+              },
+              {
+                "name": "high_confidence_only",
+                "value": "",
+                "type": "query",
+                "description": "When set to true, the API will perform an additional verification steps to ensure the identified brand matches the transaction with high confidence."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Endpoint specially designed for platforms that want to identify transaction data by the transaction title."
+        },
+        {
+          "info": {
+            "name": "Retrieve simplified brand data by domain",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.context.dev/v1/brand/retrieve-simplified",
+            "params": [
+              {
+                "name": "domain",
+                "value": "",
+                "type": "query",
+                "description": "Domain name to retrieve simplified brand data for"
+              },
+              {
+                "name": "maxAgeMs",
+                "value": "",
+                "type": "query",
+                "description": "Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year."
+              },
+              {
+                "name": "timeoutMS",
+                "value": "",
+                "type": "query",
+                "description": "Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes)."
+              },
+              {
+                "name": "theme",
+                "value": "",
+                "type": "query",
+                "description": "Optional theme preference used when selecting brand assets."
+              },
+              {
+                "name": "tags",
+                "value": "production,team-alpha",
+                "type": "query",
+                "description": "Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a simplified version of brand data containing only essential information: domain, title, colors, logos, and backdrops. Optimized for faster responses and reduced data transfer."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

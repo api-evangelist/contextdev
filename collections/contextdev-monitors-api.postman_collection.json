@@ -1,0 +1,3665 @@
+{
+  "item": [
+    {
+      "id": "d24b1690-7acb-49c1-ae42-3a0cc3991ab9",
+      "name": "Monitors",
+      "description": {
+        "content": "Monitor pages, sitemaps, and extracted website data for exact or semantic changes. Webhook payloads are documented by the MonitorsChangeDetectedWebhookPayload and MonitorsRunCompletedWebhookPayload schemas.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "979ac493-e18e-4fd7-9df3-103edffd039d",
+          "name": "Create a monitor",
+          "request": {
+            "name": "Create a monitor",
+            "description": {
+              "content": "Creates a monitor. The request body is a union of the supported target/change detection combinations. The monitor runs immediately after creation to create its initial baseline.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "monitors"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"<string>\",\n  \"target\": {\n    \"type\": \"<string>\",\n    \"url\": \"<uri>\",\n    \"normalize_whitespace\": true\n  },\n  \"change_detection\": {\n    \"type\": \"<string>\"\n  },\n  \"schedule\": {\n    \"type\": \"<string>\",\n    \"frequency\": \"<integer>\",\n    \"unit\": \"<string>\"\n  },\n  \"mode\": \"<string>\",\n  \"tags\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"webhook\": {\n    \"url\": \"<uri>\",\n    \"events\": [\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "52a0d239-2eaa-4076-a608-c99774f4b510",
+              "name": "Monitor created",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mode\": \"web\",\n  \"name\": \"Acme pricing page\",\n  \"target\": {\n    \"type\": \"page\",\n    \"url\": \"https://acme.com/pricing\"\n  },\n  \"change_detection\": {\n    \"type\": \"exact\"\n  },\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 6,\n    \"unit\": \"hours\"\n  },\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"mode\": \"web\",\n  \"id\": \"mon_123\",\n  \"name\": \"Acme pricing monitor\",\n  \"target\": {\n    \"type\": \"page\",\n    \"url\": \"https://acme.com/pricing\",\n    \"normalize_whitespace\": true\n  },\n  \"change_detection\": {\n    \"type\": \"exact\"\n  },\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 6,\n    \"unit\": \"hours\"\n  },\n  \"status\": \"active\",\n  \"created_at\": \"2012-04-08T19:48:54.255Z\",\n  \"updated_at\": \"2021-02-22T06:56:23.788Z\",\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\",\n    \"events\": [\n      \"change.detected\",\n      \"run.completed\"\n    ],\n    \"secret\": \"whsec_8f3a…\"\n  },\n  \"last_run_at\": \"1957-07-15T03:17:55.590Z\",\n  \"last_change_at\": \"1948-04-21T00:04:07.380Z\",\n  \"next_run_at\": \"1970-04-27T09:09:27.506Z\",\n  \"last_error\": {\n    \"code\": \"fetch_failed\",\n    \"message\": \"The target URL could not be fetched.\"\n  },\n  \"webhook_failure\": {\n    \"consecutive_failures\": 3,\n    \"last_status\": \"rejected\",\n    \"last_message\": \"Webhook endpoint returned HTTP 429.\",\n    \"last_failed_at\": \"1947-07-27T08:10:30.420Z\"\n  },\n  \"tags\": [\n    \"pricing\",\n    \"competitor\"\n  ],\n  \"baseline\": {\n    \"text\": \"Acme Pricing\\nStarter $9/mo…\",\n    \"captured_at\": \"1984-08-13T02:48:04.160Z\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "64f39f52-e3b7-4cb3-b5c1-b3bee75849f1",
+              "name": "Bad request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mode\": \"web\",\n  \"name\": \"Acme pricing page\",\n  \"target\": {\n    \"type\": \"page\",\n    \"url\": \"https://acme.com/pricing\"\n  },\n  \"change_detection\": {\n    \"type\": \"exact\"\n  },\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 6,\n    \"unit\": \"hours\"\n  },\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4f8f7c3d-e624-47ef-b432-ff22f3a76de9",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mode\": \"web\",\n  \"name\": \"Acme pricing page\",\n  \"target\": {\n    \"type\": \"page\",\n    \"url\": \"https://acme.com/pricing\"\n  },\n  \"change_detection\": {\n    \"type\": \"exact\"\n  },\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 6,\n    \"unit\": \"hours\"\n  },\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "ecc2bc71-7f0c-407a-89f0-14956260a99f",
+              "name": "Monitor limit for the account reached (error_code MONITOR_LIMIT_EXCEEDED)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mode\": \"web\",\n  \"name\": \"Acme pricing page\",\n  \"target\": {\n    \"type\": \"page\",\n    \"url\": \"https://acme.com/pricing\"\n  },\n  \"change_detection\": {\n    \"type\": \"exact\"\n  },\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 6,\n    \"unit\": \"hours\"\n  },\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "72caacce-9bff-43a4-86f8-adfd8af3c4b4",
+          "name": "List monitors",
+          "request": {
+            "name": "List monitors",
+            "description": {
+              "content": "Lists monitors for the authenticated organization. Supports free-text search (`q` over `search_by` fields, `prefix` or `exact` via `search_type`) plus status/type/tag filters. Results are paginated via the opaque `cursor`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "monitors"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "q",
+                  "value": "<string>",
+                  "description": "Free-text search term, matched against the fields named in `search_by`."
+                },
+                {
+                  "disabled": false,
+                  "key": "search_by",
+                  "value": "<string>",
+                  "description": "Comma-separated fields to search with `q`. Defaults to all of them. Note `instructions` only exists on extract monitors."
+                },
+                {
+                  "disabled": false,
+                  "key": "search_by",
+                  "value": "<string>",
+                  "description": "Comma-separated fields to search with `q`. Defaults to all of them. Note `instructions` only exists on extract monitors."
+                },
+                {
+                  "disabled": false,
+                  "key": "search_type",
+                  "value": "<string>",
+                  "description": "`prefix` for as-you-type prefix matching (default), `exact` for full-token matching."
+                },
+                {
+                  "disabled": false,
+                  "key": "status",
+                  "value": "<string>",
+                  "description": "Filter monitors by lifecycle status."
+                },
+                {
+                  "disabled": false,
+                  "key": "target_type",
+                  "value": "<string>",
+                  "description": "Filter by target type."
+                },
+                {
+                  "disabled": false,
+                  "key": "change_detection_type",
+                  "value": "<string>",
+                  "description": "Filter by change detection type."
+                },
+                {
+                  "disabled": false,
+                  "key": "tags",
+                  "value": "<string>",
+                  "description": "Comma-separated list of tags to filter by (matches monitors having any of them)."
+                },
+                {
+                  "disabled": false,
+                  "key": "tags",
+                  "value": "<string>",
+                  "description": "Comma-separated list of tags to filter by (matches monitors having any of them)."
+                },
+                {
+                  "disabled": false,
+                  "key": "tag",
+                  "value": "<string>",
+                  "description": "Filter to items that have this tag."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "<integer>",
+                  "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+                },
+                {
+                  "disabled": false,
+                  "key": "cursor",
+                  "value": "<string>",
+                  "description": "Opaque pagination cursor from a previous response."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "93978170-bedd-4b22-99bb-4d51cb04da5c",
+              "name": "A paginated list of monitors",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "search_by",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "search_by",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "search_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "status",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "target_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "change_detection_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tag",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"mode\": \"web\",\n      \"id\": \"mon_123\",\n      \"name\": \"Acme pricing monitor\",\n      \"target\": {\n        \"type\": \"page\",\n        \"url\": \"https://acme.com/pricing\",\n        \"normalize_whitespace\": true\n      },\n      \"change_detection\": {\n        \"type\": \"exact\"\n      },\n      \"schedule\": {\n        \"type\": \"interval\",\n        \"frequency\": 6,\n        \"unit\": \"hours\"\n      },\n      \"status\": \"paused\",\n      \"created_at\": \"1968-08-01T01:18:59.917Z\",\n      \"updated_at\": \"2026-06-08T01:31:45.708Z\",\n      \"webhook\": {\n        \"url\": \"https://example.com/webhook\",\n        \"events\": [\n          \"change.detected\",\n          \"run.completed\"\n        ],\n        \"secret\": \"whsec_8f3a…\"\n      },\n      \"last_run_at\": \"1971-03-08T10:05:42.665Z\",\n      \"last_change_at\": \"2001-04-03T15:24:58.308Z\",\n      \"next_run_at\": \"1962-03-17T06:25:08.780Z\",\n      \"last_error\": {\n        \"code\": \"fetch_failed\",\n        \"message\": \"The target URL could not be fetched.\"\n      },\n      \"webhook_failure\": {\n        \"consecutive_failures\": 3,\n        \"last_status\": \"skipped_unsafe_url\",\n        \"last_message\": \"Webhook endpoint returned HTTP 429.\",\n        \"last_failed_at\": \"1954-01-17T19:21:04.863Z\"\n      },\n      \"tags\": [\n        \"pricing\",\n        \"competitor\"\n      ],\n      \"baseline\": {\n        \"text\": \"Acme Pricing\\nStarter $9/mo…\",\n        \"captured_at\": \"1996-12-25T06:53:45.404Z\"\n      }\n    },\n    {\n      \"mode\": \"web\",\n      \"id\": \"mon_123\",\n      \"name\": \"Acme pricing monitor\",\n      \"target\": {\n        \"type\": \"page\",\n        \"url\": \"https://acme.com/pricing\",\n        \"normalize_whitespace\": true\n      },\n      \"change_detection\": {\n        \"type\": \"exact\"\n      },\n      \"schedule\": {\n        \"type\": \"interval\",\n        \"frequency\": 6,\n        \"unit\": \"hours\"\n      },\n      \"status\": \"active\",\n      \"created_at\": \"2009-03-09T02:11:39.693Z\",\n      \"updated_at\": \"2016-03-18T21:01:16.618Z\",\n      \"webhook\": {\n        \"url\": \"https://example.com/webhook\",\n        \"events\": [\n          \"change.detected\",\n          \"run.completed\"\n        ],\n        \"secret\": \"whsec_8f3a…\"\n      },\n      \"last_run_at\": \"2000-01-07T06:57:14.573Z\",\n      \"last_change_at\": \"1960-05-11T11:55:14.080Z\",\n      \"next_run_at\": \"2024-08-12T06:26:23.097Z\",\n      \"last_error\": {\n        \"code\": \"fetch_failed\",\n        \"message\": \"The target URL could not be fetched.\"\n      },\n      \"webhook_failure\": {\n        \"consecutive_failures\": 3,\n        \"last_status\": \"skipped_unsafe_url\",\n        \"last_message\": \"Webhook endpoint returned HTTP 429.\",\n        \"last_failed_at\": \"2002-03-20T14:26:39.093Z\"\n      },\n      \"tags\": [\n        \"pricing\",\n        \"competitor\"\n      ],\n      \"baseline\": {\n        \"text\": \"Acme Pricing\\nStarter $9/mo…\",\n        \"captured_at\": \"1954-02-08T08:02:28.473Z\"\n      }\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "65c4c9da-4243-45d6-ad0e-977fb100843e",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "search_by",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "search_by",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "search_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "status",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "target_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "change_detection_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tag",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1e65ddee-7669-4f4d-a2a3-a641e34abdd3",
+          "name": "Get a monitor",
+          "request": {
+            "name": "Get a monitor",
+            "description": {},
+            "url": {
+              "path": [
+                "monitors",
+                ":monitor_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "monitor_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "c0e48369-374b-4c26-af86-73142a503de1",
+              "name": "Monitor",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"mode\": \"web\",\n  \"id\": \"mon_123\",\n  \"name\": \"Acme pricing monitor\",\n  \"target\": {\n    \"type\": \"page\",\n    \"url\": \"https://acme.com/pricing\",\n    \"normalize_whitespace\": true\n  },\n  \"change_detection\": {\n    \"type\": \"exact\"\n  },\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 6,\n    \"unit\": \"hours\"\n  },\n  \"status\": \"active\",\n  \"created_at\": \"2012-04-08T19:48:54.255Z\",\n  \"updated_at\": \"2021-02-22T06:56:23.788Z\",\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\",\n    \"events\": [\n      \"change.detected\",\n      \"run.completed\"\n    ],\n    \"secret\": \"whsec_8f3a…\"\n  },\n  \"last_run_at\": \"1957-07-15T03:17:55.590Z\",\n  \"last_change_at\": \"1948-04-21T00:04:07.380Z\",\n  \"next_run_at\": \"1970-04-27T09:09:27.506Z\",\n  \"last_error\": {\n    \"code\": \"fetch_failed\",\n    \"message\": \"The target URL could not be fetched.\"\n  },\n  \"webhook_failure\": {\n    \"consecutive_failures\": 3,\n    \"last_status\": \"rejected\",\n    \"last_message\": \"Webhook endpoint returned HTTP 429.\",\n    \"last_failed_at\": \"1947-07-27T08:10:30.420Z\"\n  },\n  \"tags\": [\n    \"pricing\",\n    \"competitor\"\n  ],\n  \"baseline\": {\n    \"text\": \"Acme Pricing\\nStarter $9/mo…\",\n    \"captured_at\": \"1984-08-13T02:48:04.160Z\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7e577237-7cf9-444b-868f-4e7aaf7c74bf",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "836f81a3-71ea-4c53-a3da-b5974171ec62",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "866e6eee-a7f2-40f3-8c77-e504a0a28c82",
+          "name": "Update a monitor",
+          "request": {
+            "name": "Update a monitor",
+            "description": {
+              "content": "Updates a monitor. If `target` or `change_detection` changes, the monitor creates a new baseline. Unsupported target/change detection combinations are rejected.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "monitors",
+                ":monitor_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "monitor_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"<string>\",\n  \"tags\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"status\": \"<string>\",\n  \"target\": {\n    \"type\": \"<string>\",\n    \"url\": \"<uri>\",\n    \"normalize_whitespace\": true\n  },\n  \"change_detection\": {\n    \"type\": \"<string>\"\n  },\n  \"schedule\": {\n    \"type\": \"<string>\",\n    \"frequency\": \"<integer>\",\n    \"unit\": \"<string>\"\n  },\n  \"webhook\": {\n    \"url\": \"<uri>\",\n    \"events\": [\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "bfe74a7f-409b-4c95-8cc6-9fa032fc5ec3",
+              "name": "Updated monitor",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Acme pricing monitor\",\n  \"status\": \"active\",\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 1,\n    \"unit\": \"hours\"\n  },\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"mode\": \"web\",\n  \"id\": \"mon_123\",\n  \"name\": \"Acme pricing monitor\",\n  \"target\": {\n    \"type\": \"page\",\n    \"url\": \"https://acme.com/pricing\",\n    \"normalize_whitespace\": true\n  },\n  \"change_detection\": {\n    \"type\": \"exact\"\n  },\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 6,\n    \"unit\": \"hours\"\n  },\n  \"status\": \"active\",\n  \"created_at\": \"2012-04-08T19:48:54.255Z\",\n  \"updated_at\": \"2021-02-22T06:56:23.788Z\",\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\",\n    \"events\": [\n      \"change.detected\",\n      \"run.completed\"\n    ],\n    \"secret\": \"whsec_8f3a…\"\n  },\n  \"last_run_at\": \"1957-07-15T03:17:55.590Z\",\n  \"last_change_at\": \"1948-04-21T00:04:07.380Z\",\n  \"next_run_at\": \"1970-04-27T09:09:27.506Z\",\n  \"last_error\": {\n    \"code\": \"fetch_failed\",\n    \"message\": \"The target URL could not be fetched.\"\n  },\n  \"webhook_failure\": {\n    \"consecutive_failures\": 3,\n    \"last_status\": \"rejected\",\n    \"last_message\": \"Webhook endpoint returned HTTP 429.\",\n    \"last_failed_at\": \"1947-07-27T08:10:30.420Z\"\n  },\n  \"tags\": [\n    \"pricing\",\n    \"competitor\"\n  ],\n  \"baseline\": {\n    \"text\": \"Acme Pricing\\nStarter $9/mo…\",\n    \"captured_at\": \"1984-08-13T02:48:04.160Z\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "bf2c9378-bb5a-4e95-bc87-45a910b29eaf",
+              "name": "Bad request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Acme pricing monitor\",\n  \"status\": \"active\",\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 1,\n    \"unit\": \"hours\"\n  },\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "eda7de2a-fb20-4b7f-929f-d9e654826110",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Acme pricing monitor\",\n  \"status\": \"active\",\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 1,\n    \"unit\": \"hours\"\n  },\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1231519a-495c-40ac-82ed-b5567ed4e92f",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Acme pricing monitor\",\n  \"status\": \"active\",\n  \"schedule\": {\n    \"type\": \"interval\",\n    \"frequency\": 1,\n    \"unit\": \"hours\"\n  },\n  \"webhook\": {\n    \"url\": \"https://example.com/webhook\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "39bc0ee0-d693-4b53-9ad3-842176859528",
+          "name": "Delete a monitor",
+          "request": {
+            "name": "Delete a monitor",
+            "description": {},
+            "url": {
+              "path": [
+                "monitors",
+                ":monitor_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "monitor_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "ca1b33d5-56d1-4141-8892-3b42355440e1",
+              "name": "Monitor deleted",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"mon_123\",\n  \"deleted\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "ff0b2baa-0a3e-48b5-b53d-bc1f9a95fbaa",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c699a113-6260-432b-a3a9-ac4d3fa7dd69",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2e2a9d7c-097a-4cd6-820a-03d215201535",
+          "name": "List monitor runs",
+          "request": {
+            "name": "List monitor runs",
+            "description": {},
+            "url": {
+              "path": [
+                "monitors",
+                ":monitor_id",
+                "runs"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "status",
+                  "value": "<string>",
+                  "description": "Filter runs by lifecycle status."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "<integer>",
+                  "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+                },
+                {
+                  "disabled": false,
+                  "key": "cursor",
+                  "value": "<string>",
+                  "description": "Opaque pagination cursor from a previous response."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "monitor_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "c258db17-bed1-4ca3-84f4-6fe8c2e304db",
+              "name": "A paginated list of runs for the monitor",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "runs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"run_123\",\n      \"monitor_id\": \"mon_123\",\n      \"status\": \"queued\",\n      \"run_type\": \"baseline\",\n      \"target_type\": \"sitemap\",\n      \"change_detection_type\": \"exact\",\n      \"change_detected\": true,\n      \"baseline_created\": true,\n      \"credits_charged\": 1,\n      \"started_at\": \"2025-09-13T12:50:21.471Z\",\n      \"completed_at\": \"1985-08-14T13:53:21.374Z\",\n      \"change_id\": \"chg_123\",\n      \"skip_reason\": \"superseded\",\n      \"error\": {\n        \"code\": \"fetch_failed\",\n        \"message\": \"The target URL could not be fetched.\"\n      },\n      \"webhook_delivery\": {\n        \"event_id\": \"evt_123\",\n        \"event\": \"run.completed\",\n        \"status\": \"rejected\",\n        \"http_status\": 200,\n        \"attempted_at\": \"2023-03-06T02:48:14.587Z\",\n        \"error\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      },\n      \"webhook_deliveries\": [\n        {\n          \"event_id\": \"evt_123\",\n          \"event\": \"change.detected\",\n          \"status\": \"rejected\",\n          \"http_status\": 200,\n          \"attempted_at\": \"2012-09-14T03:44:50.385Z\",\n          \"error\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"event_id\": \"evt_123\",\n          \"event\": \"run.completed\",\n          \"status\": \"failed\",\n          \"http_status\": 200,\n          \"attempted_at\": \"1972-12-03T04:29:59.952Z\",\n          \"error\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"run_123\",\n      \"monitor_id\": \"mon_123\",\n      \"status\": \"failed\",\n      \"run_type\": \"scheduled\",\n      \"target_type\": \"extract\",\n      \"change_detection_type\": \"exact\",\n      \"change_detected\": true,\n      \"baseline_created\": true,\n      \"credits_charged\": 1,\n      \"started_at\": \"1952-03-12T16:41:15.874Z\",\n      \"completed_at\": \"1996-02-19T09:46:03.923Z\",\n      \"change_id\": \"chg_123\",\n      \"skip_reason\": \"monitor_paused\",\n      \"error\": {\n        \"code\": \"fetch_failed\",\n        \"message\": \"The target URL could not be fetched.\"\n      },\n      \"webhook_delivery\": {\n        \"event_id\": \"evt_123\",\n        \"event\": \"change.detected\",\n        \"status\": \"rejected\",\n        \"http_status\": 200,\n        \"attempted_at\": \"1948-01-22T15:22:58.120Z\",\n        \"error\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      },\n      \"webhook_deliveries\": [\n        {\n          \"event_id\": \"evt_123\",\n          \"event\": \"run.completed\",\n          \"status\": \"rejected\",\n          \"http_status\": 200,\n          \"attempted_at\": \"1969-12-19T13:02:05.418Z\",\n          \"error\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"event_id\": \"evt_123\",\n          \"event\": \"run.completed\",\n          \"status\": \"delivered\",\n          \"http_status\": 200,\n          \"attempted_at\": \"2017-08-29T05:10:02.420Z\",\n          \"error\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ]\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6ef96026-1c93-478b-9066-da0a9af82f7b",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "runs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "87ea51da-81fa-40a6-a312-307aad7b53ba",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "runs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "571ca1a0-157b-4089-a8d2-32e3afe42207",
+          "name": "List changes for a monitor",
+          "request": {
+            "name": "List changes for a monitor",
+            "description": {},
+            "url": {
+              "path": [
+                "monitors",
+                ":monitor_id",
+                "changes"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "tag",
+                  "value": "<string>",
+                  "description": "Filter to items that have this tag."
+                },
+                {
+                  "disabled": false,
+                  "key": "since",
+                  "value": "<dateTime>",
+                  "description": "Only include items at or after this ISO 8601 timestamp."
+                },
+                {
+                  "disabled": false,
+                  "key": "until",
+                  "value": "<dateTime>",
+                  "description": "Only include items before this ISO 8601 timestamp."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "<integer>",
+                  "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+                },
+                {
+                  "disabled": false,
+                  "key": "cursor",
+                  "value": "<string>",
+                  "description": "Opaque pagination cursor from a previous response."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "monitor_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "8811f343-9114-4fed-bcc8-8737a6f11d28",
+              "name": "A paginated list of changes for the monitor",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "changes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "tag",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "since",
+                      "value": "2026-06-01T00:00:00Z"
+                    },
+                    {
+                      "key": "until",
+                      "value": "2026-06-28T00:00:00Z"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"mode\": \"web\",\n      \"id\": \"chg_123\",\n      \"monitor_id\": \"mon_123\",\n      \"target_type\": \"extract\",\n      \"change_detection_type\": \"semantic\",\n      \"title\": \"Acme pricing page changed\",\n      \"summary\": \"The visible text on the page changed.\",\n      \"detected_at\": \"1967-08-24T09:42:37.211Z\",\n      \"url\": \"https://CZKRmrbFyUWpXluKwJ.vyhku-HP6O6GsFouElcONU0h.pA.epbik\",\n      \"importance\": \"high\",\n      \"confidence\": 0.5511359003318315,\n      \"added_url_count\": 7485,\n      \"removed_url_count\": 8408,\n      \"matched_url_count\": 1848,\n      \"tags\": [\n        \"pricing\",\n        \"competitor\"\n      ]\n    },\n    {\n      \"mode\": \"web\",\n      \"id\": \"chg_123\",\n      \"monitor_id\": \"mon_123\",\n      \"target_type\": \"sitemap\",\n      \"change_detection_type\": \"semantic\",\n      \"title\": \"Acme pricing page changed\",\n      \"summary\": \"The visible text on the page changed.\",\n      \"detected_at\": \"2024-08-06T12:37:36.645Z\",\n      \"url\": \"https://vZfhhT.eqOyzNm-.\",\n      \"importance\": \"high\",\n      \"confidence\": 0.8783958140010952,\n      \"added_url_count\": 4889,\n      \"removed_url_count\": 4859,\n      \"matched_url_count\": 9120,\n      \"tags\": [\n        \"pricing\",\n        \"competitor\"\n      ]\n    }\n  ],\n  \"has_more\": true,\n  \"next_cursor\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "65fd7585-9d51-427e-ba21-89d05b05d5d9",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "changes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "tag",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "since",
+                      "value": "2026-06-01T00:00:00Z"
+                    },
+                    {
+                      "key": "until",
+                      "value": "2026-06-28T00:00:00Z"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5f0166c7-af4f-4e59-89cd-e74e204a09ac",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "changes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "tag",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "since",
+                      "value": "2026-06-01T00:00:00Z"
+                    },
+                    {
+                      "key": "until",
+                      "value": "2026-06-28T00:00:00Z"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "b8927473-55ec-4ba6-9033-98b443670bf9",
+          "name": "List runs",
+          "request": {
+            "name": "List runs",
+            "description": {
+              "content": "Returns an account-wide feed of monitor runs across all monitors.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "monitors",
+                "runs"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "status",
+                  "value": "<string>",
+                  "description": "Filter runs by lifecycle status."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "<integer>",
+                  "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+                },
+                {
+                  "disabled": false,
+                  "key": "cursor",
+                  "value": "<string>",
+                  "description": "Opaque pagination cursor from a previous response."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "90f1bab4-3c4d-43c2-ae77-4319349acd42",
+              "name": "A paginated list of runs",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "runs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"run_123\",\n      \"monitor_id\": \"mon_123\",\n      \"status\": \"queued\",\n      \"run_type\": \"baseline\",\n      \"target_type\": \"sitemap\",\n      \"change_detection_type\": \"exact\",\n      \"change_detected\": true,\n      \"baseline_created\": true,\n      \"credits_charged\": 1,\n      \"started_at\": \"2025-09-13T12:50:21.471Z\",\n      \"completed_at\": \"1985-08-14T13:53:21.374Z\",\n      \"change_id\": \"chg_123\",\n      \"skip_reason\": \"superseded\",\n      \"error\": {\n        \"code\": \"fetch_failed\",\n        \"message\": \"The target URL could not be fetched.\"\n      },\n      \"webhook_delivery\": {\n        \"event_id\": \"evt_123\",\n        \"event\": \"run.completed\",\n        \"status\": \"rejected\",\n        \"http_status\": 200,\n        \"attempted_at\": \"2023-03-06T02:48:14.587Z\",\n        \"error\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      },\n      \"webhook_deliveries\": [\n        {\n          \"event_id\": \"evt_123\",\n          \"event\": \"change.detected\",\n          \"status\": \"rejected\",\n          \"http_status\": 200,\n          \"attempted_at\": \"2012-09-14T03:44:50.385Z\",\n          \"error\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"event_id\": \"evt_123\",\n          \"event\": \"run.completed\",\n          \"status\": \"failed\",\n          \"http_status\": 200,\n          \"attempted_at\": \"1972-12-03T04:29:59.952Z\",\n          \"error\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"run_123\",\n      \"monitor_id\": \"mon_123\",\n      \"status\": \"failed\",\n      \"run_type\": \"scheduled\",\n      \"target_type\": \"extract\",\n      \"change_detection_type\": \"exact\",\n      \"change_detected\": true,\n      \"baseline_created\": true,\n      \"credits_charged\": 1,\n      \"started_at\": \"1952-03-12T16:41:15.874Z\",\n      \"completed_at\": \"1996-02-19T09:46:03.923Z\",\n      \"change_id\": \"chg_123\",\n      \"skip_reason\": \"monitor_paused\",\n      \"error\": {\n        \"code\": \"fetch_failed\",\n        \"message\": \"The target URL could not be fetched.\"\n      },\n      \"webhook_delivery\": {\n        \"event_id\": \"evt_123\",\n        \"event\": \"change.detected\",\n        \"status\": \"rejected\",\n        \"http_status\": 200,\n        \"attempted_at\": \"1948-01-22T15:22:58.120Z\",\n        \"error\": {\n          \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n        }\n      },\n      \"webhook_deliveries\": [\n        {\n          \"event_id\": \"evt_123\",\n          \"event\": \"run.completed\",\n          \"status\": \"rejected\",\n          \"http_status\": 200,\n          \"attempted_at\": \"1969-12-19T13:02:05.418Z\",\n          \"error\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        },\n        {\n          \"event_id\": \"evt_123\",\n          \"event\": \"run.completed\",\n          \"status\": \"delivered\",\n          \"http_status\": 200,\n          \"attempted_at\": \"2017-08-29T05:10:02.420Z\",\n          \"error\": {\n            \"value\": \"<Error: Too many levels of nesting to fake this schema>\"\n          }\n        }\n      ]\n    }\n  ],\n  \"has_more\": false,\n  \"next_cursor\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "bed4afdd-d13b-419d-a58e-8c863213e235",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "runs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "29f6d503-048b-4584-9e87-8b92139b9e09",
+          "name": "Monitor credit usage",
+          "request": {
+            "name": "Monitor credit usage",
+            "description": {
+              "content": "Returns credits charged per monitor over an optional [since, until] window, newest spenders first.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "monitors",
+                "credit-usage"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "since",
+                  "value": "<dateTime>",
+                  "description": "Only include items at or after this ISO 8601 timestamp."
+                },
+                {
+                  "disabled": false,
+                  "key": "until",
+                  "value": "<dateTime>",
+                  "description": "Only include items before this ISO 8601 timestamp."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "9afcf8d8-6001-4e61-99d2-d5297557a564",
+              "name": "Per-monitor credit usage",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "credit-usage"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "since",
+                      "value": "2026-06-01T00:00:00Z"
+                    },
+                    {
+                      "key": "until",
+                      "value": "2026-06-28T00:00:00Z"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"monitor_id\": \"mon_123\",\n      \"name\": \"string\",\n      \"credits\": 1463,\n      \"runs\": 3360\n    },\n    {\n      \"monitor_id\": \"mon_123\",\n      \"name\": \"string\",\n      \"credits\": 7049,\n      \"runs\": 8207\n    }\n  ],\n  \"total_credits\": 582\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4a5399f7-ec9b-4f27-aa03-ae138c05bef0",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "credit-usage"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "since",
+                      "value": "2026-06-01T00:00:00Z"
+                    },
+                    {
+                      "key": "until",
+                      "value": "2026-06-28T00:00:00Z"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "69d7a2bf-bd7e-4819-ba8e-7b3c7d019f24",
+          "name": "Monitor limits",
+          "request": {
+            "name": "Monitor limits",
+            "description": {
+              "content": "Returns how many monitors the account has and the maximum it allows.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "monitors",
+                "limits"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "ef6b4ba8-4ff6-4168-adca-8bda989bc864",
+              "name": "Monitor usage and plan limit",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "limits"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"monitors_used\": 1163,\n  \"monitors_limit\": 5396,\n  \"plan\": \"pro\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b2721f4d-6daf-45d9-99c1-0a17d5d09b6e",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "limits"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1666cd3b-bdfc-4970-99e5-3786fc1ad541",
+          "name": "List changes",
+          "request": {
+            "name": "List changes",
+            "description": {
+              "content": "Returns an account-wide feed of detected changes across monitors.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "monitors",
+                "changes"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "monitor_id",
+                  "value": "<string>",
+                  "description": "Filter changes to a single monitor."
+                },
+                {
+                  "disabled": false,
+                  "key": "target_type",
+                  "value": "<string>",
+                  "description": "Filter by target type."
+                },
+                {
+                  "disabled": false,
+                  "key": "change_detection_type",
+                  "value": "<string>",
+                  "description": "Filter by change detection type."
+                },
+                {
+                  "disabled": false,
+                  "key": "tag",
+                  "value": "<string>",
+                  "description": "Filter to items that have this tag."
+                },
+                {
+                  "disabled": false,
+                  "key": "since",
+                  "value": "<dateTime>",
+                  "description": "Only include items at or after this ISO 8601 timestamp."
+                },
+                {
+                  "disabled": false,
+                  "key": "until",
+                  "value": "<dateTime>",
+                  "description": "Only include items before this ISO 8601 timestamp."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "<integer>",
+                  "description": "Maximum number of items to return per page (1-100). Defaults to 25."
+                },
+                {
+                  "disabled": false,
+                  "key": "cursor",
+                  "value": "<string>",
+                  "description": "Opaque pagination cursor from a previous response."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "1be8421a-fb10-4ec4-b322-fd80499c6591",
+              "name": "A paginated list of changes",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "changes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "monitor_id",
+                      "value": "mon_123"
+                    },
+                    {
+                      "key": "target_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "change_detection_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tag",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "since",
+                      "value": "2026-06-01T00:00:00Z"
+                    },
+                    {
+                      "key": "until",
+                      "value": "2026-06-28T00:00:00Z"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"mode\": \"web\",\n      \"id\": \"chg_123\",\n      \"monitor_id\": \"mon_123\",\n      \"target_type\": \"extract\",\n      \"change_detection_type\": \"semantic\",\n      \"title\": \"Acme pricing page changed\",\n      \"summary\": \"The visible text on the page changed.\",\n      \"detected_at\": \"1967-08-24T09:42:37.211Z\",\n      \"url\": \"https://CZKRmrbFyUWpXluKwJ.vyhku-HP6O6GsFouElcONU0h.pA.epbik\",\n      \"importance\": \"high\",\n      \"confidence\": 0.5511359003318315,\n      \"added_url_count\": 7485,\n      \"removed_url_count\": 8408,\n      \"matched_url_count\": 1848,\n      \"tags\": [\n        \"pricing\",\n        \"competitor\"\n      ]\n    },\n    {\n      \"mode\": \"web\",\n      \"id\": \"chg_123\",\n      \"monitor_id\": \"mon_123\",\n      \"target_type\": \"sitemap\",\n      \"change_detection_type\": \"semantic\",\n      \"title\": \"Acme pricing page changed\",\n      \"summary\": \"The visible text on the page changed.\",\n      \"detected_at\": \"2024-08-06T12:37:36.645Z\",\n      \"url\": \"https://vZfhhT.eqOyzNm-.\",\n      \"importance\": \"high\",\n      \"confidence\": 0.8783958140010952,\n      \"added_url_count\": 4889,\n      \"removed_url_count\": 4859,\n      \"matched_url_count\": 9120,\n      \"tags\": [\n        \"pricing\",\n        \"competitor\"\n      ]\n    }\n  ],\n  \"has_more\": true,\n  \"next_cursor\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e3be60e7-6b1a-41f5-b2cf-8c9262439cd9",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "changes"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "monitor_id",
+                      "value": "mon_123"
+                    },
+                    {
+                      "key": "target_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "change_detection_type",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "tag",
+                      "value": "pricing"
+                    },
+                    {
+                      "key": "since",
+                      "value": "2026-06-01T00:00:00Z"
+                    },
+                    {
+                      "key": "until",
+                      "value": "2026-06-28T00:00:00Z"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "<integer>"
+                    },
+                    {
+                      "key": "cursor",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2cb1a187-b6bc-429d-9d2a-c77a57fc05f0",
+          "name": "Get a change",
+          "request": {
+            "name": "Get a change",
+            "description": {},
+            "url": {
+              "path": [
+                "monitors",
+                "changes",
+                ":change_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "change_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "034372ae-6641-4536-9e4c-3d649ff25f7e",
+              "name": "Change details",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "changes",
+                    ":change_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "change_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"mode\": \"web\",\n  \"id\": \"chg_123\",\n  \"monitor_id\": \"mon_123\",\n  \"run_id\": \"run_123\",\n  \"target_type\": \"extract\",\n  \"change_detection_type\": \"semantic\",\n  \"title\": \"Acme pricing page changed\",\n  \"summary\": \"The visible text on the page changed.\",\n  \"detected_at\": \"1993-04-01T08:12:10.561Z\",\n  \"url\": \"http://S.rydfZhyog.+tpdtA+snnV6AZoV\",\n  \"tags\": [\n    \"pricing\",\n    \"competitor\"\n  ],\n  \"importance\": \"medium\",\n  \"confidence\": 0.05335481817387322,\n  \"diff\": \"string\",\n  \"before_text_excerpt\": \"string\",\n  \"after_text_excerpt\": \"string\",\n  \"added_urls\": [\n    \"http://JWWzw.befNr0r8NKVqmnAdOJE0mQ\",\n    \"https://ZLOtJYs.vzcycJuXfqfZAY0HRgUm1y2dvDM+rKj32+pu4VuJuHrSS8U,ZFzHM\"\n  ],\n  \"removed_urls\": [\n    \"https://UzRntkh.jcccKhbrqBf2ibxxUP8wLSqlhe386aBM\",\n    \"https://PwKchkvLNpTv.iaCsm+SbWUx,\"\n  ],\n  \"added_url_count\": 8606,\n  \"removed_url_count\": 6339,\n  \"matched_urls\": [\n    \"http://jPQzTbTpGncTqHPqexyajbPNM.tibiqoCtaRVSS\",\n    \"https://qsWTkjZGgIdkwfrdzMlCrchswBivei.nvY9sqGXs9yfoqMF\"\n  ],\n  \"matched_url_count\": 3663,\n  \"evidence\": [\n    {\n      \"before\": \"string\",\n      \"after\": \"string\",\n      \"url\": \"https://JeAyQruwmSKloOcPoJ.qmvleRqZ0jWdcInudG8\"\n    },\n    {\n      \"before\": \"string\",\n      \"after\": \"string\",\n      \"url\": \"https://QRciNxuEVPGLACWNYHhvfbahYSchs.xmdgKga-oAi8mHug0u9Si,7FEBPpOw-2K+ZK0qZxj3S,b40jzu90Nr7xho2zI4Ki46d\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b30571a0-44b1-4dfe-8773-e4ff2e5a85a6",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "changes",
+                    ":change_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "change_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a670f8cb-736f-4a83-a79f-8d18d192fb5d",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    "changes",
+                    ":change_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "change_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "efef76bd-e49d-40eb-a5ee-4e19544bccc0",
+          "name": "Run a monitor now",
+          "request": {
+            "name": "Run a monitor now",
+            "description": {
+              "content": "Triggers an immediate run of the monitor outside its normal schedule. The run is queued and processed asynchronously.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "monitors",
+                ":monitor_id",
+                "run"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "monitor_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "2b312c4e-7ef9-4f36-9a75-555938a4bf26",
+              "name": "Run queued",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "run"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"monitor_id\": \"mon_123\",\n  \"run_id\": \"run_123\",\n  \"queued\": true\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8a23492e-dab4-43c2-a99f-80cc79261ac5",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "run"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "86616336-9447-4ea2-9072-5c34d55801c6",
+              "name": "Not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "monitors",
+                    ":monitor_id",
+                    "run"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "monitor_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Limit",
+                  "value": "6065"
+                },
+                {
+                  "disabled": false,
+                  "description": "Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Remaining",
+                  "value": "445"
+                },
+                {
+                  "disabled": false,
+                  "description": "Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.",
+                  "key": "X-RateLimit-Reset",
+                  "value": "7417"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"string\",\n  \"error_code\": \"INSUFFICIENT_PERMISSIONS\",\n  \"key_metadata\": {\n    \"credits_consumed\": 235,\n    \"credits_remaining\": 2253\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.context.dev/v1",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "779f7762-4776-4736-966f-06c9ae9f0bda",
+    "name": "Context Brand Intelligence Monitors API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API for retrieving context data from any website",
+      "type": "text/plain"
+    }
+  }
+}
