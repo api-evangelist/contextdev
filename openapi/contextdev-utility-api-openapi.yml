@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Context Brand Intelligence Utility API
+  title: Context Utility API
   description: API for retrieving context data from any website
   version: 1.0.0
 servers:
@@ -702,6 +702,29 @@ components:
       additionalProperties: false
       title: By email
       description: Prefetch brand data by email. The domain will be extracted and validated.
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+    UtilityPrefetchDomainIdentifier:
+      type: object
+      properties:
+        domain:
+          type: string
+          minLength: 3
+          description: Domain name to prefetch brand data for
+      required:
+      - domain
+      additionalProperties: false
+      title: By domain
+      description: Prefetch brand data by domain.
     KeyMetadata:
       type: object
       properties:
@@ -715,54 +738,16 @@ components:
       - credits_consumed
       - credits_remaining
       description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-    UtilityPrefetchIdentifier:
-      oneOf:
-      - $ref: '#/components/schemas/UtilityPrefetchDomainIdentifier'
-      - $ref: '#/components/schemas/UtilityPrefetchEmailIdentifier'
-      description: Identifier of the brand to prefetch. Provide exactly one of domain or email.
-    UtilityPrefetchDomainIdentifier:
-      type: object
-      properties:
-        domain:
-          type: string
-          minLength: 3
-          description: Domain name to prefetch brand data for
-      required:
-      - domain
-      additionalProperties: false
-      title: By domain
-      description: Prefetch brand data by domain.
     TimeoutMS:
       type: integer
       minimum: 1000
       maximum: 300000
       description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-    RequestTags:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        maxLength: 50
-      maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example:
-      - production
-      - team-alpha
-  headers:
-    RateLimitRemaining:
-      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 0
-    RateLimitReset:
-      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-    RateLimitLimit:
-      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 1
+    UtilityPrefetchIdentifier:
+      oneOf:
+      - $ref: '#/components/schemas/UtilityPrefetchDomainIdentifier'
+      - $ref: '#/components/schemas/UtilityPrefetchEmailIdentifier'
+      description: Identifier of the brand to prefetch. Provide exactly one of domain or email.
   responses:
     RateLimited:
       description: Rate limit exceeded
@@ -797,6 +782,21 @@ components:
             required:
             - message
             - error_code
+  headers:
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
   securitySchemes:
     bearerAuth:
       type: http

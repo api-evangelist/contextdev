@@ -1,13 +1,7 @@
 {
   "provider": "contextdev",
   "sources": [
-    "contextdev-brand-intelligence-api-openapi.yml",
-    "contextdev-monitors-api-openapi.yml",
-    "contextdev-parsing-api-openapi.yml",
-    "contextdev-people-api-openapi.yml",
-    "contextdev-utility-api-openapi.yml",
-    "contextdev-web-extraction-api-openapi.yml",
-    "contextdev-web-scraping-api-openapi.yml"
+    "_original/contextdev-openapi.yml"
   ],
   "outputs": [
     "contextdev-brand-intelligence-api-openapi.yml",
@@ -21,6 +15,24 @@
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "contextdev-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "contextdev-openapi.yml: declared missing tag: Brand Intelligence",
+    "contextdev-openapi.yml: declared missing tag: Parsing",
+    "contextdev-openapi.yml: declared missing tag: People",
+    "contextdev-openapi.yml: declared missing tag: Utility",
+    "contextdev-openapi.yml: declared missing tag: Web Extraction",
+    "contextdev-openapi.yml: declared missing tag: Web Scraping"
+  ],
+  "skipped": [
+    "contextdev-batch-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "contextdev-brand-intelligence-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "contextdev-monitors-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "contextdev-parsing-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "contextdev-people-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "contextdev-utility-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "contextdev-web-extraction-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "contextdev-web-scraping-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }

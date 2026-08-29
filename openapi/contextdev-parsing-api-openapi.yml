@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Context Brand Intelligence Parsing API
+  title: Context Parsing API
   description: API for retrieving context data from any website
   version: 1.0.0
 servers:
@@ -393,7 +393,29 @@ paths:
       - lang: CLI
         source: "context-dev parse handle \\\n  --api-key 'My API Key' \\\n  --body 'Example data'"
 components:
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
   schemas:
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
     KeyMetadata:
       type: object
       properties:
@@ -407,23 +429,7 @@ components:
       - credits_consumed
       - credits_remaining
       description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-    RequestTags:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        maxLength: 50
-      maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example:
-      - production
-      - team-alpha
   headers:
-    RateLimitRemaining:
-      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 0
     RateLimitReset:
       description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
       schema:
@@ -433,17 +439,11 @@ components:
       schema:
         type: integer
         minimum: 1
-  parameters:
-    RequestTags:
-      name: tags
-      in: query
-      required: false
-      style: form
-      explode: false
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
       schema:
-        $ref: '#/components/schemas/RequestTags'
-      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example: production,team-alpha
+        type: integer
+        minimum: 0
   securitySchemes:
     bearerAuth:
       type: http

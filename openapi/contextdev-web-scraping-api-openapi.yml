@@ -1,6 +1,6 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
-  title: Context Brand Intelligence Web Scraping API
+  title: Context Web Scraping API
   description: API for retrieving context data from any website
   version: 1.0.0
 servers:
@@ -3005,25 +3005,63 @@ paths:
       - lang: CLI
         source: "context-dev web screenshot \\\n  --api-key 'My API Key'"
 components:
+  responses:
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          description: Seconds until the per-minute rate limit window resets
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message
+              error_code:
+                type: string
+                enum:
+                - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+            required:
+            - message
+            - error_code
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
   schemas:
-    PageMetadataAlternate:
-      type: object
-      properties:
-        href:
-          type: string
-          description: Resolved alternate URL.
-        hreflang:
-          type: string
-          description: Language or locale for the alternate URL, when present.
-        type:
-          type: string
-          description: Alternate resource MIME type, when present.
-        title:
-          type: string
-          description: Alternate resource title, when present.
-      required:
-      - href
-      additionalProperties: false
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
     KeyMetadata:
       type: object
       properties:
@@ -3037,17 +3075,17 @@ components:
       - credits_consumed
       - credits_remaining
       description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    LenientTimeoutMS:
+      type: integer
+      minimum: 1
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
     PageMetadataValue:
       oneOf:
       - type: string
       - type: array
         items:
           type: string
-    LenientTimeoutMS:
-      type: integer
-      minimum: 1
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
     BrowserCountryCode:
       type: string
       enum:
@@ -3339,23 +3377,25 @@ components:
       - sourceUrl
       - finalUrl
       description: Metadata extracted from the scraped page HTML.
-    RequestTags:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        maxLength: 50
-      maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example:
-      - production
-      - team-alpha
+    PageMetadataAlternate:
+      type: object
+      properties:
+        href:
+          type: string
+          description: Resolved alternate URL.
+        hreflang:
+          type: string
+          description: Language or locale for the alternate URL, when present.
+        type:
+          type: string
+          description: Alternate resource MIME type, when present.
+        title:
+          type: string
+          description: Alternate resource title, when present.
+      required:
+      - href
+      additionalProperties: false
   headers:
-    RateLimitRemaining:
-      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 0
     RateLimitReset:
       description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
       schema:
@@ -3365,51 +3405,11 @@ components:
       schema:
         type: integer
         minimum: 1
-  responses:
-    RateLimited:
-      description: Rate limit exceeded
-      headers:
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/RateLimitLimit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/RateLimitRemaining'
-        X-RateLimit-Reset:
-          $ref: '#/components/headers/RateLimitReset'
-        Retry-After:
-          description: Seconds until the per-minute rate limit window resets
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 60
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: Error message
-              error_code:
-                type: string
-                enum:
-                - RATE_LIMITED
-                description: Error code indicating the rate limit was exceeded
-              key_metadata:
-                $ref: '#/components/schemas/KeyMetadata'
-            required:
-            - message
-            - error_code
-  parameters:
-    RequestTags:
-      name: tags
-      in: query
-      required: false
-      style: form
-      explode: false
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
       schema:
-        $ref: '#/components/schemas/RequestTags'
-      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example: production,team-alpha
+        type: integer
+        minimum: 0
   securitySchemes:
     bearerAuth:
       type: http
