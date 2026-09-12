@@ -191,6 +191,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Website
+  url: https://www.context.dev/
 - type: AgentSkill
   url: skills/contextdev-scrape-in-batches.md
 - type: Overlay
