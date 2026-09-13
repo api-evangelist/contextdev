@@ -1,0 +1,29 @@
+{
+  "specVersion": "1.0",
+  "entries": [
+    {
+      "identifier": "urn:air:context.dev:openapi:context-api",
+      "displayName": "Context API OpenAPI specification",
+      "type": "application/vnd.oai.openapi+json",
+      "url": "https://www.context.dev/openapi.json"
+    },
+    {
+      "identifier": "urn:air:context.dev:skill:context-dev",
+      "displayName": "Context.dev agent skill",
+      "type": "text/markdown",
+      "url": "https://www.context.dev/.well-known/agent-skills/context-dev/SKILL.md"
+    },
+    {
+      "identifier": "urn:air:context.dev:mcp:context",
+      "displayName": "Context MCP server",
+      "type": "application/mcp+json",
+      "url": "https://mcp.context.dev/mcp"
+    },
+    {
+      "identifier": "urn:air:context.dev:docs:llms-txt",
+      "displayName": "Context.dev llms.txt index",
+      "type": "text/plain",
+      "url": "https://www.context.dev/llms.txt"
+    }
+  ]
+}

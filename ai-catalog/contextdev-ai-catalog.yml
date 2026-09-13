@@ -1,0 +1,79 @@
+generated: '2026-09-13'
+method: probed
+source: https://context.dev/.well-known/ai-catalog.json
+description: 'AI Catalog manifest observed at /.well-known/ai-catalog.json on context.dev. The AI Catalog
+  Standard is the publishing half of Agentic Resource Discovery (ARD): a JSON manifest listing the agentic
+  resources a domain offers — MCP servers, agent cards, skills, APIs — each typed by media type and identified
+  by a domain-anchored urn:air: URN. Two verdicts are recorded: a structural grade against the data model,
+  and the result of the ARD project''s own conformance CLI run against this exact body. Provider-published
+  by construction — served from the provider''s own host; nothing here is derived or generated.'
+discovery:
+  path: /.well-known/ai-catalog.json
+  canonical: false
+  predecessor_only: true
+  attempts:
+  - path: /.well-known/ard.json
+    http_status: 404
+  - path: /.well-known/ai-catalog.json
+    http_status: 200
+  host: context.dev
+conformance:
+  spec: AI Catalog 1.0 / ARD v0.91
+  grade: flavored
+  spec_version_declared: '1.0'
+  hard_failures:
+  - no-host-object
+  soft_gaps:
+  - content-type-not-ai-catalog-json
+  - entry-no-representativeQueries
+  official_tool:
+    tool: ARD conformance-test v0.9.1 (ards-project/ard-spec)
+    status: PASS
+    critical_errors: 0
+    errors: []
+    warnings:
+    - '[Context API OpenAPI specification] No ''representativeQueries''. The semantic index is built from
+      this term, so the entry will not be found by search — it is a valid catalog entry but not a discoverable
+      ARD entry.'
+    - '[Context.dev agent skill] Media type ''text/markdown'' is based on standard discovery type ''text/markdown''
+      but has missing required parameters: profile="urn:air:agent-skills".'
+    - '[Context.dev agent skill] No ''representativeQueries''. The semantic index is built from this term,
+      so the entry will not be found by search — it is a valid catalog entry but not a discoverable ARD
+      entry.'
+    - '[Context MCP server] No ''representativeQueries''. The semantic index is built from this term,
+      so the entry will not be found by search — it is a valid catalog entry but not a discoverable ARD
+      entry.'
+    - '[Context.dev llms.txt index] Media type ''text/plain'' is not one of standard discovery types:
+      [''application/ai-catalog+json'', ''application/agent-card+json'', ''application/a2a-agent-card+json'',
+      ''application/mcp-server-card+json'', ''application/agent-skills+zip'', ''application/agent-skills+gzip'',
+      ''text/markdown; profile="urn:air:agent-skills"'', ''application/ai-registry'', ''application/ai-registry+json''].'
+    - '[Context.dev llms.txt index] No ''representativeQueries''. The semantic index is built from this
+      term, so the entry will not be found by search — it is a valid catalog entry but not a discoverable
+      ARD entry.'
+    informational:
+    - '[Context API OpenAPI specification] Media type ''application/vnd.oai.openapi+json'' is a valid
+      application extension media type. ARD permits extension types without core registration.'
+    - '[Context MCP server] Media type ''application/mcp+json'' is a valid application extension media
+      type. ARD permits extension types without core registration.'
+catalog:
+  host_display_name: null
+  host_identifier: null
+  entry_count: 4
+  types:
+    application/mcp+json: 1
+    application/vnd.oai.openapi+json: 1
+    text/markdown: 1
+    text/plain: 1
+  representative_queries: 0
+  trust_manifests: 0
+  file: contextdev-ai-catalog.json
+transport:
+  http_status: 200
+  content_type: application/json
+  access_control_allow_origin: '*'
+x-evidence:
+  fetched: '2026-09-13'
+  url: https://context.dev/.well-known/ai-catalog.json
+  http_status: 200
+  content_type: application/json
+  note: Verbatim body saved alongside this manifest. No field inferred.
