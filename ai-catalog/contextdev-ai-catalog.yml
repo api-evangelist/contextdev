@@ -55,6 +55,7 @@ conformance:
       application extension media type. ARD permits extension types without core registration.'
     - '[Context MCP server] Media type ''application/mcp+json'' is a valid application extension media
       type. ARD permits extension types without core registration.'
+  did_web: null
 catalog:
   host_display_name: null
   host_identifier: null
