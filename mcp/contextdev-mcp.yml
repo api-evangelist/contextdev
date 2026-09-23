@@ -18,17 +18,13 @@ server:
     registration_endpoint: https://mcp.context.dev/register
     authorization_endpoint: https://mcp.context.dev/authorize
     token_endpoint: https://mcp.context.dev/token
-    note: >-
-      Browser sign-in. The docs state plainly: "Context.dev uses OAuth. You sign in
-      through your browser, so you do not need to paste an API key into your MCP
-      configuration." Clients register themselves via RFC 7591 DCR — the Claude
-      connector instructions say to leave client ID and secret empty.
+    note: 'Browser sign-in. The docs state plainly: "Context.dev uses OAuth. You sign in through your
+      browser, so you do not need to paste an API key into your MCP configuration." Clients register themselves
+      via RFC 7591 DCR — the Claude connector instructions say to leave client ID and secret empty.'
 install:
   claude_code: claude mcp add --transport http --scope user context https://mcp.context.dev/mcp
-  claude_desktop: >-
-    Customize -> Connectors -> Add custom connector, name it "Context.dev", URL
-    https://mcp.context.dev/mcp, leave OAuth client ID/secret empty, then Connect
-    and sign in via the browser.
+  claude_desktop: Customize -> Connectors -> Add custom connector, name it "Context.dev", URL https://mcp.context.dev/mcp,
+    leave OAuth client ID/secret empty, then Connect and sign in via the browser.
   cursor: '{"mcpServers":{"context":{"url":"https://mcp.context.dev/mcp"}}}'
   stdio: npx -y context.dev-mcp@latest
   clients_documented:
@@ -40,56 +36,36 @@ install:
   - VS Code
 tools:
 - name: execute
-  description: >-
-    Code Mode — runs agent-authored TypeScript against an initialized Context.dev
-    SDK client in a sandboxed container, letting the agent compose multiple API
-    calls and return curated results in one round trip.
+  description: Code Mode — runs agent-authored TypeScript against an initialized Context.dev SDK client
+    in a sandboxed container, letting the agent compose multiple API calls and return curated results
+    in one round trip.
 - name: search_docs
-  description: >-
-    Search the Context.dev SDK documentation for methods, parameters, and usage
-    examples. Annotated readOnlyHint.
-tools_note: >-
-  This tool list was read from the LEGACY Stainless-hosted endpoint
-  (https://context-dev.stlmcp.com), which answers tools/list anonymously. The
-  canonical endpoint https://mcp.context.dev/mcp requires OAuth for discovery as
-  well as invocation, so its live tool list could NOT be confirmed anonymously and
-  may differ. Treat these two tools as the best available evidence, not as a
-  verified reading of the canonical server.
+  description: Search the Context.dev SDK documentation for methods, parameters, and usage examples. Annotated
+    readOnlyHint.
+tools_note: This tool list was read from the LEGACY Stainless-hosted endpoint (https://context-dev.stlmcp.com),
+  which answers tools/list anonymously. The canonical endpoint https://mcp.context.dev/mcp requires OAuth
+  for discovery as well as invocation, so its live tool list could NOT be confirmed anonymously and may
+  differ. Treat these two tools as the best available evidence, not as a verified reading of the canonical
+  server.
 deployment:
-  mode: both
-  endpoint: https://mcp.context.dev/mcp
-  install: npx -y context.dev-mcp@latest
-  package: https://www.npmjs.com/package/context.dev-mcp
-  auth: oauth
+  mode: remote
+  endpoint: https://context-dev.stlmcp.com
   verified: probed
-  checked: '2026-08-14'
-  source: >-
-    POST tools/list to https://mcp.context.dev/mcp returned HTTP 401 with
-    WWW-Authenticate: Bearer error="unauthorized",
-    resource_metadata="https://mcp.context.dev/.well-known/oauth-protected-resource/mcp"
-    — a correct RFC 9728 challenge, which is positive evidence the endpoint is a
-    live, spec-compliant MCP server rather than a guessed path. The npm package
-    context.dev-mcp gives the same server a local-stdio distribution, so
-    Context.dev ships BOTH a remote agent surface and a local one.
-  mode_note: >-
-    Corrected on 2026-08-14. Prior rounds recorded the endpoint as
-    https://context-dev.stlmcp.com with an x-context-dev-api-key header. The docs
-    now name https://mcp.context.dev/mcp with OAuth as the hosted URL ("Use the
-    exact hosted URL, including /mcp"). The stlmcp.com endpoint still answers and
-    is recorded below as legacy.
+  probe: live
+  tools: 2
+  checked: '2026-08-12'
+  source: catalog MCP census
 endpoints_probed:
 - url: https://mcp.context.dev/mcp
   role: canonical
-  method: 'POST tools/list (jsonrpc 2.0)'
+  method: POST tools/list (jsonrpc 2.0)
   http_status: 401
-  www_authenticate: >-
-    Bearer error="unauthorized", error_description="Authorization needed",
-    resource_metadata="https://mcp.context.dev/.well-known/oauth-protected-resource/mcp"
+  www_authenticate: Bearer error="unauthorized", error_description="Authorization needed", resource_metadata="https://mcp.context.dev/.well-known/oauth-protected-resource/mcp"
   discovery_gated: true
   checked: '2026-08-14'
 - url: https://context-dev.stlmcp.com
   role: legacy (Stainless-hosted)
-  method: 'POST tools/list (jsonrpc 2.0)'
+  method: POST tools/list (jsonrpc 2.0)
   http_status: 200
   transport_framing: text/event-stream
   tools_returned: 2
@@ -97,11 +73,10 @@ endpoints_probed:
   discovery_gated: false
   auth_for_invocation: x-context-dev-api-key header (ctxt_secret_ prefix)
   checked: '2026-08-14'
-  note: >-
-    Still live and still answering anonymous discovery, but no longer the URL the
-    docs tell people to use. Two hosted endpoints for the same product is itself a
-    finding: an agent that discovered Context.dev before 2026-08 is pointed at a
-    different server, with a different auth model, than one onboarding today.
+  note: 'Still live and still answering anonymous discovery, but no longer the URL the docs tell people
+    to use. Two hosted endpoints for the same product is itself a finding: an agent that discovered Context.dev
+    before 2026-08 is pointed at a different server, with a different auth model, than one onboarding
+    today.'
 oauth_discovery:
   authorization_server_metadata: well-known/contextdev-mcp-oauth-authorization-server.json
   protected_resource_metadata: well-known/contextdev-mcp-oauth-protected-resource-mcp.json
@@ -111,10 +86,8 @@ oauth_discovery:
   - RFC 9728 (protected resource metadata)
   - RFC 7591 (dynamic client registration)
   - RFC 7636 (PKCE, S256)
-notes: >-
-  Code-Mode design — two meta-tools over the full SDK surface rather than one tool
-  per operation. See mcp/contextdev-tool-crosswalk.yml for what that costs an agent
-  in schema visibility.
+notes: Code-Mode design — two meta-tools over the full SDK surface rather than one tool per operation.
+  See mcp/contextdev-tool-crosswalk.yml for what that costs an agent in schema visibility.
 cross_ref:
   crosswalk: mcp/contextdev-tool-crosswalk.yml
   scopes: scopes/contextdev-scopes.yml

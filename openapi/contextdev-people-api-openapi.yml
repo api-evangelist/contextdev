@@ -125,57 +125,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+      operationId: postPeopleRetrieve
+      x-operation-id-source: derived
 components:
-  responses:
-    RateLimited:
-      description: Rate limit exceeded
-      headers:
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/RateLimitLimit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/RateLimitRemaining'
-        X-RateLimit-Reset:
-          $ref: '#/components/headers/RateLimitReset'
-        Retry-After:
-          description: Seconds until the per-minute rate limit window resets
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 60
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: Error message
-              error_code:
-                type: string
-                enum:
-                - RATE_LIMITED
-                description: Error code indicating the rate limit was exceeded
-              key_metadata:
-                $ref: '#/components/schemas/KeyMetadata'
-            required:
-            - message
-            - error_code
   schemas:
-    PersonSkill:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Skill name.
-        normalized:
-          type: string
-          description: Standardized skill name, when available.
-        proficiency:
-          type: string
-          description: Skill proficiency, when available.
-      required:
-      - name
-      additionalProperties: false
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
     PersonProfile:
       type: object
       properties:
@@ -196,90 +154,6 @@ components:
           format: uri
           description: Profile image URL.
       additionalProperties: false
-    RequestTags:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        maxLength: 50
-      maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example:
-      - production
-      - team-alpha
-    PersonEducation:
-      type: object
-      properties:
-        institution:
-          allOf:
-          - $ref: '#/components/schemas/PersonNormalizedName'
-          description: School or institution name.
-        qualification:
-          type: string
-          description: Degree, certificate, or credential.
-        fieldOfStudy:
-          type: string
-          description: Area of study.
-        description:
-          type: string
-          description: Additional education details.
-        dates:
-          allOf:
-          - $ref: '#/components/schemas/PersonDateRange'
-          description: Education dates.
-      additionalProperties: false
-      required:
-      - institution
-    KeyMetadata:
-      type: object
-      properties:
-        credits_consumed:
-          type: integer
-          description: The number of credits consumed by this request.
-        credits_remaining:
-          type: integer
-          description: The number of credits remaining for your organization after this request.
-      required:
-      - credits_consumed
-      - credits_remaining
-      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          description: Error message
-        error_code:
-          type: string
-          enum:
-          - INTERNAL_ERROR
-          - VALID
-          - NOT_FOUND
-          - FORBIDDEN
-          - USAGE_EXCEEDED
-          - RATE_LIMITED
-          - UNAUTHORIZED
-          - DISABLED
-          - INSUFFICIENT_PERMISSIONS
-          - TIMEOUT_EXCEEDS_MAXIMUM
-          - WEBSITE_ACCESS_ERROR
-          - EXTERNAL_PROVIDER_ERROR
-          - INPUT_VALIDATION_ERROR
-          - FREE_EMAIL_DETECTED
-          - DISPOSABLE_EMAIL_DETECTED
-          - REQUEST_TIMEOUT
-          - UNSUPPORTED_CONTENT
-          - MONITOR_PAUSED
-          - MONITOR_LIMIT_EXCEEDED
-          - SEARCH_UNAVAILABLE
-          description: Error code indicating the type of error
-        key_metadata:
-          $ref: '#/components/schemas/KeyMetadata'
-    TimeoutMS:
-      type: integer
-      minimum: 1000
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
     PersonRetrieveResponse:
       type: object
       properties:
@@ -356,6 +230,25 @@ components:
       - person
       - metadata
       additionalProperties: false
+    PersonDate:
+      type: object
+      properties:
+        year:
+          type: integer
+          description: Year value.
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: Month value, when known.
+        day:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Day value, when known.
+      required:
+      - year
+      additionalProperties: false
     PersonNormalizedName:
       type: object
       properties:
@@ -367,6 +260,47 @@ components:
           description: Standardized name, when available.
       required:
       - display
+      additionalProperties: false
+    PersonSkill:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Skill name.
+        normalized:
+          type: string
+          description: Standardized skill name, when available.
+        proficiency:
+          type: string
+          description: Skill proficiency, when available.
+      required:
+      - name
+      additionalProperties: false
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+    PersonDateRange:
+      type: object
+      properties:
+        startDate:
+          allOf:
+          - $ref: '#/components/schemas/PersonDate'
+          description: Start date, when known.
+        endDate:
+          allOf:
+          - $ref: '#/components/schemas/PersonDate'
+          description: End date, when known.
+        isCurrent:
+          type: boolean
+          description: Whether the entry is current.
       additionalProperties: false
     PersonRetrieveRequest:
       type: object
@@ -386,40 +320,6 @@ components:
           $ref: '#/components/schemas/RequestTags'
       required:
       - identifiers
-      additionalProperties: false
-    PersonDateRange:
-      type: object
-      properties:
-        startDate:
-          allOf:
-          - $ref: '#/components/schemas/PersonDate'
-          description: Start date, when known.
-        endDate:
-          allOf:
-          - $ref: '#/components/schemas/PersonDate'
-          description: End date, when known.
-        isCurrent:
-          type: boolean
-          description: Whether the entry is current.
-      additionalProperties: false
-    PersonDate:
-      type: object
-      properties:
-        year:
-          type: integer
-          description: Year value.
-        month:
-          type: integer
-          minimum: 1
-          maximum: 12
-          description: Month value, when known.
-        day:
-          type: integer
-          minimum: 1
-          maximum: 31
-          description: Day value, when known.
-      required:
-      - year
       additionalProperties: false
     Person:
       type: object
@@ -470,12 +370,75 @@ components:
       - company
       - title
       additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        error_code:
+          type: string
+          enum:
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - WEBSITE_ACCESS_ERROR
+          - EXTERNAL_PROVIDER_ERROR
+          - INPUT_VALIDATION_ERROR
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - UNSUPPORTED_CONTENT
+          - MONITOR_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          description: Error code indicating the type of error
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    PersonEducation:
+      type: object
+      properties:
+        institution:
+          allOf:
+          - $ref: '#/components/schemas/PersonNormalizedName'
+          description: School or institution name.
+        qualification:
+          type: string
+          description: Degree, certificate, or credential.
+        fieldOfStudy:
+          type: string
+          description: Area of study.
+        description:
+          type: string
+          description: Additional education details.
+        dates:
+          allOf:
+          - $ref: '#/components/schemas/PersonDateRange'
+          description: Education dates.
+      additionalProperties: false
+      required:
+      - institution
   headers:
-    RateLimitLimit:
-      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 1
     RateLimitReset:
       description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
       schema:
@@ -485,6 +448,45 @@ components:
       schema:
         type: integer
         minimum: 0
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          description: Seconds until the per-minute rate limit window resets
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message
+              error_code:
+                type: string
+                enum:
+                - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+            required:
+            - message
+            - error_code
   securitySchemes:
     bearerAuth:
       type: http

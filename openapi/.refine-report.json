@@ -23,10 +23,10 @@
     "contextdev-openapi.yml: declared missing tag: People",
     "contextdev-openapi.yml: declared missing tag: Utility",
     "contextdev-openapi.yml: declared missing tag: Web Extraction",
-    "contextdev-openapi.yml: declared missing tag: Web Scraping"
+    "contextdev-openapi.yml: declared missing tag: Web Scraping",
+    "apis.yml register: already-registered"
   ],
   "skipped": [
-    "contextdev-batch-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "contextdev-brand-intelligence-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "contextdev-monitors-api-openapi.yml: previously refined output, superseded by openapi/_original/",
     "contextdev-parsing-api-openapi.yml: previously refined output, superseded by openapi/_original/",

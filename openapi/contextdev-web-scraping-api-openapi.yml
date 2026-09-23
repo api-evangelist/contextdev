@@ -441,6 +441,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webScrapeHTML(\n    url: 'https://example.com',\n    country: 'de',\n    excludeSelectors: ['x'],\n    headers: ['foo' => 'J!'],\n    includeFrames: 'true',\n    includeSelectors: ['x'],\n    maxAgeMs: 0,\n    pdf: ['end' => 1, 'ocr' => 'true', 'shouldParse' => 'true', 'start' => 1],\n    settleAnimations: 'true',\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    useMainContentOnly: 'true',\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web web-scrape-html \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+      operationId: getWebScrapeHtml
+      x-operation-id-source: derived
   /web/scrape/markdown:
     get:
       summary: Scrape Markdown
@@ -923,6 +925,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webScrapeMd(\n    url: 'https://example.com',\n    country: 'de',\n    excludeSelectors: ['x'],\n    headers: ['foo' => 'J!'],\n    includeFrames: 'true',\n    includeImages: 'true',\n    includeLinks: 'true',\n    includeSelectors: ['x'],\n    maxAgeMs: 0,\n    pdf: ['end' => 1, 'ocr' => 'true', 'shouldParse' => 'true', 'start' => 1],\n    settleAnimations: 'true',\n    shortenBase64Images: 'true',\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    useMainContentOnly: 'true',\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web web-scrape-md \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+      operationId: getWebScrapeMarkdown
+      x-operation-id-source: derived
   /web/scrape/images:
     get:
       summary: Scrape Images
@@ -1292,6 +1296,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webScrapeImages(\n    url: 'https://example.com',\n    dedupe: 'true',\n    enrichment: [\n      'classification' => 'true',\n      'hostedURL' => 'true',\n      'maxTimePerMs' => 1,\n      'resolution' => 'true',\n    ],\n    headers: ['foo' => 'J!'],\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web web-scrape-images \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+      operationId: getWebScrapeImages
+      x-operation-id-source: derived
   /web/scrape/sitemap:
     get:
       summary: Crawl Sitemap
@@ -1566,6 +1572,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webScrapeSitemap(\n    domain: 'xxx',\n    headers: ['foo' => 'J!'],\n    maxLinks: 1,\n    sitemapURL: 'https://example.com',\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    urlRegex: '^https?://[^/]+/blog/',\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web web-scrape-sitemap \\\n  --api-key 'My API Key' \\\n  --domain xxx"
+      operationId: getWebScrapeSitemap
+      x-operation-id-source: derived
   /web/crawl:
     post:
       summary: Crawl Website & Scrape Markdown
@@ -1981,6 +1989,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->webCrawlMd(\n    url: 'https://example.com',\n    country: 'de',\n    excludeSelectors: ['string'],\n    followSubdomains: true,\n    includeFrames: true,\n    includeImages: true,\n    includeLinks: true,\n    includeSelectors: ['string'],\n    maxAgeMs: 0,\n    maxDepth: 0,\n    maxPages: 1,\n    pdf: ['end' => 1, 'ocr' => true, 'shouldParse' => true, 'start' => 1],\n    settleAnimations: true,\n    shortenBase64Images: true,\n    stopAfterMs: 10000,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    urlRegex: '^https?://[^/]+/blog/',\n    useMainContentOnly: true,\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web web-crawl-md \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+      operationId: postWebCrawl
+      x-operation-id-source: derived
   /web/search:
     post:
       summary: Web Search
@@ -2563,6 +2573,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->search(\n    query: 'x',\n    country: 'af',\n    excludeDomains: ['string'],\n    freshness: 'last_24_hours',\n    includeDomains: ['string'],\n    markdownOptions: [\n      'enabled' => true,\n      'includeFrames' => true,\n      'includeImages' => true,\n      'includeLinks' => true,\n      'maxAgeMs' => 0,\n      'pdf' => ['end' => 1, 'shouldParse' => true, 'start' => 1],\n      'shortenBase64Images' => true,\n      'timeoutMs' => 1000,\n      'useMainContentOnly' => true,\n      'waitForMs' => 0,\n    ],\n    numResults: 10,\n    queryFanout: true,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web search \\\n  --api-key 'My API Key' \\\n  --query x"
+      operationId: postWebSearch
+      x-operation-id-source: derived
   /web/screenshot:
     get:
       summary: Scrape Screenshot
@@ -3004,53 +3016,38 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->screenshot(\n    colorScheme: 'light',\n    country: 'de',\n    directURL: 'https://example.com',\n    domain: 'xxx',\n    fullScreenshot: 'true',\n    handleCookiePopup: 'true',\n    maxAgeMs: 0,\n    page: 'login',\n    scrollOffset: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1,\n    viewport: ['height' => 240, 'width' => 240],\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web screenshot \\\n  --api-key 'My API Key'"
+      operationId: getWebScreenshot
+      x-operation-id-source: derived
 components:
-  responses:
-    RateLimited:
-      description: Rate limit exceeded
-      headers:
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/RateLimitLimit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/RateLimitRemaining'
-        X-RateLimit-Reset:
-          $ref: '#/components/headers/RateLimitReset'
-        Retry-After:
-          description: Seconds until the per-minute rate limit window resets
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 60
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                description: Error message
-              error_code:
-                type: string
-                enum:
-                - RATE_LIMITED
-                description: Error code indicating the rate limit was exceeded
-              key_metadata:
-                $ref: '#/components/schemas/KeyMetadata'
-            required:
-            - message
-            - error_code
-  parameters:
-    RequestTags:
-      name: tags
-      in: query
-      required: false
-      style: form
-      explode: false
-      schema:
-        $ref: '#/components/schemas/RequestTags'
-      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example: production,team-alpha
   schemas:
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    LenientTimeoutMS:
+      type: integer
+      minimum: 1
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    PageMetadataAlternate:
+      type: object
+      properties:
+        href:
+          type: string
+          description: Resolved alternate URL.
+        hreflang:
+          type: string
+          description: Language or locale for the alternate URL, when present.
+        type:
+          type: string
+          description: Alternate resource MIME type, when present.
+        title:
+          type: string
+          description: Alternate resource title, when present.
+      required:
+      - href
+      additionalProperties: false
     RequestTags:
       type: array
       items:
@@ -3062,30 +3059,89 @@ components:
       example:
       - production
       - team-alpha
-    KeyMetadata:
-      type: object
-      properties:
-        credits_consumed:
-          type: integer
-          description: The number of credits consumed by this request.
-        credits_remaining:
-          type: integer
-          description: The number of credits remaining for your organization after this request.
-      required:
-      - credits_consumed
-      - credits_remaining
-      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-    LenientTimeoutMS:
-      type: integer
-      minimum: 1
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
     PageMetadataValue:
       oneOf:
       - type: string
       - type: array
         items:
           type: string
+    PageMetadata:
+      type: object
+      properties:
+        sourceUrl:
+          type: string
+          description: Original URL requested by the caller.
+        finalUrl:
+          type: string
+          description: Final URL scraped after redirects or scraper fallback, when known. Falls back to sourceUrl when unavailable.
+        title:
+          type: string
+          description: Best title extracted from the page.
+        description:
+          type: string
+          description: Best description extracted from standard, Open Graph, or Twitter metadata.
+        language:
+          type: string
+          description: Language extracted from html lang or language meta tags.
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Keywords extracted from the page's keywords meta tag.
+        canonicalUrl:
+          type: string
+          description: Resolved canonical URL, when present.
+        author:
+          type: string
+          description: Author metadata, when present.
+        siteName:
+          type: string
+          description: Site or application name from page metadata.
+        image:
+          type: string
+          description: Primary resolved preview image from Open Graph, Twitter, or image metadata.
+        favicon:
+          type: string
+          description: Resolved favicon URL, when present.
+        publishedTime:
+          type: string
+          description: Published timestamp/date from page metadata, when present.
+        modifiedTime:
+          type: string
+          description: Modified timestamp/date from page metadata, when present.
+        robots:
+          type: string
+          description: Robots meta directive, when present.
+        openGraph:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: 'Open Graph metadata with the og: prefix removed and keys camel-cased.'
+        twitter:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: 'Twitter card metadata with the twitter: prefix removed and keys camel-cased.'
+        alternates:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageMetadataAlternate'
+          description: Resolved alternate links from link rel=alternate tags.
+        jsonLd:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: JSON-LD structured data blocks parsed from the page.
+        additionalMeta:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: Additional non-social meta tags not promoted to top-level metadata fields.
+      required:
+      - sourceUrl
+      - finalUrl
+      description: Metadata extracted from the scraped page HTML.
     BrowserCountryCode:
       type: string
       enum:
@@ -3295,121 +3351,79 @@ components:
       - zw
       example: de
       description: Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country.
-    TimeoutMS:
-      type: integer
-      minimum: 1000
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-    PageMetadata:
+    KeyMetadata:
       type: object
       properties:
-        sourceUrl:
-          type: string
-          description: Original URL requested by the caller.
-        finalUrl:
-          type: string
-          description: Final URL scraped after redirects or scraper fallback, when known. Falls back to sourceUrl when unavailable.
-        title:
-          type: string
-          description: Best title extracted from the page.
-        description:
-          type: string
-          description: Best description extracted from standard, Open Graph, or Twitter metadata.
-        language:
-          type: string
-          description: Language extracted from html lang or language meta tags.
-        keywords:
-          type: array
-          items:
-            type: string
-          description: Keywords extracted from the page's keywords meta tag.
-        canonicalUrl:
-          type: string
-          description: Resolved canonical URL, when present.
-        author:
-          type: string
-          description: Author metadata, when present.
-        siteName:
-          type: string
-          description: Site or application name from page metadata.
-        image:
-          type: string
-          description: Primary resolved preview image from Open Graph, Twitter, or image metadata.
-        favicon:
-          type: string
-          description: Resolved favicon URL, when present.
-        publishedTime:
-          type: string
-          description: Published timestamp/date from page metadata, when present.
-        modifiedTime:
-          type: string
-          description: Modified timestamp/date from page metadata, when present.
-        robots:
-          type: string
-          description: Robots meta directive, when present.
-        openGraph:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PageMetadataValue'
-          description: 'Open Graph metadata with the og: prefix removed and keys camel-cased.'
-        twitter:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PageMetadataValue'
-          description: 'Twitter card metadata with the twitter: prefix removed and keys camel-cased.'
-        alternates:
-          type: array
-          items:
-            $ref: '#/components/schemas/PageMetadataAlternate'
-          description: Resolved alternate links from link rel=alternate tags.
-        jsonLd:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-          description: JSON-LD structured data blocks parsed from the page.
-        additionalMeta:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PageMetadataValue'
-          description: Additional non-social meta tags not promoted to top-level metadata fields.
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
       required:
-      - sourceUrl
-      - finalUrl
-      description: Metadata extracted from the scraped page HTML.
-    PageMetadataAlternate:
-      type: object
-      properties:
-        href:
-          type: string
-          description: Resolved alternate URL.
-        hreflang:
-          type: string
-          description: Language or locale for the alternate URL, when present.
-        type:
-          type: string
-          description: Alternate resource MIME type, when present.
-        title:
-          type: string
-          description: Alternate resource title, when present.
-      required:
-      - href
-      additionalProperties: false
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
   headers:
     RateLimitReset:
       description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
       schema:
         type: integer
-    RateLimitLimit:
-      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 1
     RateLimitRemaining:
       description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
       schema:
         type: integer
         minimum: 0
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
+  responses:
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          description: Seconds until the per-minute rate limit window resets
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Error message
+              error_code:
+                type: string
+                enum:
+                - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+            required:
+            - message
+            - error_code
   securitySchemes:
     bearerAuth:
       type: http

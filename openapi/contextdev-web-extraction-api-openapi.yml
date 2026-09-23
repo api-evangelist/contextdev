@@ -282,6 +282,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->extract(\n    schema: [\n      'type' => 'bar',\n      'properties' => 'bar',\n      'required' => 'bar',\n      'additionalProperties' => 'bar',\n    ],\n    url: 'https://example.com',\n    factCheck: true,\n    followSubdomains: true,\n    includeFrames: true,\n    instructions: 'instructions',\n    maxAgeMs: 0,\n    maxDepth: 0,\n    maxPages: 1,\n    pdf: ['end' => 1, 'shouldParse' => true, 'start' => 1],\n    stopAfterMs: 10000,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web extract \\\n  --api-key 'My API Key' \\\n  --schema '{type: bar, properties: bar, required: bar, additionalProperties: bar}' \\\n  --url https://example.com"
+      operationId: postWebExtract
+      x-operation-id-source: derived
   /web/competitors:
     get:
       x-hidden: true
@@ -579,6 +581,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->extractCompetitors(\n    domain: 'xxx',\n    numCompetitors: 1,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web extract-competitors \\\n  --api-key 'My API Key' \\\n  --domain xxx"
+      operationId: getWebCompetitors
+      x-operation-id-source: derived
   /web/styleguide:
     get:
       summary: Scrape Styleguide
@@ -1309,6 +1313,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->extractStyleguide(\n    colorScheme: 'light',\n    directURL: 'https://example.com',\n    domain: 'xxx',\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web extract-styleguide \\\n  --api-key 'My API Key'"
+      operationId: getWebStyleguide
+      x-operation-id-source: derived
   /web/fonts:
     get:
       summary: Scrape Fonts
@@ -1624,6 +1630,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->extractFonts(\n    directURL: 'https://example.com',\n    domain: 'xxx',\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev web extract-fonts \\\n  --api-key 'My API Key'"
+      operationId: getWebFonts
+      x-operation-id-source: derived
   /web/naics:
     get:
       summary: Classify NAICS industries
@@ -1850,6 +1858,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->industry->retrieveNaics(\n    input: 'xxxx',\n    maxResults: 1,\n    minResults: 1,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev industry retrieve-naics \\\n  --api-key 'My API Key' \\\n  --input xxxx"
+      operationId: getWebNaics
+      x-operation-id-source: derived
   /web/sic:
     get:
       summary: Classify SIC industries
@@ -2102,6 +2112,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->industry->retrieveSic(\n    input: 'xxxx',\n    maxResults: 1,\n    minResults: 1,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    type: 'original_sic',\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev industry retrieve-sic \\\n  --api-key 'My API Key' \\\n  --input xxxx"
+      operationId: getWebSic
+      x-operation-id-source: derived
   /brand/ai/query:
     post:
       x-hidden: true
@@ -2387,6 +2399,8 @@ paths:
                     description: Error code indicating internal server error
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+      operationId: postBrandAiQuery
+      x-operation-id-source: derived
   /brand/ai/product:
     post:
       summary: Extract a single product from a URL
@@ -2683,6 +2697,8 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->ai->extractProduct(\n    url: 'https://example.com',\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev ai extract-product \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
+      operationId: postBrandAiProduct
+      x-operation-id-source: derived
   /brand/ai/products:
     post:
       summary: Extract products from a brand's website
@@ -2995,7 +3011,97 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->ai->extractProducts(\n    domain: 'domain',\n    maxAgeMs: 0,\n    maxProducts: 1,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    directURL: 'https://example.com',\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev ai extract-products \\\n  --api-key 'My API Key' \\\n  --domain domain \\\n  --direct-url https://example.com"
+      operationId: postBrandAiProducts
+      x-operation-id-source: derived
 components:
+  schemas:
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        error_code:
+          type: string
+          enum:
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - WEBSITE_ACCESS_ERROR
+          - EXTERNAL_PROVIDER_ERROR
+          - INPUT_VALIDATION_ERROR
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - UNSUPPORTED_CONTENT
+          - MONITOR_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          description: Error code indicating the type of error
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+  headers:
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
   responses:
     RateLimited:
       description: Rate limit exceeded
@@ -3030,94 +3136,6 @@ components:
             required:
             - message
             - error_code
-  parameters:
-    RequestTags:
-      name: tags
-      in: query
-      required: false
-      style: form
-      explode: false
-      schema:
-        $ref: '#/components/schemas/RequestTags'
-      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example: production,team-alpha
-  schemas:
-    RequestTags:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        maxLength: 50
-      maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example:
-      - production
-      - team-alpha
-    KeyMetadata:
-      type: object
-      properties:
-        credits_consumed:
-          type: integer
-          description: The number of credits consumed by this request.
-        credits_remaining:
-          type: integer
-          description: The number of credits remaining for your organization after this request.
-      required:
-      - credits_consumed
-      - credits_remaining
-      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          description: Error message
-        error_code:
-          type: string
-          enum:
-          - INTERNAL_ERROR
-          - VALID
-          - NOT_FOUND
-          - FORBIDDEN
-          - USAGE_EXCEEDED
-          - RATE_LIMITED
-          - UNAUTHORIZED
-          - DISABLED
-          - INSUFFICIENT_PERMISSIONS
-          - TIMEOUT_EXCEEDS_MAXIMUM
-          - WEBSITE_ACCESS_ERROR
-          - EXTERNAL_PROVIDER_ERROR
-          - INPUT_VALIDATION_ERROR
-          - FREE_EMAIL_DETECTED
-          - DISPOSABLE_EMAIL_DETECTED
-          - REQUEST_TIMEOUT
-          - UNSUPPORTED_CONTENT
-          - MONITOR_PAUSED
-          - MONITOR_LIMIT_EXCEEDED
-          - SEARCH_UNAVAILABLE
-          description: Error code indicating the type of error
-        key_metadata:
-          $ref: '#/components/schemas/KeyMetadata'
-    TimeoutMS:
-      type: integer
-      minimum: 1000
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-  headers:
-    RateLimitReset:
-      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-    RateLimitLimit:
-      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 1
-    RateLimitRemaining:
-      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 0
   securitySchemes:
     bearerAuth:
       type: http

@@ -392,18 +392,24 @@ paths:
         source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\FileParam;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->parse->handle(\n    FileParam::fromString('Example data', filename: uniqid('file-upload-', true)),\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
       - lang: CLI
         source: "context-dev parse handle \\\n  --api-key 'My API Key' \\\n  --body 'Example data'"
+      operationId: postParse
+      x-operation-id-source: derived
 components:
-  parameters:
-    RequestTags:
-      name: tags
-      in: query
-      required: false
-      style: form
-      explode: false
+  headers:
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
       schema:
-        $ref: '#/components/schemas/RequestTags'
-      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example: production,team-alpha
+        type: integer
+    RateLimitRemaining:
+      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 0
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
   schemas:
     RequestTags:
       type: array
@@ -429,21 +435,17 @@ components:
       - credits_consumed
       - credits_remaining
       description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-  headers:
-    RateLimitReset:
-      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
       schema:
-        type: integer
-    RateLimitLimit:
-      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 1
-    RateLimitRemaining:
-      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 0
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
   securitySchemes:
     bearerAuth:
       type: http

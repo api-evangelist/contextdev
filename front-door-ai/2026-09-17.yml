@@ -1,0 +1,36 @@
+# Front Door AI Index — contextdev — 2026-09-17
+# AI vocabulary counted on the provider's root page. Generated; do not edit.
+# `score` is null unless ownership is `own` — see front_door_ai.py.
+front_door_ai:
+  slug: contextdev
+  lexicon_version: '1.0'
+  probed_at: '2026-09-17'
+  host: www.context.dev
+  final_host: www.context.dev
+  ownership: own
+  owner: contextdev
+  shares_host_with: null
+  inherited_from: null
+  verdict: scored
+  score: 52
+  host_score: 52
+  density: 14.55
+  words: 3574
+  tiers:
+    agentic: 19
+    core: 28
+    model: 5
+  ambiguous: 39
+  top_terms:
+    agent: 36
+    AI: 23
+    AI agent: 10
+    LLMs: 5
+    OpenAI: 3
+    RAG: 3
+    GPT: 2
+    chatbot: 2
+    intelligence: 2
+    MCP: 1
+    automation: 1
+    embedding: 1

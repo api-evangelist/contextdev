@@ -1108,58 +1108,325 @@ webhooks:
           description: Webhook accepted.
 components:
   schemas:
-    MonitorsNullableRunError:
-      anyOf:
-      - allOf:
-        - $ref: '#/components/schemas/MonitorsRunError'
-      - type: 'null'
-    MonitorsEvidence:
+    MonitorsChangeDetection:
+      oneOf:
+      - $ref: '#/components/schemas/MonitorsExactChangeDetection'
+      - $ref: '#/components/schemas/MonitorsSemanticChangeDetection'
+      discriminator:
+        propertyName: type
+        mapping:
+          exact: '#/components/schemas/MonitorsExactChangeDetection'
+          semantic: '#/components/schemas/MonitorsSemanticChangeDetection'
+      description: Discriminated union describing how changes are detected.
+    MonitorsImportance:
+      type: string
+      enum:
+      - low
+      - medium
+      - high
+    MonitorsWebhookFailure:
       type: object
       properties:
-        url:
+        consecutive_failures:
+          type: integer
+          minimum: 1
+          description: Number of consecutive delivery attempts that did not succeed.
+          example: 3
+        last_status:
           type: string
-          format: uri
-          description: Optional URL the evidence relates to. Absent for whole-target diffs.
-        before:
+          enum:
+          - rejected
+          - failed
+          - skipped_unsafe_url
+          description: Outcome of the most recent failed delivery. rejected means a non-2xx response; failed means no HTTP response was received; skipped_unsafe_url means the URL failed the public-endpoint safety check.
+        last_message:
           type: string
-          description: Snapshot of the content before the change.
-        after:
+          description: Human-readable description of the most recent failure.
+          example: Webhook endpoint returned HTTP 429.
+        last_failed_at:
           type: string
-          description: Snapshot of the content after the change.
+          format: date-time
       required:
-      - before
-      - after
+      - consecutive_failures
+      - last_status
+      - last_message
+      - last_failed_at
       additionalProperties: false
-    MonitorsWebhookConfig:
+    MonitorsExtractTarget:
       type: object
       properties:
+        type:
+          type: string
+          enum:
+          - extract
         url:
           type: string
           format: uri
-          description: Webhook URL events are delivered to.
-          example: https://example.com/webhook
-        events:
+          description: Root URL to extract structured data from.
+          example: https://acme.com
+        schema:
+          type: object
+          additionalProperties: {}
+          description: 'JSON Schema describing the data you care about. It is used three ways: it guides which pages are selected for tracking, it gives the change judge extra context on which changes matter (alongside `instructions`), and it defines the shape of the baseline `data` snapshot on GET /monitors/{monitor_id} (refreshed at most about once a day). It is not a response format for changes: change events and webhook payloads always contain diffs, summaries, and evidence excerpts — never data in this schema''s shape. If omitted, a default summary + key-points schema is used.'
+          example:
+            type: object
+            properties:
+              plans:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    price:
+                      type: string
+        instructions:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Natural-language instructions guiding which pages and facts to track and which changes to report.
+          example: Extract every pricing plan with its monthly price and included limits.
+        max_pages:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+          description: Maximum number of pages to track.
+        max_depth:
+          type: integer
+          minimum: 0
+          maximum: 10
+          description: Optional maximum link depth from the starting URL (0 = only the starting page).
+        follow_subdomains:
+          type: boolean
+          default: false
+      required:
+      - type
+      - url
+      - instructions
+      additionalProperties: false
+      title: Extract target
+    MonitorsMode:
+      type: string
+      enum:
+      - web
+      description: Top-level monitor category. Always `web` today; the concrete behavior is described by `target` and `change_detection`.
+      title: Monitor mode
+    MonitorsRun:
+      type: object
+      properties:
+        id:
+          type: string
+          example: run_123
+        monitor_id:
+          type: string
+          example: mon_123
+        status:
+          $ref: '#/components/schemas/MonitorsRunStatus'
+        run_type:
+          type: string
+          enum:
+          - baseline
+          - scheduled
+          description: The first run after monitor creation is a baseline run.
+        target_type:
+          $ref: '#/components/schemas/MonitorsTargetType'
+        change_detection_type:
+          $ref: '#/components/schemas/MonitorsChangeDetectionType'
+        started_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        change_detected:
+          type: boolean
+          example: true
+        change_id:
+          type:
+          - string
+          - 'null'
+          example: chg_123
+        baseline_created:
+          type: boolean
+          description: True when this run established the monitor's initial baseline; baseline runs perform no change detection.
+        credits_charged:
+          type: integer
+          minimum: 0
+          description: Credits charged for this run (0 for skipped/failed runs).
+          example: 1
+        skip_reason:
+          type:
+          - string
+          - 'null'
+          enum:
+          - insufficient_credits
+          - monitor_paused
+          - superseded
+          - null
+          description: Why a skipped run never executed; null unless status is `skipped`.
+        error:
+          $ref: '#/components/schemas/MonitorsNullableRunError'
+        webhook_delivery:
+          $ref: '#/components/schemas/MonitorsWebhookDelivery'
+          deprecated: true
+          description: 'Deprecated: use `webhook_deliveries`, which records every attempt now that a run can deliver multiple events. Omitted when no webhook was attempted, including historical runs created before delivery tracking was added.'
+        webhook_deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsWebhookDelivery'
+          description: All webhook deliveries attempted by this run — one per subscribed event that fired. Omitted when no webhook was attempted, including runs created before event selection was added.
+      required:
+      - id
+      - monitor_id
+      - status
+      - run_type
+      - target_type
+      - change_detection_type
+      - change_detected
+      - baseline_created
+      - credits_charged
+      additionalProperties: false
+    MonitorsLimitsResponse:
+      type: object
+      properties:
+        monitors_used:
+          type: integer
+          description: Number of monitors the account currently has.
+        monitors_limit:
+          type: integer
+          description: Maximum number of monitors allowed for the account. Defaults to the plan allowance unless a custom limit is set for the organization.
+        plan:
+          type: string
+          enum:
+          - free
+          - starter
+          - pro
+          - scale
+          description: The plan tier the limit was resolved from.
+      required:
+      - monitors_used
+      - monitors_limit
+      - plan
+      additionalProperties: false
+      title: Monitor limits response
+    MonitorsChangeDetectionType:
+      type: string
+      enum:
+      - exact
+      - semantic
+    MonitorsMonitor:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/MonitorsMode'
+        id:
+          type: string
+          example: mon_123
+        name:
+          type: string
+          example: Acme pricing monitor
+        target:
+          $ref: '#/components/schemas/MonitorsTarget'
+        change_detection:
+          $ref: '#/components/schemas/MonitorsChangeDetection'
+        schedule:
+          $ref: '#/components/schemas/MonitorsSchedule'
+        webhook:
+          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
+        status:
+          $ref: '#/components/schemas/MonitorsMonitorStatus'
+        last_run_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        last_change_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        next_run_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the next scheduled run is due.
+        last_error:
+          anyOf:
+          - allOf:
+            - $ref: '#/components/schemas/MonitorsRunError'
+          - type: 'null'
+          description: Error from the most recent failed run; null when the last run succeeded.
+        webhook_failure:
+          allOf:
+          - $ref: '#/components/schemas/MonitorsWebhookFailure'
+          nullable: true
+          description: Present while webhook deliveries are failing consecutively; null when deliveries are healthy or no webhook is configured. Cleared on the next successful delivery and when the webhook URL changes.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        tags:
           type: array
           items:
             type: string
-            enum:
-            - change.detected
-            - run.completed
-          minItems: 1
-          maxItems: 2
-          uniqueItems: true
-          description: Events delivered to this endpoint. `change.detected` fires only when a run detects a change; `run.completed` fires on every completed run — including runs that detected no change — and embeds the change when one was detected. Defaults to `["change.detected"]` when omitted.
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: User-defined tags for grouping and filtering monitors and their changes.
           example:
-          - change.detected
-          - run.completed
-        secret:
-          type: string
-          readOnly: true
-          description: 'Signing secret used to verify webhook authenticity. Each delivery includes an `X-Context-Signature: t=<unix>,v1=<hmac>` header, where the HMAC is SHA-256 over `"{t}.{rawRequestBody}"` keyed by this secret. Recompute it with a constant-time compare and reject stale timestamps to prevent replay. Generated by the API; cannot be set by clients.'
-          example: whsec_8f3a…
+          - pricing
+          - competitor
+        baseline:
+          oneOf:
+          - $ref: '#/components/schemas/MonitorsPageBaseline'
+          - $ref: '#/components/schemas/MonitorsSitemapBaseline'
+          - $ref: '#/components/schemas/MonitorsExtractBaseline'
+          - type: 'null'
+          description: 'Current baseline: the last observed value the monitor compares new snapshots against. Its shape follows `target.type` (page/sitemap/extract). Only populated on GET /monitors/{monitor_id}; null until the first baseline run completes (and after a target or change_detection update, which resets the baseline).'
       required:
-      - url
+      - mode
+      - id
+      - name
+      - target
+      - change_detection
+      - schedule
+      - status
+      - created_at
+      - updated_at
       additionalProperties: false
+      title: Monitor
+      description: A web monitor. `mode` is the constant `web`; behavior is described by `target` (page/sitemap/extract) and `change_detection` (exact/semantic).
+    MonitorsCreditUsageResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsCreditUsage'
+        total_credits:
+          type: integer
+          description: Sum of credits across all monitors in the window.
+      required:
+      - data
+      - total_credits
+      additionalProperties: false
+      title: Monitor credit usage response
+    MonitorsSchedule:
+      oneOf:
+      - $ref: '#/components/schemas/MonitorsIntervalSchedule'
+      discriminator:
+        propertyName: type
+        mapping:
+          interval: '#/components/schemas/MonitorsIntervalSchedule'
+      description: Discriminated union describing how the monitor is scheduled. Only `interval` is supported today; `cron` and `exact_time` are reserved for future use.
     MonitorsChange:
       type: object
       properties:
@@ -1261,235 +1528,6 @@ components:
       additionalProperties: false
       title: Change
       description: 'A detected change. `mode` is the constant `web`; `target_type` and `change_detection_type` describe the change, and which optional fields are present depends on them (page: `diff` + excerpts; sitemap: `added_urls`/`removed_urls`; semantic: `confidence`/`importance`/`evidence`/`matched_urls`).'
-    MonitorsCreateMonitorRequest:
-      type: object
-      properties:
-        mode:
-          $ref: '#/components/schemas/MonitorsMode'
-        name:
-          type: string
-          minLength: 1
-          maxLength: 200
-          example: Acme pricing monitor
-        tags:
-          type: array
-          items:
-            type: string
-            minLength: 1
-            maxLength: 50
-          maxItems: 20
-          description: User-defined tags for grouping and filtering monitors and their changes.
-          example:
-          - pricing
-          - competitor
-        target:
-          $ref: '#/components/schemas/MonitorsTarget'
-        change_detection:
-          $ref: '#/components/schemas/MonitorsChangeDetection'
-        schedule:
-          $ref: '#/components/schemas/MonitorsSchedule'
-        webhook:
-          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
-      required:
-      - name
-      - target
-      - change_detection
-      - schedule
-      additionalProperties: false
-      title: Create monitor request
-      description: 'Creates a web monitor. `mode` is the constant `web`; the behavior is described by `target` (page, sitemap, or extract) and `change_detection` (exact or semantic). Supported combinations: page + exact, sitemap + exact, extract + semantic.'
-    MonitorsDeleteMonitorResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          example: mon_123
-        deleted:
-          type: boolean
-          example: true
-      required:
-      - id
-      - deleted
-      additionalProperties: false
-    MonitorsExtractBaseline:
-      type: object
-      properties:
-        data:
-          description: The extracted structured data, matching the monitor's extraction schema (same shape as the /web/extract endpoint's `data`). Refreshed when the monitor re-discovers its page set (at most about once a day); `null` when no extraction has been captured yet.
-          example:
-            plans:
-            - name: Starter
-              price: $9/mo
-        urls_analyzed:
-          type: array
-          items:
-            type: string
-          description: The page URLs the monitor tracks and analyzes for changes.
-          example:
-          - https://acme.com/pricing
-        captured_at:
-          type: string
-          format: date-time
-          description: When this baseline was last captured or replaced.
-      required:
-      - data
-      - urls_analyzed
-      - captured_at
-      additionalProperties: false
-      title: Extract baseline
-      description: 'Current baseline of an `extract` monitor: the pages it tracks and the structured data as last extracted.'
-    MonitorsMonitor:
-      type: object
-      properties:
-        mode:
-          $ref: '#/components/schemas/MonitorsMode'
-        id:
-          type: string
-          example: mon_123
-        name:
-          type: string
-          example: Acme pricing monitor
-        target:
-          $ref: '#/components/schemas/MonitorsTarget'
-        change_detection:
-          $ref: '#/components/schemas/MonitorsChangeDetection'
-        schedule:
-          $ref: '#/components/schemas/MonitorsSchedule'
-        webhook:
-          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
-        status:
-          $ref: '#/components/schemas/MonitorsMonitorStatus'
-        last_run_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        last_change_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        next_run_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: When the next scheduled run is due.
-        last_error:
-          anyOf:
-          - allOf:
-            - $ref: '#/components/schemas/MonitorsRunError'
-          - type: 'null'
-          description: Error from the most recent failed run; null when the last run succeeded.
-        webhook_failure:
-          allOf:
-          - $ref: '#/components/schemas/MonitorsWebhookFailure'
-          nullable: true
-          description: Present while webhook deliveries are failing consecutively; null when deliveries are healthy or no webhook is configured. Cleared on the next successful delivery and when the webhook URL changes.
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        tags:
-          type: array
-          items:
-            type: string
-            minLength: 1
-            maxLength: 50
-          maxItems: 20
-          description: User-defined tags for grouping and filtering monitors and their changes.
-          example:
-          - pricing
-          - competitor
-        baseline:
-          oneOf:
-          - $ref: '#/components/schemas/MonitorsPageBaseline'
-          - $ref: '#/components/schemas/MonitorsSitemapBaseline'
-          - $ref: '#/components/schemas/MonitorsExtractBaseline'
-          - type: 'null'
-          description: 'Current baseline: the last observed value the monitor compares new snapshots against. Its shape follows `target.type` (page/sitemap/extract). Only populated on GET /monitors/{monitor_id}; null until the first baseline run completes (and after a target or change_detection update, which resets the baseline).'
-      required:
-      - mode
-      - id
-      - name
-      - target
-      - change_detection
-      - schedule
-      - status
-      - created_at
-      - updated_at
-      additionalProperties: false
-      title: Monitor
-      description: A web monitor. `mode` is the constant `web`; behavior is described by `target` (page/sitemap/extract) and `change_detection` (exact/semantic).
-    MonitorsScheduleUnit:
-      type: string
-      enum:
-      - minutes
-      - hours
-      - days
-      example: hours
-    MonitorsWebhookDelivery:
-      type: object
-      properties:
-        event_id:
-          type: string
-          description: Identifier sent in the X-Context-Id header.
-          example: evt_123
-        event:
-          type: string
-          enum:
-          - change.detected
-          - run.completed
-          description: The event this delivery carried. Deliveries recorded before event selection existed report change.detected.
-        status:
-          type: string
-          enum:
-          - delivered
-          - rejected
-          - failed
-          - skipped_unsafe_url
-          description: Delivery outcome. delivered means any 2xx response; rejected means a non-2xx response; failed means no HTTP response was received; skipped_unsafe_url means the URL failed the public-endpoint safety check.
-        http_status:
-          type:
-          - integer
-          - 'null'
-          minimum: 100
-          maximum: 599
-          description: The endpoint's final HTTP response status, or null when no response was received.
-          example: 200
-        attempted_at:
-          type: string
-          format: date-time
-        error:
-          $ref: '#/components/schemas/MonitorsNullableRunError'
-      required:
-      - event_id
-      - event
-      - status
-      - http_status
-      - attempted_at
-      - error
-      additionalProperties: false
-    MonitorsListRunsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/MonitorsRun'
-        has_more:
-          type: boolean
-        next_cursor:
-          type:
-          - string
-          - 'null'
-      required:
-      - data
-      - has_more
-      - next_cursor
-      additionalProperties: false
     MonitorsSitemapTarget:
       type: object
       properties:
@@ -1530,191 +1568,11 @@ components:
       additionalProperties: false
       description: Watch a sitemap for URL additions and removals. Crawled URLs are normalized (lowercased host, no trailing slash/fragment) and scoped to the monitored site and its subdomains before comparison. On a detected difference the sitemap is re-fetched within the same run and only URLs both observations agree on are reported, suppressing transient crawl flaps.
       title: Sitemap target
-    MonitorsPageBaseline:
-      type: object
-      properties:
-        text:
-          type: string
-          description: The page's visible text as last observed.
-          example: 'Acme Pricing
-
-            Starter $9/mo…'
-        captured_at:
-          type: string
-          format: date-time
-          description: When this baseline was last captured or replaced.
-      required:
-      - text
-      - captured_at
-      additionalProperties: false
-      title: Page baseline
-      description: 'Current baseline of a `page` monitor: the visible page text as last observed.'
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          description: Error message
-        error_code:
-          type: string
-          enum:
-          - INTERNAL_ERROR
-          - VALID
-          - NOT_FOUND
-          - FORBIDDEN
-          - USAGE_EXCEEDED
-          - RATE_LIMITED
-          - UNAUTHORIZED
-          - DISABLED
-          - INSUFFICIENT_PERMISSIONS
-          - TIMEOUT_EXCEEDS_MAXIMUM
-          - WEBSITE_ACCESS_ERROR
-          - EXTERNAL_PROVIDER_ERROR
-          - INPUT_VALIDATION_ERROR
-          - FREE_EMAIL_DETECTED
-          - DISPOSABLE_EMAIL_DETECTED
-          - REQUEST_TIMEOUT
-          - UNSUPPORTED_CONTENT
-          - MONITOR_PAUSED
-          - MONITOR_LIMIT_EXCEEDED
-          - SEARCH_UNAVAILABLE
-          description: Error code indicating the type of error
-        key_metadata:
-          $ref: '#/components/schemas/KeyMetadata'
-    MonitorsMode:
-      type: string
-      enum:
-      - web
-      description: Top-level monitor category. Always `web` today; the concrete behavior is described by `target` and `change_detection`.
-      title: Monitor mode
-    MonitorsCreditUsageResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/MonitorsCreditUsage'
-        total_credits:
-          type: integer
-          description: Sum of credits across all monitors in the window.
-      required:
-      - data
-      - total_credits
-      additionalProperties: false
-      title: Monitor credit usage response
-    MonitorsWebhookFailure:
-      type: object
-      properties:
-        consecutive_failures:
-          type: integer
-          minimum: 1
-          description: Number of consecutive delivery attempts that did not succeed.
-          example: 3
-        last_status:
-          type: string
-          enum:
-          - rejected
-          - failed
-          - skipped_unsafe_url
-          description: Outcome of the most recent failed delivery. rejected means a non-2xx response; failed means no HTTP response was received; skipped_unsafe_url means the URL failed the public-endpoint safety check.
-        last_message:
-          type: string
-          description: Human-readable description of the most recent failure.
-          example: Webhook endpoint returned HTTP 429.
-        last_failed_at:
-          type: string
-          format: date-time
-      required:
-      - consecutive_failures
-      - last_status
-      - last_message
-      - last_failed_at
-      additionalProperties: false
-    MonitorsChangeDetectionType:
-      type: string
-      enum:
-      - exact
-      - semantic
-    MonitorsSchedule:
-      oneOf:
-      - $ref: '#/components/schemas/MonitorsIntervalSchedule'
-      discriminator:
-        propertyName: type
-        mapping:
-          interval: '#/components/schemas/MonitorsIntervalSchedule'
-      description: Discriminated union describing how the monitor is scheduled. Only `interval` is supported today; `cron` and `exact_time` are reserved for future use.
-    MonitorsUpdateMonitorRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-          maxLength: 200
-          example: Acme pricing monitor
-        tags:
-          type: array
-          items:
-            type: string
-            minLength: 1
-            maxLength: 50
-          maxItems: 20
-          description: User-defined tags for grouping and filtering monitors and their changes.
-          example:
-          - pricing
-          - competitor
-        status:
-          type: string
-          enum:
-          - active
-          - paused
-        target:
-          $ref: '#/components/schemas/MonitorsTarget'
-        change_detection:
-          $ref: '#/components/schemas/MonitorsChangeDetection'
-        schedule:
-          $ref: '#/components/schemas/MonitorsSchedule'
-        webhook:
-          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
-          description: Set to null to remove the webhook.
-      additionalProperties: false
-      description: Shared monitor update fields. `target` and `change_detection` can be updated, but the final combination must be supported.
-    MonitorsImportance:
-      type: string
-      enum:
-      - low
-      - medium
-      - high
-    KeyMetadata:
-      type: object
-      properties:
-        credits_consumed:
-          type: integer
-          description: The number of credits consumed by this request.
-        credits_remaining:
-          type: integer
-          description: The number of credits remaining for your organization after this request.
-      required:
-      - credits_consumed
-      - credits_remaining
-      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-    MonitorsListMonitorsResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/MonitorsMonitor'
-        has_more:
-          type: boolean
-        next_cursor:
-          type:
-          - string
-          - 'null'
-      required:
-      - data
-      - has_more
-      - next_cursor
-      additionalProperties: false
+    MonitorsNullableRunError:
+      anyOf:
+      - allOf:
+        - $ref: '#/components/schemas/MonitorsRunError'
+      - type: 'null'
     MonitorsRunStatus:
       type: string
       enum:
@@ -1724,35 +1582,111 @@ components:
       - failed
       - skipped
       description: Lifecycle status of a run. `skipped` runs never executed — see `skip_reason` (insufficient credits, monitor paused, or superseded by a concurrent run).
-    MonitorsIntervalSchedule:
+    MonitorsExtractBaseline:
+      type: object
+      properties:
+        data:
+          description: The extracted structured data, matching the monitor's extraction schema (same shape as the /web/extract endpoint's `data`). Refreshed when the monitor re-discovers its page set (at most about once a day); `null` when no extraction has been captured yet.
+          example:
+            plans:
+            - name: Starter
+              price: $9/mo
+        urls_analyzed:
+          type: array
+          items:
+            type: string
+          description: The page URLs the monitor tracks and analyzes for changes.
+          example:
+          - https://acme.com/pricing
+        captured_at:
+          type: string
+          format: date-time
+          description: When this baseline was last captured or replaced.
+      required:
+      - data
+      - urls_analyzed
+      - captured_at
+      additionalProperties: false
+      title: Extract baseline
+      description: 'Current baseline of an `extract` monitor: the pages it tracks and the structured data as last extracted.'
+    MonitorsSitemapBaseline:
+      type: object
+      properties:
+        urls:
+          type: array
+          items:
+            type: string
+          description: The sitemap URLs as last observed (sorted, normalized).
+          example:
+          - https://acme.com/blog/launch
+          - https://acme.com/pricing
+        url_count:
+          type: integer
+          description: Number of URLs in the baseline.
+          example: 2
+        captured_at:
+          type: string
+          format: date-time
+          description: When this baseline was last captured or replaced.
+      required:
+      - urls
+      - url_count
+      - captured_at
+      additionalProperties: false
+      title: Sitemap baseline
+      description: 'Current baseline of a `sitemap` monitor: the normalized URL set as last observed.'
+    MonitorsPageTarget:
       type: object
       properties:
         type:
           type: string
           enum:
-          - interval
-        frequency:
-          type: integer
-          minimum: 1
-          maximum: 525600
-          description: Number of units between runs. The resulting interval (frequency × unit) must be at least 10 minutes and at most 1 year (e.g. minimum 10 when unit is minutes; maximum 365 when unit is days).
-          example: 6
-        unit:
-          $ref: '#/components/schemas/MonitorsScheduleUnit'
+          - page
+        url:
+          type: string
+          format: uri
+          example: https://acme.com/pricing
+        normalize_whitespace:
+          type: boolean
+          default: true
+          description: Normalize whitespace before comparing or analyzing text.
       required:
       - type
-      - frequency
-      - unit
+      - url
       additionalProperties: false
-      description: Run the monitor on a fixed interval defined by a frequency and a unit, e.g. every 6 hours or every 2 days. The total interval (frequency × unit) must be between 10 minutes and 1 year.
-      title: Interval
-    MonitorsListChangesResponse:
+      description: Watch a single web page.
+      title: Page target
+    MonitorsMonitorStatus:
+      type: string
+      enum:
+      - active
+      - paused
+      - failed
+      description: Monitor lifecycle status. `failed` means the most recent run failed (see the monitor's `last_error`); failed monitors keep running on schedule and flip back to `active` on the next successful run. Monitors are auto-`paused` after repeated consecutive failures or insufficient-credit skips; resume by PATCHing status to `active`.
+    MonitorsEvidence:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Optional URL the evidence relates to. Absent for whole-target diffs.
+        before:
+          type: string
+          description: Snapshot of the content before the change.
+        after:
+          type: string
+          description: Snapshot of the content after the change.
+      required:
+      - before
+      - after
+      additionalProperties: false
+    MonitorsListRunsResponse:
       type: object
       properties:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/MonitorsChangeSummary'
+            $ref: '#/components/schemas/MonitorsRun'
         has_more:
           type: boolean
         next_cursor:
@@ -1763,139 +1697,6 @@ components:
       - data
       - has_more
       - next_cursor
-      additionalProperties: false
-    MonitorsExtractTarget:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - extract
-        url:
-          type: string
-          format: uri
-          description: Root URL to extract structured data from.
-          example: https://acme.com
-        schema:
-          type: object
-          additionalProperties: {}
-          description: 'JSON Schema describing the data you care about. It is used three ways: it guides which pages are selected for tracking, it gives the change judge extra context on which changes matter (alongside `instructions`), and it defines the shape of the baseline `data` snapshot on GET /monitors/{monitor_id} (refreshed at most about once a day). It is not a response format for changes: change events and webhook payloads always contain diffs, summaries, and evidence excerpts — never data in this schema''s shape. If omitted, a default summary + key-points schema is used.'
-          example:
-            type: object
-            properties:
-              plans:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    price:
-                      type: string
-        instructions:
-          type: string
-          minLength: 1
-          maxLength: 2000
-          description: Natural-language instructions guiding which pages and facts to track and which changes to report.
-          example: Extract every pricing plan with its monthly price and included limits.
-        max_pages:
-          type: integer
-          minimum: 1
-          maximum: 50
-          default: 10
-          description: Maximum number of pages to track.
-        max_depth:
-          type: integer
-          minimum: 0
-          maximum: 10
-          description: Optional maximum link depth from the starting URL (0 = only the starting page).
-        follow_subdomains:
-          type: boolean
-          default: false
-      required:
-      - type
-      - url
-      - instructions
-      additionalProperties: false
-      title: Extract target
-    MonitorsRun:
-      type: object
-      properties:
-        id:
-          type: string
-          example: run_123
-        monitor_id:
-          type: string
-          example: mon_123
-        status:
-          $ref: '#/components/schemas/MonitorsRunStatus'
-        run_type:
-          type: string
-          enum:
-          - baseline
-          - scheduled
-          description: The first run after monitor creation is a baseline run.
-        target_type:
-          $ref: '#/components/schemas/MonitorsTargetType'
-        change_detection_type:
-          $ref: '#/components/schemas/MonitorsChangeDetectionType'
-        started_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        completed_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-        change_detected:
-          type: boolean
-          example: true
-        change_id:
-          type:
-          - string
-          - 'null'
-          example: chg_123
-        baseline_created:
-          type: boolean
-          description: True when this run established the monitor's initial baseline; baseline runs perform no change detection.
-        credits_charged:
-          type: integer
-          minimum: 0
-          description: Credits charged for this run (0 for skipped/failed runs).
-          example: 1
-        skip_reason:
-          type:
-          - string
-          - 'null'
-          enum:
-          - insufficient_credits
-          - monitor_paused
-          - superseded
-          - null
-          description: Why a skipped run never executed; null unless status is `skipped`.
-        error:
-          $ref: '#/components/schemas/MonitorsNullableRunError'
-        webhook_delivery:
-          $ref: '#/components/schemas/MonitorsWebhookDelivery'
-          deprecated: true
-          description: 'Deprecated: use `webhook_deliveries`, which records every attempt now that a run can deliver multiple events. Omitted when no webhook was attempted, including historical runs created before delivery tracking was added.'
-        webhook_deliveries:
-          type: array
-          items:
-            $ref: '#/components/schemas/MonitorsWebhookDelivery'
-          description: All webhook deliveries attempted by this run — one per subscribed event that fired. Omitted when no webhook was attempted, including runs created before event selection was added.
-      required:
-      - id
-      - monitor_id
-      - status
-      - run_type
-      - target_type
-      - change_detection_type
-      - change_detected
-      - baseline_created
-      - credits_charged
       additionalProperties: false
     MonitorsRunCompletedWebhookPayload:
       type: object
@@ -1986,6 +1787,203 @@ components:
       additionalProperties: false
       title: Monitor run completed webhook payload
       description: 'Payload sent after every completed run when the monitor''s webhook subscribes to run.completed. A run with `change_detected: false` is a confirmation that the monitor ran and found no change.'
+    MonitorsIntervalSchedule:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - interval
+        frequency:
+          type: integer
+          minimum: 1
+          maximum: 525600
+          description: Number of units between runs. The resulting interval (frequency × unit) must be at least 10 minutes and at most 1 year (e.g. minimum 10 when unit is minutes; maximum 365 when unit is days).
+          example: 6
+        unit:
+          $ref: '#/components/schemas/MonitorsScheduleUnit'
+      required:
+      - type
+      - frequency
+      - unit
+      additionalProperties: false
+      description: Run the monitor on a fixed interval defined by a frequency and a unit, e.g. every 6 hours or every 2 days. The total interval (frequency × unit) must be between 10 minutes and 1 year.
+      title: Interval
+    MonitorsChangeDetectedWebhookPayload:
+      type: object
+      properties:
+        event:
+          type: string
+          enum:
+          - change.detected
+        id:
+          type: string
+          example: evt_123
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-07-09T18:00:12.000Z'
+        data:
+          type: object
+          properties:
+            change:
+              $ref: '#/components/schemas/MonitorsChange'
+          required:
+          - change
+          additionalProperties: false
+      required:
+      - event
+      - id
+      - created_at
+      - data
+      additionalProperties: false
+      title: Monitor change detected webhook payload
+      description: Payload sent when a monitor detects a change. The nested change is the same full change record returned by GET /monitors/changes/{change_id}.
+    MonitorsListChangesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsChangeSummary'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
+      required:
+      - data
+      - has_more
+      - next_cursor
+      additionalProperties: false
+    MonitorsNullableWebhookConfig:
+      anyOf:
+      - allOf:
+        - $ref: '#/components/schemas/MonitorsWebhookConfig'
+      - type: 'null'
+    MonitorsExactChangeDetection:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - exact
+      required:
+      - type
+      additionalProperties: false
+      description: Detect exact changes. For page targets, this means visible text diffs. For sitemap targets, this means URL additions and removals.
+      title: Exact
+    MonitorsPageBaseline:
+      type: object
+      properties:
+        text:
+          type: string
+          description: The page's visible text as last observed.
+          example: 'Acme Pricing
+
+            Starter $9/mo…'
+        captured_at:
+          type: string
+          format: date-time
+          description: When this baseline was last captured or replaced.
+      required:
+      - text
+      - captured_at
+      additionalProperties: false
+      title: Page baseline
+      description: 'Current baseline of a `page` monitor: the visible page text as last observed.'
+    MonitorsTargetType:
+      type: string
+      enum:
+      - page
+      - sitemap
+      - extract
+    MonitorsUpdateMonitorRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Acme pricing monitor
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: User-defined tags for grouping and filtering monitors and their changes.
+          example:
+          - pricing
+          - competitor
+        status:
+          type: string
+          enum:
+          - active
+          - paused
+        target:
+          $ref: '#/components/schemas/MonitorsTarget'
+        change_detection:
+          $ref: '#/components/schemas/MonitorsChangeDetection'
+        schedule:
+          $ref: '#/components/schemas/MonitorsSchedule'
+        webhook:
+          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
+          description: Set to null to remove the webhook.
+      additionalProperties: false
+      description: Shared monitor update fields. `target` and `change_detection` can be updated, but the final combination must be supported.
+    MonitorsCreateMonitorRequest:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/MonitorsMode'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Acme pricing monitor
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: User-defined tags for grouping and filtering monitors and their changes.
+          example:
+          - pricing
+          - competitor
+        target:
+          $ref: '#/components/schemas/MonitorsTarget'
+        change_detection:
+          $ref: '#/components/schemas/MonitorsChangeDetection'
+        schedule:
+          $ref: '#/components/schemas/MonitorsSchedule'
+        webhook:
+          $ref: '#/components/schemas/MonitorsNullableWebhookConfig'
+      required:
+      - name
+      - target
+      - change_detection
+      - schedule
+      additionalProperties: false
+      title: Create monitor request
+      description: 'Creates a web monitor. `mode` is the constant `web`; the behavior is described by `target` (page, sitemap, or extract) and `change_detection` (exact or semantic). Supported combinations: page + exact, sitemap + exact, extract + semantic.'
+    MonitorsRunError:
+      type: object
+      properties:
+        code:
+          type: string
+          example: fetch_failed
+        message:
+          type: string
+          example: The target URL could not be fetched.
+      required:
+      - code
+      - message
+      additionalProperties: false
     MonitorsRunNowResponse:
       type: object
       properties:
@@ -2004,53 +2002,70 @@ components:
       - run_id
       - queued
       additionalProperties: false
-    MonitorsSitemapBaseline:
+    MonitorsScheduleUnit:
+      type: string
+      enum:
+      - minutes
+      - hours
+      - days
+      example: hours
+    MonitorsDeleteMonitorResponse:
       type: object
       properties:
-        urls:
-          type: array
-          items:
-            type: string
-          description: The sitemap URLs as last observed (sorted, normalized).
-          example:
-          - https://acme.com/blog/launch
-          - https://acme.com/pricing
-        url_count:
-          type: integer
-          description: Number of URLs in the baseline.
-          example: 2
-        captured_at:
+        id:
           type: string
-          format: date-time
-          description: When this baseline was last captured or replaced.
+          example: mon_123
+        deleted:
+          type: boolean
+          example: true
       required:
-      - urls
-      - url_count
-      - captured_at
+      - id
+      - deleted
       additionalProperties: false
-      title: Sitemap baseline
-      description: 'Current baseline of a `sitemap` monitor: the normalized URL set as last observed.'
-    MonitorsPageTarget:
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    MonitorsSemanticChangeDetection:
       type: object
       properties:
         type:
           type: string
           enum:
-          - page
-        url:
-          type: string
-          format: uri
-          example: https://acme.com/pricing
-        normalize_whitespace:
-          type: boolean
-          default: true
-          description: Normalize whitespace before comparing or analyzing text.
+          - semantic
+        confidence_threshold:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.75
       required:
       - type
-      - url
       additionalProperties: false
-      description: Watch a single web page.
-      title: Page target
+      description: Detect meaning-level changes to tracked page content, ignoring cosmetic or paraphrase-only differences. Which changes are meaningful is judged against the extract target's `instructions` (and `schema`, when provided).
+      title: Semantic
+    MonitorsTarget:
+      oneOf:
+      - $ref: '#/components/schemas/MonitorsPageTarget'
+      - $ref: '#/components/schemas/MonitorsSitemapTarget'
+      - allOf:
+        - $ref: '#/components/schemas/MonitorsExtractTarget'
+        - description: Watch the monitor-relevant pages of a site for meaningful changes. A crawl guided by `schema`/`instructions` selects up to `max_pages` relevant pages to track; each run re-checks exactly those pages, and confirmed content changes are judged for relevance against the monitor's `instructions` (and `schema`, when provided). The tracked page set is refreshed by a periodic re-discovery crawl.
+      discriminator:
+        propertyName: type
+        mapping:
+          page: '#/components/schemas/MonitorsPageTarget'
+          sitemap: '#/components/schemas/MonitorsSitemapTarget'
+          extract: '#/components/schemas/MonitorsExtractTarget'
+      description: Discriminated union describing what the monitor watches.
     MonitorsChangeSummary:
       type: object
       properties:
@@ -2117,121 +2132,54 @@ components:
       additionalProperties: false
       title: Change summary
       description: A lightweight change summary. `mode` is the constant `web`; `target_type` and `change_detection_type` describe the change, and which optional fields are present depends on them (e.g. sitemap changes include `added_url_count`/`removed_url_count`; semantic changes include `confidence`/`importance`).
-    MonitorsTarget:
-      oneOf:
-      - $ref: '#/components/schemas/MonitorsPageTarget'
-      - $ref: '#/components/schemas/MonitorsSitemapTarget'
-      - allOf:
-        - $ref: '#/components/schemas/MonitorsExtractTarget'
-        - description: Watch the monitor-relevant pages of a site for meaningful changes. A crawl guided by `schema`/`instructions` selects up to `max_pages` relevant pages to track; each run re-checks exactly those pages, and confirmed content changes are judged for relevance against the monitor's `instructions` (and `schema`, when provided). The tracked page set is refreshed by a periodic re-discovery crawl.
-      discriminator:
-        propertyName: type
-        mapping:
-          page: '#/components/schemas/MonitorsPageTarget'
-          sitemap: '#/components/schemas/MonitorsSitemapTarget'
-          extract: '#/components/schemas/MonitorsExtractTarget'
-      description: Discriminated union describing what the monitor watches.
-    MonitorsRunError:
+    MonitorsWebhookConfig:
       type: object
       properties:
-        code:
+        url:
           type: string
-          example: fetch_failed
-        message:
-          type: string
-          example: The target URL could not be fetched.
-      required:
-      - code
-      - message
-      additionalProperties: false
-    MonitorsChangeDetection:
-      oneOf:
-      - $ref: '#/components/schemas/MonitorsExactChangeDetection'
-      - $ref: '#/components/schemas/MonitorsSemanticChangeDetection'
-      discriminator:
-        propertyName: type
-        mapping:
-          exact: '#/components/schemas/MonitorsExactChangeDetection'
-          semantic: '#/components/schemas/MonitorsSemanticChangeDetection'
-      description: Discriminated union describing how changes are detected.
-    MonitorsTargetType:
-      type: string
-      enum:
-      - page
-      - sitemap
-      - extract
-    MonitorsLimitsResponse:
-      type: object
-      properties:
-        monitors_used:
-          type: integer
-          description: Number of monitors the account currently has.
-        monitors_limit:
-          type: integer
-          description: Maximum number of monitors allowed for the account. Defaults to the plan allowance unless a custom limit is set for the organization.
-        plan:
-          type: string
-          enum:
-          - free
-          - starter
-          - pro
-          - scale
-          description: The plan tier the limit was resolved from.
-      required:
-      - monitors_used
-      - monitors_limit
-      - plan
-      additionalProperties: false
-      title: Monitor limits response
-    MonitorsChangeDetectedWebhookPayload:
-      type: object
-      properties:
-        event:
-          type: string
-          enum:
+          format: uri
+          description: Webhook URL events are delivered to.
+          example: https://example.com/webhook
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+            - change.detected
+            - run.completed
+          minItems: 1
+          maxItems: 2
+          uniqueItems: true
+          description: Events delivered to this endpoint. `change.detected` fires only when a run detects a change; `run.completed` fires on every completed run — including runs that detected no change — and embeds the change when one was detected. Defaults to `["change.detected"]` when omitted.
+          example:
           - change.detected
-        id:
+          - run.completed
+        secret:
           type: string
-          example: evt_123
-        created_at:
-          type: string
-          format: date-time
-          example: '2026-07-09T18:00:12.000Z'
-        data:
-          type: object
-          properties:
-            change:
-              $ref: '#/components/schemas/MonitorsChange'
-          required:
-          - change
-          additionalProperties: false
+          readOnly: true
+          description: 'Signing secret used to verify webhook authenticity. Each delivery includes an `X-Context-Signature: t=<unix>,v1=<hmac>` header, where the HMAC is SHA-256 over `"{t}.{rawRequestBody}"` keyed by this secret. Recompute it with a constant-time compare and reject stale timestamps to prevent replay. Generated by the API; cannot be set by clients.'
+          example: whsec_8f3a…
       required:
-      - event
-      - id
-      - created_at
-      - data
+      - url
       additionalProperties: false
-      title: Monitor change detected webhook payload
-      description: Payload sent when a monitor detects a change. The nested change is the same full change record returned by GET /monitors/changes/{change_id}.
-    MonitorsExactChangeDetection:
+    MonitorsListMonitorsResponse:
       type: object
       properties:
-        type:
-          type: string
-          enum:
-          - exact
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorsMonitor'
+        has_more:
+          type: boolean
+        next_cursor:
+          type:
+          - string
+          - 'null'
       required:
-      - type
+      - data
+      - has_more
+      - next_cursor
       additionalProperties: false
-      description: Detect exact changes. For page targets, this means visible text diffs. For sitemap targets, this means URL additions and removals.
-      title: Exact
-    MonitorsMonitorStatus:
-      type: string
-      enum:
-      - active
-      - paused
-      - failed
-      description: Monitor lifecycle status. `failed` means the most recent run failed (see the monitor's `last_error`); failed monitors keep running on schedule and flip back to `active` on the next successful run. Monitors are auto-`paused` after repeated consecutive failures or insufficient-credit skips; resume by PATCHing status to `active`.
     MonitorsCreditUsage:
       type: object
       properties:
@@ -2254,29 +2202,107 @@ components:
       - runs
       additionalProperties: false
       title: Monitor credit usage
-    MonitorsSemanticChangeDetection:
+    ErrorResponse:
       type: object
       properties:
-        type:
+        message:
+          type: string
+          description: Error message
+        error_code:
           type: string
           enum:
-          - semantic
-        confidence_threshold:
-          type: number
-          minimum: 0
-          maximum: 1
-          default: 0.75
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - WEBSITE_ACCESS_ERROR
+          - EXTERNAL_PROVIDER_ERROR
+          - INPUT_VALIDATION_ERROR
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - UNSUPPORTED_CONTENT
+          - MONITOR_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          description: Error code indicating the type of error
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    MonitorsWebhookDelivery:
+      type: object
+      properties:
+        event_id:
+          type: string
+          description: Identifier sent in the X-Context-Id header.
+          example: evt_123
+        event:
+          type: string
+          enum:
+          - change.detected
+          - run.completed
+          description: The event this delivery carried. Deliveries recorded before event selection existed report change.detected.
+        status:
+          type: string
+          enum:
+          - delivered
+          - rejected
+          - failed
+          - skipped_unsafe_url
+          description: Delivery outcome. delivered means any 2xx response; rejected means a non-2xx response; failed means no HTTP response was received; skipped_unsafe_url means the URL failed the public-endpoint safety check.
+        http_status:
+          type:
+          - integer
+          - 'null'
+          minimum: 100
+          maximum: 599
+          description: The endpoint's final HTTP response status, or null when no response was received.
+          example: 200
+        attempted_at:
+          type: string
+          format: date-time
+        error:
+          $ref: '#/components/schemas/MonitorsNullableRunError'
       required:
-      - type
+      - event_id
+      - event
+      - status
+      - http_status
+      - attempted_at
+      - error
       additionalProperties: false
-      description: Detect meaning-level changes to tracked page content, ignoring cosmetic or paraphrase-only differences. Which changes are meaningful is judged against the extract target's `instructions` (and `schema`, when provided).
-      title: Semantic
-    MonitorsNullableWebhookConfig:
-      anyOf:
-      - allOf:
-        - $ref: '#/components/schemas/MonitorsWebhookConfig'
-      - type: 'null'
   responses:
+    MonitorsLimitExceeded:
+      description: Monitor limit for the account reached (error_code MONITOR_LIMIT_EXCEEDED)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+    MonitorsUnauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
     MonitorsNotFound:
       description: Not found
       content:
@@ -2303,38 +2329,7 @@ components:
           $ref: '#/components/headers/RateLimitRemaining'
         X-RateLimit-Reset:
           $ref: '#/components/headers/RateLimitReset'
-    MonitorsUnauthorized:
-      description: Unauthorized
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-      headers:
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/RateLimitLimit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/RateLimitRemaining'
-        X-RateLimit-Reset:
-          $ref: '#/components/headers/RateLimitReset'
-    MonitorsLimitExceeded:
-      description: Monitor limit for the account reached (error_code MONITOR_LIMIT_EXCEEDED)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-      headers:
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/RateLimitLimit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/RateLimitRemaining'
-        X-RateLimit-Reset:
-          $ref: '#/components/headers/RateLimitReset'
   headers:
-    RateLimitLimit:
-      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 1
     RateLimitRemaining:
       description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
       schema:
@@ -2344,6 +2339,11 @@ components:
       description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
       schema:
         type: integer
+    RateLimitLimit:
+      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
+        minimum: 1
   securitySchemes:
     bearerAuth:
       type: http
