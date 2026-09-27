@@ -129,30 +129,40 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    TimeoutMS:
-      type: integer
-      minimum: 1000
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-    PersonProfile:
+    PersonEducation:
       type: object
       properties:
-        fullName:
+        institution:
+          allOf:
+          - $ref: '#/components/schemas/PersonNormalizedName'
+          description: School or institution name.
+        qualification:
           type: string
-          description: Person's full name.
-        headline:
+          description: Degree, certificate, or credential.
+        fieldOfStudy:
           type: string
-          description: Short professional headline.
-        location:
+          description: Area of study.
+        description:
           type: string
-          description: Person's listed location.
-        summary:
+          description: Additional education details.
+        dates:
+          allOf:
+          - $ref: '#/components/schemas/PersonDateRange'
+          description: Education dates.
+      additionalProperties: false
+      required:
+      - institution
+    PersonNormalizedName:
+      type: object
+      properties:
+        display:
           type: string
-          description: Brief profile summary.
-        profilePictureUrl:
+          description: Display name.
+        normalized:
           type: string
-          format: uri
-          description: Profile image URL.
+          description: Standardized name, when available.
+      required:
+      - display
       additionalProperties: false
     PersonRetrieveResponse:
       type: object
@@ -230,146 +240,6 @@ components:
       - person
       - metadata
       additionalProperties: false
-    PersonDate:
-      type: object
-      properties:
-        year:
-          type: integer
-          description: Year value.
-        month:
-          type: integer
-          minimum: 1
-          maximum: 12
-          description: Month value, when known.
-        day:
-          type: integer
-          minimum: 1
-          maximum: 31
-          description: Day value, when known.
-      required:
-      - year
-      additionalProperties: false
-    PersonNormalizedName:
-      type: object
-      properties:
-        display:
-          type: string
-          description: Display name.
-        normalized:
-          type: string
-          description: Standardized name, when available.
-      required:
-      - display
-      additionalProperties: false
-    PersonSkill:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Skill name.
-        normalized:
-          type: string
-          description: Standardized skill name, when available.
-        proficiency:
-          type: string
-          description: Skill proficiency, when available.
-      required:
-      - name
-      additionalProperties: false
-    RequestTags:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        maxLength: 50
-      maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example:
-      - production
-      - team-alpha
-    PersonDateRange:
-      type: object
-      properties:
-        startDate:
-          allOf:
-          - $ref: '#/components/schemas/PersonDate'
-          description: Start date, when known.
-        endDate:
-          allOf:
-          - $ref: '#/components/schemas/PersonDate'
-          description: End date, when known.
-        isCurrent:
-          type: boolean
-          description: Whether the entry is current.
-      additionalProperties: false
-    PersonRetrieveRequest:
-      type: object
-      properties:
-        identifiers:
-          type: object
-          properties:
-            linkedinUrl:
-              type: string
-              format: uri
-              description: LinkedIn profile URL, e.g. https://www.linkedin.com/in/yahia-bakour/.
-          additionalProperties: false
-          description: Known identifiers for the person. At least one identifier is required.
-        timeoutMS:
-          $ref: '#/components/schemas/TimeoutMS'
-        tags:
-          $ref: '#/components/schemas/RequestTags'
-      required:
-      - identifiers
-      additionalProperties: false
-    Person:
-      type: object
-      properties:
-        profile:
-          allOf:
-          - $ref: '#/components/schemas/PersonProfile'
-          description: Core profile details.
-        education:
-          type: array
-          items:
-            $ref: '#/components/schemas/PersonEducation'
-          description: Education history.
-        experience:
-          type: array
-          items:
-            $ref: '#/components/schemas/PersonExperience'
-          description: Work history.
-        skills:
-          type: array
-          items:
-            $ref: '#/components/schemas/PersonSkill'
-          description: Listed skills.
-      required:
-      - profile
-      - education
-      - experience
-      - skills
-      additionalProperties: false
-    PersonExperience:
-      type: object
-      properties:
-        company:
-          allOf:
-          - $ref: '#/components/schemas/PersonNormalizedName'
-          description: Company or organization name.
-        title:
-          type: string
-          description: Role or job title.
-        description:
-          type: string
-          description: Role description.
-        dates:
-          allOf:
-          - $ref: '#/components/schemas/PersonDateRange'
-          description: Role dates.
-      required:
-      - company
-      - title
-      additionalProperties: false
     ErrorResponse:
       type: object
       properties:
@@ -402,6 +272,54 @@ components:
           description: Error code indicating the type of error
         key_metadata:
           $ref: '#/components/schemas/KeyMetadata'
+    Person:
+      type: object
+      properties:
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/PersonProfile'
+          description: Core profile details.
+        education:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonEducation'
+          description: Education history.
+        experience:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonExperience'
+          description: Work history.
+        skills:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonSkill'
+          description: Listed skills.
+      required:
+      - profile
+      - education
+      - experience
+      - skills
+      additionalProperties: false
+    PersonProfile:
+      type: object
+      properties:
+        fullName:
+          type: string
+          description: Person's full name.
+        headline:
+          type: string
+          description: Short professional headline.
+        location:
+          type: string
+          description: Person's listed location.
+        summary:
+          type: string
+          description: Brief profile summary.
+        profilePictureUrl:
+          type: string
+          format: uri
+          description: Profile image URL.
+      additionalProperties: false
     KeyMetadata:
       type: object
       properties:
@@ -415,34 +333,112 @@ components:
       - credits_consumed
       - credits_remaining
       description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-    PersonEducation:
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+    PersonDateRange:
       type: object
       properties:
-        institution:
+        startDate:
+          allOf:
+          - $ref: '#/components/schemas/PersonDate'
+          description: Start date, when known.
+        endDate:
+          allOf:
+          - $ref: '#/components/schemas/PersonDate'
+          description: End date, when known.
+        isCurrent:
+          type: boolean
+          description: Whether the entry is current.
+      additionalProperties: false
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    PersonDate:
+      type: object
+      properties:
+        year:
+          type: integer
+          description: Year value.
+        month:
+          type: integer
+          minimum: 1
+          maximum: 12
+          description: Month value, when known.
+        day:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Day value, when known.
+      required:
+      - year
+      additionalProperties: false
+    PersonSkill:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Skill name.
+        normalized:
+          type: string
+          description: Standardized skill name, when available.
+        proficiency:
+          type: string
+          description: Skill proficiency, when available.
+      required:
+      - name
+      additionalProperties: false
+    PersonExperience:
+      type: object
+      properties:
+        company:
           allOf:
           - $ref: '#/components/schemas/PersonNormalizedName'
-          description: School or institution name.
-        qualification:
+          description: Company or organization name.
+        title:
           type: string
-          description: Degree, certificate, or credential.
-        fieldOfStudy:
-          type: string
-          description: Area of study.
+          description: Role or job title.
         description:
           type: string
-          description: Additional education details.
+          description: Role description.
         dates:
           allOf:
           - $ref: '#/components/schemas/PersonDateRange'
-          description: Education dates.
-      additionalProperties: false
+          description: Role dates.
       required:
-      - institution
+      - company
+      - title
+      additionalProperties: false
+    PersonRetrieveRequest:
+      type: object
+      properties:
+        identifiers:
+          type: object
+          properties:
+            linkedinUrl:
+              type: string
+              format: uri
+              description: LinkedIn profile URL, e.g. https://www.linkedin.com/in/yahia-bakour/.
+          additionalProperties: false
+          description: Known identifiers for the person. At least one identifier is required.
+        timeoutMS:
+          $ref: '#/components/schemas/TimeoutMS'
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+      required:
+      - identifiers
+      additionalProperties: false
   headers:
-    RateLimitReset:
-      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
     RateLimitRemaining:
       description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
       schema:
@@ -453,6 +449,10 @@ components:
       schema:
         type: integer
         minimum: 1
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
   responses:
     RateLimited:
       description: Rate limit exceeded

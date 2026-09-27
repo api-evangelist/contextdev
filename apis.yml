@@ -48,6 +48,9 @@ image: https://www.context.dev/logo.png
 specificationVersion: '0.23'
 created: '2026-07-17'
 modified: '2026-08-14'
+x-docs-platform: mintlify
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-09-24
 tags:
 - Web Scraping
 - Brand Intelligence
@@ -58,6 +61,7 @@ tags:
 - Website Monitoring
 - Company Data
 - Developer Tools
+- A2A
 tags_raw:
 - Web Scraping
 - Brand Intelligence
@@ -69,6 +73,7 @@ tags_raw:
 - Company Data
 - Developer Tools
 - APIs
+- A2A
 apis:
 - aid: contextdev:contextdev-brand-intelligence-api
   name: Context.dev Brand Intelligence API
@@ -284,3 +289,10 @@ x-enrichment:
   status: enriched
   artifacts_added: 12
   pass: local-v1
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://docs.context.dev/.well-known/agent-card.json"
+  grade: "conformant"
+  protocol_version: "0.3"
+  control: 404

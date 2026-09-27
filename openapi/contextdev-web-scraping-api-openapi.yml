@@ -3020,51 +3020,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    TimeoutMS:
-      type: integer
-      minimum: 1000
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-    LenientTimeoutMS:
-      type: integer
-      minimum: 1
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-    PageMetadataAlternate:
-      type: object
-      properties:
-        href:
-          type: string
-          description: Resolved alternate URL.
-        hreflang:
-          type: string
-          description: Language or locale for the alternate URL, when present.
-        type:
-          type: string
-          description: Alternate resource MIME type, when present.
-        title:
-          type: string
-          description: Alternate resource title, when present.
-      required:
-      - href
-      additionalProperties: false
-    RequestTags:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        maxLength: 50
-      maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example:
-      - production
-      - team-alpha
-    PageMetadataValue:
-      oneOf:
-      - type: string
-      - type: array
-        items:
-          type: string
     PageMetadata:
       type: object
       properties:
@@ -3142,6 +3097,11 @@ components:
       - sourceUrl
       - finalUrl
       description: Metadata extracted from the scraped page HTML.
+    LenientTimeoutMS:
+      type: integer
+      minimum: 1
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
     BrowserCountryCode:
       type: string
       enum:
@@ -3364,11 +3324,47 @@ components:
       - credits_consumed
       - credits_remaining
       description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+    PageMetadataAlternate:
+      type: object
+      properties:
+        href:
+          type: string
+          description: Resolved alternate URL.
+        hreflang:
+          type: string
+          description: Language or locale for the alternate URL, when present.
+        type:
+          type: string
+          description: Alternate resource MIME type, when present.
+        title:
+          type: string
+          description: Alternate resource title, when present.
+      required:
+      - href
+      additionalProperties: false
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    PageMetadataValue:
+      oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
   headers:
-    RateLimitReset:
-      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
     RateLimitRemaining:
       description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
       schema:
@@ -3379,6 +3375,10 @@ components:
       schema:
         type: integer
         minimum: 1
+    RateLimitReset:
+      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
+      schema:
+        type: integer
   parameters:
     RequestTags:
       name: tags
