@@ -695,6 +695,11 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
     UtilityPrefetchEmailIdentifier:
       type: object
       properties:
@@ -708,11 +713,6 @@ components:
       additionalProperties: false
       title: By email
       description: Prefetch brand data by email. The domain will be extracted and validated.
-    UtilityPrefetchIdentifier:
-      oneOf:
-      - $ref: '#/components/schemas/UtilityPrefetchDomainIdentifier'
-      - $ref: '#/components/schemas/UtilityPrefetchEmailIdentifier'
-      description: Identifier of the brand to prefetch. Provide exactly one of domain or email.
     UtilityPrefetchDomainIdentifier:
       type: object
       properties:
@@ -725,22 +725,6 @@ components:
       additionalProperties: false
       title: By domain
       description: Prefetch brand data by domain.
-    TimeoutMS:
-      type: integer
-      minimum: 1000
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-    RequestTags:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        maxLength: 50
-      maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example:
-      - production
-      - team-alpha
     KeyMetadata:
       type: object
       properties:
@@ -754,6 +738,22 @@ components:
       - credits_consumed
       - credits_remaining
       description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example:
+      - production
+      - team-alpha
+    UtilityPrefetchIdentifier:
+      oneOf:
+      - $ref: '#/components/schemas/UtilityPrefetchDomainIdentifier'
+      - $ref: '#/components/schemas/UtilityPrefetchEmailIdentifier'
+      description: Identifier of the brand to prefetch. Provide exactly one of domain or email.
   headers:
     RateLimitReset:
       description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.

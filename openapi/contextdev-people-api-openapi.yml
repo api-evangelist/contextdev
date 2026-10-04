@@ -129,29 +129,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    PersonEducation:
-      type: object
-      properties:
-        institution:
-          allOf:
-          - $ref: '#/components/schemas/PersonNormalizedName'
-          description: School or institution name.
-        qualification:
-          type: string
-          description: Degree, certificate, or credential.
-        fieldOfStudy:
-          type: string
-          description: Area of study.
-        description:
-          type: string
-          description: Additional education details.
-        dates:
-          allOf:
-          - $ref: '#/components/schemas/PersonDateRange'
-          description: Education dates.
-      additionalProperties: false
-      required:
-      - institution
     PersonRetrieveRequest:
       type: object
       properties:
@@ -190,47 +167,6 @@ components:
       required:
       - year
       additionalProperties: false
-    TimeoutMS:
-      type: integer
-      minimum: 1000
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-    PersonSkill:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Skill name.
-        normalized:
-          type: string
-          description: Standardized skill name, when available.
-        proficiency:
-          type: string
-          description: Skill proficiency, when available.
-      required:
-      - name
-      additionalProperties: false
-    PersonExperience:
-      type: object
-      properties:
-        company:
-          allOf:
-          - $ref: '#/components/schemas/PersonNormalizedName'
-          description: Company or organization name.
-        title:
-          type: string
-          description: Role or job title.
-        description:
-          type: string
-          description: Role description.
-        dates:
-          allOf:
-          - $ref: '#/components/schemas/PersonDateRange'
-          description: Role dates.
-      required:
-      - company
-      - title
-      additionalProperties: false
     Person:
       type: object
       properties:
@@ -258,6 +194,162 @@ components:
       - education
       - experience
       - skills
+      additionalProperties: false
+    PersonDateRange:
+      type: object
+      properties:
+        startDate:
+          allOf:
+          - $ref: '#/components/schemas/PersonDate'
+          description: Start date, when known.
+        endDate:
+          allOf:
+          - $ref: '#/components/schemas/PersonDate'
+          description: End date, when known.
+        isCurrent:
+          type: boolean
+          description: Whether the entry is current.
+      additionalProperties: false
+    TimeoutMS:
+      type: integer
+      minimum: 1000
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    PersonEducation:
+      type: object
+      properties:
+        institution:
+          allOf:
+          - $ref: '#/components/schemas/PersonNormalizedName'
+          description: School or institution name.
+        qualification:
+          type: string
+          description: Degree, certificate, or credential.
+        fieldOfStudy:
+          type: string
+          description: Area of study.
+        description:
+          type: string
+          description: Additional education details.
+        dates:
+          allOf:
+          - $ref: '#/components/schemas/PersonDateRange'
+          description: Education dates.
+      additionalProperties: false
+      required:
+      - institution
+    PersonSkill:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Skill name.
+        normalized:
+          type: string
+          description: Standardized skill name, when available.
+        proficiency:
+          type: string
+          description: Skill proficiency, when available.
+      required:
+      - name
+      additionalProperties: false
+    PersonNormalizedName:
+      type: object
+      properties:
+        display:
+          type: string
+          description: Display name.
+        normalized:
+          type: string
+          description: Standardized name, when available.
+      required:
+      - display
+      additionalProperties: false
+    PersonProfile:
+      type: object
+      properties:
+        fullName:
+          type: string
+          description: Person's full name.
+        headline:
+          type: string
+          description: Short professional headline.
+        location:
+          type: string
+          description: Person's listed location.
+        summary:
+          type: string
+          description: Brief profile summary.
+        profilePictureUrl:
+          type: string
+          format: uri
+          description: Profile image URL.
+      additionalProperties: false
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+        error_code:
+          type: string
+          enum:
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - WEBSITE_ACCESS_ERROR
+          - EXTERNAL_PROVIDER_ERROR
+          - INPUT_VALIDATION_ERROR
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - UNSUPPORTED_CONTENT
+          - MONITOR_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          description: Error code indicating the type of error
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    PersonExperience:
+      type: object
+      properties:
+        company:
+          allOf:
+          - $ref: '#/components/schemas/PersonNormalizedName'
+          description: Company or organization name.
+        title:
+          type: string
+          description: Role or job title.
+        description:
+          type: string
+          description: Role description.
+        dates:
+          allOf:
+          - $ref: '#/components/schemas/PersonDateRange'
+          description: Role dates.
+      required:
+      - company
+      - title
       additionalProperties: false
     RequestTags:
       type: array
@@ -345,98 +437,6 @@ components:
       - code
       - person
       - metadata
-      additionalProperties: false
-    ErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          description: Error message
-        error_code:
-          type: string
-          enum:
-          - INTERNAL_ERROR
-          - VALID
-          - NOT_FOUND
-          - FORBIDDEN
-          - USAGE_EXCEEDED
-          - RATE_LIMITED
-          - UNAUTHORIZED
-          - DISABLED
-          - INSUFFICIENT_PERMISSIONS
-          - TIMEOUT_EXCEEDS_MAXIMUM
-          - WEBSITE_ACCESS_ERROR
-          - EXTERNAL_PROVIDER_ERROR
-          - INPUT_VALIDATION_ERROR
-          - FREE_EMAIL_DETECTED
-          - DISPOSABLE_EMAIL_DETECTED
-          - REQUEST_TIMEOUT
-          - UNSUPPORTED_CONTENT
-          - MONITOR_PAUSED
-          - MONITOR_LIMIT_EXCEEDED
-          - SEARCH_UNAVAILABLE
-          description: Error code indicating the type of error
-        key_metadata:
-          $ref: '#/components/schemas/KeyMetadata'
-    PersonNormalizedName:
-      type: object
-      properties:
-        display:
-          type: string
-          description: Display name.
-        normalized:
-          type: string
-          description: Standardized name, when available.
-      required:
-      - display
-      additionalProperties: false
-    KeyMetadata:
-      type: object
-      properties:
-        credits_consumed:
-          type: integer
-          description: The number of credits consumed by this request.
-        credits_remaining:
-          type: integer
-          description: The number of credits remaining for your organization after this request.
-      required:
-      - credits_consumed
-      - credits_remaining
-      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
-    PersonDateRange:
-      type: object
-      properties:
-        startDate:
-          allOf:
-          - $ref: '#/components/schemas/PersonDate'
-          description: Start date, when known.
-        endDate:
-          allOf:
-          - $ref: '#/components/schemas/PersonDate'
-          description: End date, when known.
-        isCurrent:
-          type: boolean
-          description: Whether the entry is current.
-      additionalProperties: false
-    PersonProfile:
-      type: object
-      properties:
-        fullName:
-          type: string
-          description: Person's full name.
-        headline:
-          type: string
-          description: Short professional headline.
-        location:
-          type: string
-          description: Person's listed location.
-        summary:
-          type: string
-          description: Brief profile summary.
-        profilePictureUrl:
-          type: string
-          format: uri
-          description: Profile image URL.
       additionalProperties: false
   headers:
     RateLimitReset:

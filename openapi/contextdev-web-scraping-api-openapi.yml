@@ -3019,23 +3019,113 @@ paths:
       operationId: getWebScreenshot
       x-operation-id-source: derived
 components:
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      example: production,team-alpha
   schemas:
-    PageMetadataValue:
-      oneOf:
-      - type: string
-      - type: array
-        items:
-          type: string
     TimeoutMS:
       type: integer
       minimum: 1000
       maximum: 300000
       description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-    LenientTimeoutMS:
-      type: integer
-      minimum: 1
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    PageMetadata:
+      type: object
+      properties:
+        sourceUrl:
+          type: string
+          description: Original URL requested by the caller.
+        finalUrl:
+          type: string
+          description: Final URL scraped after redirects or scraper fallback, when known. Falls back to sourceUrl when unavailable.
+        title:
+          type: string
+          description: Best title extracted from the page.
+        description:
+          type: string
+          description: Best description extracted from standard, Open Graph, or Twitter metadata.
+        language:
+          type: string
+          description: Language extracted from html lang or language meta tags.
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Keywords extracted from the page's keywords meta tag.
+        canonicalUrl:
+          type: string
+          description: Resolved canonical URL, when present.
+        author:
+          type: string
+          description: Author metadata, when present.
+        siteName:
+          type: string
+          description: Site or application name from page metadata.
+        image:
+          type: string
+          description: Primary resolved preview image from Open Graph, Twitter, or image metadata.
+        favicon:
+          type: string
+          description: Resolved favicon URL, when present.
+        publishedTime:
+          type: string
+          description: Published timestamp/date from page metadata, when present.
+        modifiedTime:
+          type: string
+          description: Modified timestamp/date from page metadata, when present.
+        robots:
+          type: string
+          description: Robots meta directive, when present.
+        openGraph:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: 'Open Graph metadata with the og: prefix removed and keys camel-cased.'
+        twitter:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: 'Twitter card metadata with the twitter: prefix removed and keys camel-cased.'
+        alternates:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageMetadataAlternate'
+          description: Resolved alternate links from link rel=alternate tags.
+        jsonLd:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: JSON-LD structured data blocks parsed from the page.
+        additionalMeta:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: Additional non-social meta tags not promoted to top-level metadata fields.
+      required:
+      - sourceUrl
+      - finalUrl
+      description: Metadata extracted from the scraped page HTML.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: The number of credits consumed by this request.
+        credits_remaining:
+          type: integer
+          description: The number of credits remaining for your organization after this request.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
     RequestTags:
       type: array
       items:
@@ -3065,19 +3155,17 @@ components:
       required:
       - href
       additionalProperties: false
-    KeyMetadata:
-      type: object
-      properties:
-        credits_consumed:
-          type: integer
-          description: The number of credits consumed by this request.
-        credits_remaining:
-          type: integer
-          description: The number of credits remaining for your organization after this request.
-      required:
-      - credits_consumed
-      - credits_remaining
-      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+    LenientTimeoutMS:
+      type: integer
+      minimum: 1
+      maximum: 300000
+      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+    PageMetadataValue:
+      oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
     BrowserCountryCode:
       type: string
       enum:
@@ -3287,83 +3375,6 @@ components:
       - zw
       example: de
       description: Two-letter ISO 3166-1 alpha-2 country code identifying a supported Context.dev residential proxy exit location. Must be one of Context.dev's supported countries. When provided, Context.dev fetches the target page from that country.
-    PageMetadata:
-      type: object
-      properties:
-        sourceUrl:
-          type: string
-          description: Original URL requested by the caller.
-        finalUrl:
-          type: string
-          description: Final URL scraped after redirects or scraper fallback, when known. Falls back to sourceUrl when unavailable.
-        title:
-          type: string
-          description: Best title extracted from the page.
-        description:
-          type: string
-          description: Best description extracted from standard, Open Graph, or Twitter metadata.
-        language:
-          type: string
-          description: Language extracted from html lang or language meta tags.
-        keywords:
-          type: array
-          items:
-            type: string
-          description: Keywords extracted from the page's keywords meta tag.
-        canonicalUrl:
-          type: string
-          description: Resolved canonical URL, when present.
-        author:
-          type: string
-          description: Author metadata, when present.
-        siteName:
-          type: string
-          description: Site or application name from page metadata.
-        image:
-          type: string
-          description: Primary resolved preview image from Open Graph, Twitter, or image metadata.
-        favicon:
-          type: string
-          description: Resolved favicon URL, when present.
-        publishedTime:
-          type: string
-          description: Published timestamp/date from page metadata, when present.
-        modifiedTime:
-          type: string
-          description: Modified timestamp/date from page metadata, when present.
-        robots:
-          type: string
-          description: Robots meta directive, when present.
-        openGraph:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PageMetadataValue'
-          description: 'Open Graph metadata with the og: prefix removed and keys camel-cased.'
-        twitter:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PageMetadataValue'
-          description: 'Twitter card metadata with the twitter: prefix removed and keys camel-cased.'
-        alternates:
-          type: array
-          items:
-            $ref: '#/components/schemas/PageMetadataAlternate'
-          description: Resolved alternate links from link rel=alternate tags.
-        jsonLd:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-          description: JSON-LD structured data blocks parsed from the page.
-        additionalMeta:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PageMetadataValue'
-          description: Additional non-social meta tags not promoted to top-level metadata fields.
-      required:
-      - sourceUrl
-      - finalUrl
-      description: Metadata extracted from the scraped page HTML.
   headers:
     RateLimitReset:
       description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
@@ -3379,17 +3390,6 @@ components:
       schema:
         type: integer
         minimum: 1
-  parameters:
-    RequestTags:
-      name: tags
-      in: query
-      required: false
-      style: form
-      explode: false
-      schema:
-        $ref: '#/components/schemas/RequestTags'
-      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example: production,team-alpha
   responses:
     RateLimited:
       description: Rate limit exceeded
