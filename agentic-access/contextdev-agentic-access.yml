@@ -1,141 +1,24 @@
-generated: '2026-07-18'
+generated: '2026-09-23'
 method: generated
-source: openapi/contextdev-openapi.yml, openapi/contextdev-openapi.yml
+source: openapi/contextdev-brand-intelligence-api-openapi.yml, openapi/contextdev-monitors-api-openapi.yml,
+  openapi/contextdev-parsing-api-openapi.yml, openapi/contextdev-people-api-openapi.yml, openapi/contextdev-utility-api-openapi.yml,
+  openapi/contextdev-web-extraction-api-openapi.yml, openapi/contextdev-web-scraping-api-openapi.yml
 description: Recommended x-agentic-access execution contracts, classified heuristically from
   the OpenAPI. A governance starting point for exposing this API to AI agents — review and bind
   audience per deployment. See research/curity/agentic-governance/.
 summary:
-  operations: 84
+  operations: 42
   by_action_class:
-    acting: 32
-    connected: 52
+    connected: 29
+    acting: 13
   by_consequence:
-    write: 32
-    read: 52
+    read: 29
+    write: 13
   human_in_the_loop_required: 0
 operations:
-- path: /parse
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /web/scrape/html
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/scrape/markdown
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/scrape/images
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/scrape/sitemap
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/crawl
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /web/extract
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /web/search
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /web/competitors
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /people/retrieve
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
 - path: /brand/retrieve
   method: get
+  operationId: getBrandRetrieve
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -145,21 +28,17 @@ operations:
     audit: none
 - path: /brand/retrieve
   method: post
+  operationId: postBrandRetrieve
   x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
+    action-class: connected
+    consequence: read
+    subject: optional
     token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
+      max-ttl: 3600
+    audit: none
 - path: /brand/retrieve-by-name
   method: get
+  operationId: getBrandRetrieveByName
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -169,6 +48,7 @@ operations:
     audit: none
 - path: /brand/retrieve-by-email
   method: get
+  operationId: getBrandRetrieveByEmail
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -178,6 +58,7 @@ operations:
     audit: none
 - path: /brand/retrieve-by-ticker
   method: get
+  operationId: getBrandRetrieveByTicker
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -187,6 +68,7 @@ operations:
     audit: none
 - path: /brand/retrieve-by-isin
   method: get
+  operationId: getBrandRetrieveByIsin
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -196,6 +78,7 @@ operations:
     audit: none
 - path: /brand/transaction_identifier
   method: get
+  operationId: getBrandTransactionIdentifier
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -205,6 +88,7 @@ operations:
     audit: none
 - path: /brand/retrieve-simplified
   method: get
+  operationId: getBrandRetrieveSimplified
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -212,141 +96,6 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /web/styleguide
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/fonts
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/screenshot
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/naics
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/sic
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /brand/ai/query
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /brand/ai/product
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /brand/ai/products
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /brand/prefetch
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /brand/prefetch-by-email
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /utility/prefetch
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
 - path: /monitors
   method: post
   operationId: createMonitor
@@ -503,6 +252,7 @@ operations:
     audit: required
 - path: /parse
   method: post
+  operationId: postParse
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -516,113 +266,9 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /web/scrape/html
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/scrape/markdown
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/scrape/images
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/scrape/sitemap
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/crawl
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /web/extract
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /web/search
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /web/competitors
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
 - path: /people/retrieve
   method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /brand/retrieve
-  method: get
+  operationId: postPeopleRetrieve
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -630,167 +276,9 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /brand/retrieve
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /brand/retrieve-by-name
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /brand/retrieve-by-email
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /brand/retrieve-by-ticker
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /brand/retrieve-by-isin
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /brand/transaction_identifier
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /brand/retrieve-simplified
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/styleguide
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/fonts
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/screenshot
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/naics
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /web/sic
-  method: get
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /brand/ai/query
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /brand/ai/product
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /brand/ai/products
-  method: post
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
 - path: /brand/prefetch
   method: post
+  operationId: postBrandPrefetch
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -806,6 +294,7 @@ operations:
     audit: required
 - path: /brand/prefetch-by-email
   method: post
+  operationId: postBrandPrefetchByEmail
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -821,6 +310,7 @@ operations:
     audit: required
 - path: /utility/prefetch
   method: post
+  operationId: postUtilityPrefetch
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -834,9 +324,9 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /monitors
+- path: /web/extract
   method: post
-  operationId: createMonitor
+  operationId: postWebExtract
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -850,9 +340,9 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /monitors
+- path: /web/competitors
   method: get
-  operationId: listMonitors
+  operationId: getWebCompetitors
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -860,9 +350,9 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /monitors/{monitor_id}
+- path: /web/styleguide
   method: get
-  operationId: getMonitor
+  operationId: getWebStyleguide
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -870,41 +360,9 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /monitors/{monitor_id}
-  method: patch
-  operationId: updateMonitor
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /monitors/{monitor_id}
-  method: delete
-  operationId: deleteMonitor
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /monitors/{monitor_id}/runs
+- path: /web/fonts
   method: get
-  operationId: listMonitorRuns
+  operationId: getWebFonts
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -912,9 +370,9 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /monitors/{monitor_id}/changes
+- path: /web/naics
   method: get
-  operationId: listMonitorChanges
+  operationId: getWebNaics
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -922,9 +380,9 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /monitors/runs
+- path: /web/sic
   method: get
-  operationId: listAccountRuns
+  operationId: getWebSic
   x-agentic-access:
     action-class: connected
     consequence: read
@@ -932,49 +390,19 @@ operations:
     token:
       max-ttl: 3600
     audit: none
-- path: /monitors/credit-usage
-  method: get
-  operationId: listMonitorCreditUsage
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /monitors/limits
-  method: get
-  operationId: getMonitorLimits
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /monitors/changes
-  method: get
-  operationId: listChanges
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /monitors/changes/{change_id}
-  method: get
-  operationId: getChange
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /monitors/{monitor_id}/run
+- path: /brand/ai/query
   method: post
-  operationId: runMonitorNow
+  operationId: postBrandAiQuery
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /brand/ai/product
+  method: post
+  operationId: postBrandAiProduct
   x-agentic-access:
     action-class: acting
     consequence: write
@@ -988,3 +416,101 @@ operations:
       - abnormal
       - high-value
     audit: required
+- path: /brand/ai/products
+  method: post
+  operationId: postBrandAiProducts
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /web/scrape/html
+  method: get
+  operationId: getWebScrapeHtml
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /web/scrape/markdown
+  method: get
+  operationId: getWebScrapeMarkdown
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /web/scrape/images
+  method: get
+  operationId: getWebScrapeImages
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /web/scrape/sitemap
+  method: get
+  operationId: getWebScrapeSitemap
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /web/crawl
+  method: post
+  operationId: postWebCrawl
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /web/search
+  method: post
+  operationId: postWebSearch
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /web/screenshot
+  method: get
+  operationId: getWebScreenshot
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
