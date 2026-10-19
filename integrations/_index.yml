@@ -50,3 +50,95 @@
     builder: unknown (not in the directory record)
   status: not-a-workflow
   arazzo: null
+- slug: contextdev-go-module-proxy
+  label: Go module proxy
+  partner_name: Go module proxy
+  category: official SDK (Go)
+  type: register
+  channel: package-registry
+  evidence: https://pkg.go.dev/github.com/context-dot-dev/context-go-sdk
+  source: edge
+  relationship: distribution-channel
+  contract_reference:
+    register: Go module proxy (public registry JSON)
+    spec_file: null
+    language: Go
+    packages:
+    - name: github.com/context-dot-dev/context-go-sdk
+      version: v1.5.0
+      released: '2026-06-30'
+      released_field: Time
+      lapsed: false
+      page: https://pkg.go.dev/github.com/context-dot-dev/context-go-sdk
+      repo_leg: github-org:context-dot-dev
+      publisher_leg: org:context-dot-dev
+      matched_by: github-org
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-official-sdks.py
+    detected: '2026-10-18'
+  status: not-a-workflow
+  arazzo: null
+- slug: contextdev-npm-registry
+  label: npm registry
+  partner: npm
+  partner_name: npm registry
+  category: official SDK (JavaScript/TypeScript)
+  type: register
+  channel: package-registry
+  evidence: https://www.npmjs.com/package/context.dev
+  source: edge
+  relationship: distribution-channel
+  contract_reference:
+    register: npm registry (public registry JSON)
+    spec_file: null
+    language: JavaScript/TypeScript
+    packages:
+    - name: context.dev
+      version: 3.10.0
+      released: '2026-10-18'
+      released_field: modified
+      lapsed: false
+      page: https://www.npmjs.com/package/context.dev
+      repo_leg: github-org:context-dot-dev
+      publisher_leg: email:context.dev
+      matched_by: domain
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-official-sdks.py
+    detected: '2026-10-18'
+  status: not-a-workflow
+  arazzo: null
+- slug: contextdev-pypi
+  label: PyPI
+  partner: pypi
+  partner_name: PyPI
+  category: official SDK (Python)
+  type: register
+  channel: package-registry
+  evidence: https://pypi.org/project/context.dev/
+  source: edge
+  relationship: distribution-channel
+  contract_reference:
+    register: PyPI (public registry JSON)
+    spec_file: null
+    language: Python
+    packages:
+    - name: context.dev
+      version: 2.29.0
+      released: '2026-10-18'
+      released_field: upload_time
+      lapsed: false
+      page: https://pypi.org/project/context.dev/
+      repo_leg: github-org:context-dot-dev
+      publisher_leg: email:context.dev
+      matched_by: domain
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-official-sdks.py
+    detected: '2026-10-18'
+  status: not-a-workflow
+  arazzo: null
