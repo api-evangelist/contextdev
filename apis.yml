@@ -190,6 +190,86 @@ apis:
     url: https://docs.context.dev/introduction
   - type: Webhooks
     url: asyncapi/contextdev-webhooks.yml
+- aid: contextdev:contextdev-agent-feedback-api
+  name: Context.dev Agent Feedback API
+  description: Report API issues and documentation mismatches.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Agent Feedback
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-agent-feedback-api-openapi.yml
+- aid: contextdev:contextdev-answers-api
+  name: Context.dev Answers API
+  description: Answer a research task from the live web in the JSON shape you ask for.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Answers
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-answers-api-openapi.yml
+- aid: contextdev:contextdev-batches-api
+  name: Context.dev Batches API
+  description: Scrape many pages or crawl a site asynchronously.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Batches
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-batches-api-openapi.yml
+- aid: contextdev:contextdev-browser-profiles-api
+  name: Context.dev Browser Profiles API
+  description: See the authenticated browser profiles your organization created.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Browser Profiles
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-browser-profiles-api-openapi.yml
+- aid: contextdev:contextdev-logs-api
+  name: Context.dev Logs API
+  description: Read your organization's API request logs.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Logs
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-logs-api-openapi.yml
+- aid: contextdev:contextdev-news-api
+  name: Context.dev News API
+  description: Search live and historical news about a company.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - News
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-news-api-openapi.yml
+- aid: contextdev:contextdev-usage-api
+  name: Context.dev Usage API
+  description: Read your organization's credit balance and usage history.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Usage
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-usage-api-openapi.yml
+- aid: contextdev:contextdev-webhooks-api
+  name: Context.dev Webhooks API
+  description: Inspect and retry batch and monitor webhook deliveries.
+  humanURL: https://docs.context.dev
+  baseURL: https://api.context.dev/v1
+  tags:
+  - Webhooks
+  properties:
+  - type: OpenAPI
+    url: openapi/contextdev-webhooks-api-openapi.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com

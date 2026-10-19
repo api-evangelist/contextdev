@@ -1,38 +1,38 @@
 {
   "provider": "contextdev",
   "sources": [
-    "_original/contextdev-openapi.yml"
+    "_original/contextdev-openapi.json"
   ],
   "outputs": [
+    "contextdev-agent-feedback-api-openapi.yml",
+    "contextdev-answers-api-openapi.yml",
+    "contextdev-batches-api-openapi.yml",
     "contextdev-brand-intelligence-api-openapi.yml",
+    "contextdev-browser-profiles-api-openapi.yml",
+    "contextdev-logs-api-openapi.yml",
     "contextdev-monitors-api-openapi.yml",
+    "contextdev-news-api-openapi.yml",
     "contextdev-parsing-api-openapi.yml",
     "contextdev-people-api-openapi.yml",
+    "contextdev-usage-api-openapi.yml",
     "contextdev-utility-api-openapi.yml",
     "contextdev-web-extraction-api-openapi.yml",
-    "contextdev-web-scraping-api-openapi.yml"
+    "contextdev-web-scraping-api-openapi.yml",
+    "contextdev-webhooks-api-openapi.yml"
   ],
   "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
     "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
-    "contextdev-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "contextdev-openapi.yml: declared missing tag: Brand Intelligence",
-    "contextdev-openapi.yml: declared missing tag: Parsing",
-    "contextdev-openapi.yml: declared missing tag: People",
-    "contextdev-openapi.yml: declared missing tag: Utility",
-    "contextdev-openapi.yml: declared missing tag: Web Extraction",
-    "contextdev-openapi.yml: declared missing tag: Web Scraping",
-    "apis.yml register: already-registered"
+    "contextdev-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "contextdev-openapi.json: declared missing tag: Brand Intelligence",
+    "contextdev-openapi.json: declared missing tag: Parsing",
+    "contextdev-openapi.json: declared missing tag: People",
+    "contextdev-openapi.json: declared missing tag: Utility",
+    "contextdev-openapi.json: declared missing tag: Web Extraction",
+    "contextdev-openapi.json: declared missing tag: Web Scraping",
+    "apis.yml register: written (+8 apis, 15 total)"
   ],
-  "skipped": [
-    "contextdev-brand-intelligence-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "contextdev-monitors-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "contextdev-parsing-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "contextdev-people-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "contextdev-utility-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "contextdev-web-extraction-api-openapi.yml: previously refined output, superseded by openapi/_original/",
-    "contextdev-web-scraping-api-openapi.yml: previously refined output, superseded by openapi/_original/"
-  ]
+  "skipped": []
 }

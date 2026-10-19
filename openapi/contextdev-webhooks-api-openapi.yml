@@ -1,0 +1,1211 @@
+openapi: 3.2.0
+info:
+  title: Context.dev Webhooks API
+  description: Scrape, crawl, search, and monitor websites, and retrieve brand, people, and news data.
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: Webhooks
+  description: Inspect and retry batch and monitor webhook deliveries.
+paths:
+  /webhooks/deliveries:
+    post:
+      operationId: listWebhookDeliveries
+      summary: List webhook deliveries
+      tags:
+      - Webhooks
+      description: List batch and monitor webhook deliveries from the last 30 days.
+      security:
+      - bearerAuth: []
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                    - batch
+                    description: Delivery source.
+                  batch_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                    pattern: ^[\w-]+$
+                    description: Filter by batch ID.
+                  status:
+                    type: string
+                    enum:
+                    - pending
+                    - delivering
+                    - retrying
+                    - delivered
+                    - failed
+                    - cancelled
+                    description: Filter by delivery status.
+                  created_after:
+                    type: string
+                    format: date-time
+                    description: Only include events created after this ISO 8601 timestamp.
+                    example: '2026-09-01T00:00:00Z'
+                  limit:
+                    type: integer
+                    minimum: 1
+                    maximum: 100
+                    default: 25
+                    description: Number of deliveries to return.
+                  cursor:
+                    type: string
+                    pattern: ^whd_[a-f0-9]{32}$
+                    description: The next_cursor from the previous response.
+                  tags:
+                    $ref: '#/components/schemas/RequestTags'
+                required:
+                - type
+                additionalProperties: false
+                title: By Batch
+              - type: object
+                properties:
+                  type:
+                    type: string
+                    enum:
+                    - monitor
+                    description: Delivery source.
+                  monitor_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                    pattern: ^[\w-]+$
+                    description: Filter by monitor ID.
+                  run_id:
+                    type: string
+                    minLength: 1
+                    maxLength: 200
+                    pattern: ^[\w-]+$
+                    description: Filter by monitor run ID.
+                  status:
+                    type: string
+                    enum:
+                    - pending
+                    - delivering
+                    - retrying
+                    - delivered
+                    - failed
+                    - cancelled
+                    description: Filter by delivery status.
+                  created_after:
+                    type: string
+                    format: date-time
+                    description: Only include events created after this ISO 8601 timestamp.
+                    example: '2026-09-01T00:00:00Z'
+                  limit:
+                    type: integer
+                    minimum: 1
+                    maximum: 100
+                    default: 25
+                    description: Number of deliveries to return.
+                  cursor:
+                    type: string
+                    pattern: ^whd_[a-f0-9]{32}$
+                    description: The next_cursor from the previous response.
+                  tags:
+                    $ref: '#/components/schemas/RequestTags'
+                required:
+                - type
+                additionalProperties: false
+                title: By Monitor
+              discriminator:
+                propertyName: type
+            examples:
+              batch:
+                summary: List failed batch deliveries
+                value:
+                  type: batch
+                  status: failed
+                  limit: 25
+              monitor:
+                summary: List deliveries for a monitor run
+                value:
+                  type: monitor
+                  monitor_id: mon_123
+                  run_id: run_123
+              recent_monitor_failures:
+                summary: List recent monitor delivery failures
+                value:
+                  type: monitor
+                  status: failed
+                  created_after: '2026-09-01T00:00:00Z'
+                  limit: 100
+      responses:
+        '200':
+          description: A page of webhook deliveries
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWebhookDeliveriesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          description: Rate limit exceeded (600 requests per minute per organization).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Webhook service is temporarily unavailable.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /webhooks/deliveries/{delivery_id}:
+    get:
+      operationId: getWebhookDelivery
+      summary: Retrieve a webhook delivery
+      tags:
+      - Webhooks
+      description: Retrieve a webhook delivery’s status and original payload.
+      security:
+      - bearerAuth: []
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          pattern: ^whd_[a-f0-9]{32}$
+          description: Delivery ID.
+        required: true
+        description: Delivery ID.
+        name: delivery_id
+        in: path
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: Webhook delivery
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/WebhookDelivery'
+                - type: object
+                  properties:
+                    key_metadata:
+                      $ref: '#/components/schemas/KeyMetadata'
+                    request_id:
+                      $ref: '#/components/schemas/RequestId'
+                  required:
+                  - request_id
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          description: Rate limit exceeded (600 requests per minute per organization).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Webhook service is temporarily unavailable.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /webhooks/deliveries/{delivery_id}/attempts:
+    get:
+      operationId: listWebhookDeliveryAttempts
+      summary: List webhook delivery attempts
+      tags:
+      - Webhooks
+      description: List a delivery’s attempts, newest first.
+      security:
+      - bearerAuth: []
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          pattern: ^whd_[a-f0-9]{32}$
+          description: Delivery ID.
+        required: true
+        description: Delivery ID.
+        name: delivery_id
+        in: path
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+          description: Number of attempts to return.
+        required: false
+        description: Number of attempts to return.
+        name: limit
+        in: query
+      - schema:
+          type: string
+          pattern: ^wha_[a-f0-9]{32}$
+          description: The next_cursor from the previous response.
+        required: false
+        description: The next_cursor from the previous response.
+        name: cursor
+        in: query
+      - $ref: '#/components/parameters/RequestTags'
+      responses:
+        '200':
+          description: A page of delivery attempts
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWebhookAttemptsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          description: Rate limit exceeded (600 requests per minute per organization).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Webhook service is temporarily unavailable.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /webhooks/deliveries/{delivery_id}/retry:
+    post:
+      operationId: retryWebhookDelivery
+      summary: Retry a webhook delivery
+      tags:
+      - Webhooks
+      description: Resend the original payload using the source’s current URL and secret. Available for 7 days after the event.
+      security:
+      - bearerAuth: []
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          pattern: ^whd_[a-f0-9]{32}$
+          description: Delivery ID.
+        required: true
+        description: Delivery ID.
+        name: delivery_id
+        in: path
+      - schema:
+          type: string
+          maxLength: 200
+          description: Unique key to prevent duplicate retry requests.
+        required: false
+        description: Unique key to prevent duplicate retry requests.
+        name: Idempotency-Key
+        in: header
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                force:
+                  type: boolean
+                  default: false
+                  description: Resend even if the delivery already succeeded. Defaults to false.
+                tags:
+                  $ref: '#/components/schemas/RequestTags'
+              additionalProperties: false
+            example: {}
+      responses:
+        '202':
+          description: Retry accepted.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            Location:
+              description: Delivery status URL.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryWebhookDeliveryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Delivery cannot be retried or the idempotency key conflicts.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '410':
+          description: The seven-day retry window has expired.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded (600 requests per minute per organization).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Webhook service is temporarily unavailable.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Labels for filtering usage in the dashboard.
+      example:
+      - production
+      - team-alpha
+    WebhookAttempt:
+      type: object
+      properties:
+        attempt:
+          type: integer
+          minimum: 1
+          description: Attempt number, starting at 1.
+        trigger:
+          type: string
+          enum:
+          - initial
+          - automatic
+          - manual
+          description: '`initial`, `automatic` (scheduled retry), or `manual` (Retry endpoint).'
+        url:
+          type: string
+          format: uri
+          description: URL used for this attempt.
+        started_at:
+          type: string
+          format: date-time
+          description: Attempt start time.
+        completed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Completion time, or null while in progress.
+        http_status:
+          type:
+          - integer
+          - 'null'
+          description: HTTP response status, or null if no response was received.
+        error:
+          type:
+          - object
+          - 'null'
+          properties:
+            code:
+              type: string
+              description: Error code.
+            message:
+              type: string
+              description: Error details.
+          required:
+          - code
+          - message
+          description: Attempt error, or null if none.
+      required:
+      - attempt
+      - trigger
+      - url
+      - started_at
+      - completed_at
+      - http_status
+      - error
+    WebhookDeliverySummary:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Delivery ID.
+        event:
+          type: string
+          enum:
+          - batch.completed
+          - batch.failed
+          - batch.cancelled
+          - change.detected
+          - run.completed
+          description: Webhook event type.
+        source:
+          oneOf:
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - batch
+                description: 'Which deliveries to list: `batch` or `monitor`.'
+              batch_id:
+                type: string
+                description: Batch ID.
+            required:
+            - type
+            - batch_id
+            title: Batch
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - monitor
+                description: 'Which deliveries to list: `batch` or `monitor`.'
+              monitor_id:
+                type: string
+                description: Monitor ID.
+              run_id:
+                type: string
+                description: Monitor run ID.
+            required:
+            - type
+            - monitor_id
+            - run_id
+            title: Monitor
+          description: Batch or monitor run that produced the event.
+        url:
+          type: string
+          format: uri
+          description: Webhook destination URL.
+        status:
+          type: string
+          enum:
+          - pending
+          - delivering
+          - retrying
+          - delivered
+          - failed
+          - cancelled
+          description: '`pending`, `delivering`, `retrying`, `delivered`, `failed`, or `cancelled` (source or its webhook was removed).'
+        created_at:
+          type: string
+          format: date-time
+          description: Event creation time.
+        retry_expires_at:
+          type: string
+          format: date-time
+          description: Last time you can retry manually (7 days after the event).
+        delivered_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Last successful delivery time, or null if never delivered.
+        next_attempt_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Next scheduled attempt, or null if none.
+        last_error:
+          type:
+          - object
+          - 'null'
+          properties:
+            code:
+              type: string
+              description: Error code.
+            message:
+              type: string
+              description: Error details.
+          required:
+          - code
+          - message
+          description: Latest delivery error, or null if none.
+      required:
+      - id
+      - event
+      - source
+      - url
+      - status
+      - created_at
+      - retry_expires_at
+      - delivered_at
+      - next_attempt_at
+      - last_error
+    ListWebhookDeliveriesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookDeliverySummary'
+          description: Webhook deliveries.
+        has_more:
+          type: boolean
+          description: Whether more deliveries are available.
+        next_cursor:
+          type:
+          - string
+          - 'null'
+          description: Next page cursor, or null on the last page.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - data
+      - has_more
+      - next_cursor
+      - request_id
+    ConcurrencyErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+          - true
+        limit_type:
+          type: string
+          enum:
+          - concurrency
+        limit:
+          type: number
+          minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        retry_after_seconds:
+          type: number
+          minimum: 0
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_charged:
+          type: number
+          enum:
+          - 0
+        should_retry:
+          type: boolean
+          enum:
+          - false
+        retry_condition:
+          type: string
+          enum:
+          - available_concurrency
+        recovery_options:
+          type: array
+          items:
+            type: string
+            enum:
+            - wait_for_in_flight_requests
+            - increase_concurrency_limit
+        info_url:
+          type: string
+          enum:
+          - https://context.dev/dashboard/subscription
+      required:
+      - is_authenticated
+      - limit_type
+      - limit
+      - remaining
+      - retry_after_seconds
+      - credits_charged
+      - should_retry
+      - retry_condition
+      - recovery_options
+      - info_url
+      description: Organization concurrency rejection details. Authentication is valid and no credits were charged. should_retry is false immediately; respect retry_after_seconds and wait for an in-flight request to finish or for the effective concurrency limit to increase. info_url opens subscription settings; no higher allowance is guaranteed for a particular account.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: Credits charged for this request.
+        credits_remaining:
+          type: integer
+          description: Credits remaining for your organization.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Credits this request used and your remaining balance.
+    BillingErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+          - true
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_required:
+          type: number
+          minimum: 0
+        is_credits_required_estimated:
+          type: boolean
+        credits_charged:
+          type: number
+          minimum: 0
+        should_retry:
+          type: boolean
+          enum:
+          - false
+        retry_condition:
+          type: string
+          enum:
+          - sufficient_credits
+        next_refill_at:
+          type: string
+          format: date-time
+        next_refill_credits:
+          type: number
+          exclusiveMinimum: 0
+        info_url:
+          type: string
+          enum:
+          - https://context.dev/dashboard/subscription
+      required:
+      - is_authenticated
+      - should_retry
+      - retry_condition
+      - info_url
+      description: Credit admission or reservation failure details. credits_required is an admission estimate, not a final charge. should_retry is false for an unchanged request immediately; retry_condition requires sufficient account credits. Unknown balances, costs, and refill details are omitted. next_refill_at is an ISO 8601 UTC timestamp. Existing request_id and key_metadata remain on the error envelope.
+    ListWebhookAttemptsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookAttempt'
+          description: Delivery attempts.
+        has_more:
+          type: boolean
+          description: Whether more attempts are available.
+        next_cursor:
+          type:
+          - string
+          - 'null'
+          description: Next page cursor, or null on the last page.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - data
+      - has_more
+      - next_cursor
+      - request_id
+    RetryWebhookDeliveryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Delivery ID.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - id
+      - request_id
+    WebhookDelivery:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Delivery ID.
+        event:
+          type: string
+          enum:
+          - batch.completed
+          - batch.failed
+          - batch.cancelled
+          - change.detected
+          - run.completed
+          description: Webhook event type.
+        source:
+          oneOf:
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - batch
+                description: 'Which deliveries to list: `batch` or `monitor`.'
+              batch_id:
+                type: string
+                description: Batch ID.
+            required:
+            - type
+            - batch_id
+            title: Batch
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - monitor
+                description: 'Which deliveries to list: `batch` or `monitor`.'
+              monitor_id:
+                type: string
+                description: Monitor ID.
+              run_id:
+                type: string
+                description: Monitor run ID.
+            required:
+            - type
+            - monitor_id
+            - run_id
+            title: Monitor
+          description: Batch or monitor run that produced the event.
+        url:
+          type: string
+          format: uri
+          description: Webhook destination URL.
+        status:
+          type: string
+          enum:
+          - pending
+          - delivering
+          - retrying
+          - delivered
+          - failed
+          - cancelled
+          description: '`pending`, `delivering`, `retrying`, `delivered`, `failed`, or `cancelled` (source or its webhook was removed).'
+        created_at:
+          type: string
+          format: date-time
+          description: Event creation time.
+        retry_expires_at:
+          type: string
+          format: date-time
+          description: Last time you can retry manually (7 days after the event).
+        delivered_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Last successful delivery time, or null if never delivered.
+        next_attempt_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Next scheduled attempt, or null if none.
+        last_error:
+          type:
+          - object
+          - 'null'
+          properties:
+            code:
+              type: string
+              description: Error code.
+            message:
+              type: string
+              description: Error details.
+          required:
+          - code
+          - message
+          description: Latest delivery error, or null if none.
+        event_id:
+          type: string
+          description: Stable event ID for deduplicating received webhooks.
+        retry:
+          allOf:
+          - $ref: '#/components/schemas/WebhookRetry'
+          - description: Automatic retry settings for this event.
+        last_attempt:
+          anyOf:
+          - $ref: '#/components/schemas/WebhookAttempt'
+          - type: 'null'
+          description: Latest attempt, or null if none.
+      required:
+      - id
+      - event
+      - source
+      - url
+      - status
+      - created_at
+      - retry_expires_at
+      - delivered_at
+      - next_attempt_at
+      - last_error
+      - event_id
+      - retry
+      - last_attempt
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        error_code:
+          type: string
+          enum:
+          - PROFILE_NOT_FOUND
+          - PROFILE_BUSY
+          - PROFILE_SESSION_EXPIRED
+          - PROFILE_REAUTHENTICATION_REQUIRED
+          - PROFILE_INVALID_CREDENTIALS
+          - PROFILE_MISSING_CREDENTIALS
+          - PROFILE_INTERACTION_REQUIRED
+          - PROFILE_AUTHENTICATION_UNKNOWN
+          - PROFILE_ORIGIN_BLOCKED
+          - PROFILE_INVALID_SESSION
+          - PROFILE_SESSION_TOO_LARGE
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - PAID_PLAN_REQUIRED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - TIMEOUT_TOO_SHORT_FOR_WAIT
+          - WEBSITE_ACCESS_ERROR
+          - WEBSITE_BLOCKED
+          - WEBSITE_NOT_FOUND
+          - PDF_SKIPPED
+          - PDF_IMAGES_ONLY
+          - INPUT_VALIDATION_ERROR
+          - ZDR_NOT_SUPPORTED
+          - ZDR_NOT_ENABLED
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - COLD_DOMAIN_TIMEOUT_TOO_LOW
+          - UNSUPPORTED_CONTENT
+          - CONTENT_TOO_LARGE
+          - MONITOR_PAUSED
+          - MONITOR_NO_WEBHOOK
+          - COLLECTION_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          - BATCH_LIMIT_EXCEEDED
+          - BATCH_NOT_CANCELLABLE
+          - BATCH_NOT_COMPLETED
+          - IDEMPOTENCY_KEY_CONFLICT
+          - DELIVERY_IN_PROGRESS
+          - DELIVERY_ALREADY_DELIVERED
+          - DELIVERY_EXPIRED
+          - DELIVERY_CANCELLED
+          description: Machine-readable error code.
+        error_data:
+          anyOf:
+          - $ref: '#/components/schemas/BillingErrorData'
+          - $ref: '#/components/schemas/ConcurrencyErrorData'
+        required_permission:
+          type: string
+          enum:
+          - logs:read
+          - data:execute
+          - monitors:read
+          - monitors:write
+          - batches:read
+          - batches:write
+          description: Permission required for this request when error_code is INSUFFICIENT_PERMISSIONS. Manage (write) also grants read access to the same resource group.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - request_id
+    RequestId:
+      type: string
+      format: uuid
+      description: Unique ID of this request, also in `X-Request-Id`. Include it when contacting support.
+      example: 3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91
+    WebhookRetry:
+      type: object
+      properties:
+        delays_seconds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 86400
+          maxItems: 10
+          description: Retry delays in seconds, totaling at most 72 hours. Use [] to disable automatic retries.
+          example:
+          - 30
+          - 300
+          - 3600
+      additionalProperties: false
+      description: Webhook retry settings. Use {} for the default schedule.
+      example:
+        delays_seconds:
+        - 10
+        - 60
+        - 300
+        - 1800
+        - 7200
+        - 21600
+        - 57600
+  headers:
+    RateLimitLimit:
+      description: Maximum request units per minute, or maximum concurrent requests when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitMode:
+      description: Set to concurrency when these headers report concurrent requests. When a per-minute limit also applies, its rejections report per-minute headers without this header. New Free accounts have 2 concurrent requests and 10 requests per minute; paid plans have no per-minute limit by default. Existing and custom allowances can differ.
+      schema:
+        type: string
+        enum:
+        - concurrency
+    RateLimitRemaining:
+      description: Request units remaining in the current minute, or concurrent requests still available when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 0
+    RequestId:
+      description: Unique ID of this request; also `request_id` in JSON bodies.
+      schema:
+        type: string
+        format: uuid
+    RateLimitReset:
+      description: Unix timestamp in seconds when the per-minute rate limit resets. Omitted for concurrency limits.
+      schema:
+        type: integer
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Comma-separated labels for filtering usage, e.g. `production,team-alpha`.
+      example: production,team-alpha
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Send `Authorization: Bearer <API_KEY>`. Keys have full access unless restricted to scopes.'

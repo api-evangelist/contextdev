@@ -1,0 +1,3953 @@
+openapi: 3.2.0
+info:
+  title: Context.dev Batches API
+  description: Scrape, crawl, search, and monitor websites, and retrieve brand, people, and news data.
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: Batches
+  description: Scrape many pages or crawl a site asynchronously.
+paths:
+  /batch/submit:
+    post:
+      summary: Submit a batch
+      description: Scrape up to 100,000 URLs, or crawl a site, asynchronously using the same formats and scrape parameters as POST /web/scrape. Choose Markdown, HTML, screenshots, images, bytes, parsed fields, products, highlights, and JSON. Poll the batch ID or receive a webhook when it finishes.
+      operationId: submitBatch
+      security:
+      - bearerAuth: []
+      tags:
+      - Batches
+      x-mint:
+        content: <Badge color="blue">From 1 credit per page</Badge>
+      parameters:
+      - schema:
+          type: string
+          maxLength: 200
+          description: Unique key per submission. Retrying with the same key and body returns the original batch; a different body returns `409`.
+        required: false
+        description: Unique key per submission. Retrying with the same key and body returns the original batch; a different body returns `409`.
+        name: Idempotency-Key
+        in: header
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchSubmitRequest'
+            examples:
+              scrapeAnything:
+                summary: Scrape URLs as Markdown and HTML
+                value:
+                  input:
+                    mode: scrape
+                    data:
+                      urls:
+                      - url: https://example.com/products/anvil
+                        itemId: sku-1
+                        meta:
+                          category: tools
+                      - url: https://example.com/products/hammer
+                        itemId: sku-2
+                      formats:
+                        markdown: true
+                        html: true
+                      sharedParams:
+                        mainContentOnly: true
+              scrapeScreenshots:
+                summary: Capture screenshots and images
+                value:
+                  input:
+                    mode: scrape
+                    data:
+                      urls:
+                      - url: https://example.com
+                      - url: https://example.com/pricing
+                      formats:
+                        screenshot: true
+                        images: true
+                      screenshotParams:
+                        area: fullPage
+                        format: png
+              scrapeJson:
+                summary: Extract structured JSON from each URL
+                value:
+                  input:
+                    mode: scrape
+                    data:
+                      urls:
+                      - url: https://example.com/products/anvil
+                      formats:
+                        json: true
+                      jsonParams:
+                        schema:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            price:
+                              type:
+                              - number
+                              - 'null'
+                          required:
+                          - name
+                          additionalProperties: false
+              crawlAnything:
+                summary: Crawl a site with multiple output formats
+                value:
+                  input:
+                    mode: crawl
+                    data:
+                      source:
+                        type: start_url
+                        url: https://example.com/docs
+                        controls:
+                          maxUrls: 500
+                          maxDepth: 3
+                      formats:
+                        markdown: true
+                        html: true
+                      sharedParams:
+                        mainContentOnly: true
+              crawlSitemapAnything:
+                summary: Scrape sitemap pages with selected formats
+                value:
+                  input:
+                    mode: crawl
+                    data:
+                      source:
+                        type: sitemap
+                        domain: example.com
+                        controls:
+                          maxUrls: 250
+                      formats:
+                        markdown: true
+                        images: true
+      responses:
+        '202':
+          description: Batch accepted. Read progress and results from `GET /batch/{batch_id}`.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/BatchAccepted'
+                - type: object
+                  properties:
+                    key_metadata:
+                      $ref: '#/components/schemas/KeyMetadata'
+                      description: API key usage for this request.
+                    request_id:
+                      $ref: '#/components/schemas/RequestId'
+                  required:
+                  - request_id
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Authentication failed.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: Insufficient credits (`USAGE_EXCEEDED`); authentication is valid. Retry once funded. Legacy deployments may return 401.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Too many active batches (`BATCH_LIMIT_EXCEEDED`), or the key lacks `batches:write` (`INSUFFICIENT_PERMISSIONS`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Idempotency-Key reused with a different body (error_code IDEMPOTENCY_KEY_CONFLICT).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          description: Batch input could not be staged or queued.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /batch/list:
+    get:
+      summary: List batches
+      description: List your batches, newest first, with optional filters.
+      operationId: listBatches
+      security:
+      - bearerAuth: []
+      tags:
+      - Batches
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: boolean
+          default: false
+          description: Include batches submitted with Scrape Anything formats. Defaults to false.
+        required: false
+        description: Include batches submitted with Scrape Anything formats. Defaults to false.
+        name: shouldIncludeUnified
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+          description: Batches per page. Defaults to 25.
+        required: false
+        description: Batches per page. Defaults to 25.
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Cursor from the previous page.
+        required: false
+        description: Cursor from the previous page.
+        name: cursor
+        in: query
+      - schema:
+          type: string
+          enum:
+          - queued
+          - running
+          - cancelling
+          - completed
+          - cancelled
+          - failed
+          description: Filter by status.
+        required: false
+        description: Filter by status.
+        name: status
+        in: query
+      - schema:
+          type: string
+          maxLength: 200
+          description: Free-text search term, matched against the batch id, crawl source (start URL or sitemap domain), and tags.
+          example: batch_1a2b
+        required: false
+        description: Free-text search term, matched against the batch id, crawl source (start URL or sitemap domain), and tags.
+        name: q
+        in: query
+      - schema:
+          type: string
+          enum:
+          - exact
+          - prefix
+          description: '`prefix` for as-you-type prefix matching (default), `exact` for full-token matching.'
+        required: false
+        description: '`prefix` for as-you-type prefix matching (default), `exact` for full-token matching.'
+        name: search_type
+        in: query
+      - schema:
+          anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+          description: Tags to filter by (matches batches having any of them). Pass repeated `tags` params or one comma-separated list, e.g. `tags=docs,competitor`.
+          example: docs,competitor
+        required: false
+        description: Tags to filter by (matches batches having any of them). Pass repeated `tags` params or one comma-separated list, e.g. `tags=docs,competitor`.
+        name: tags
+        in: query
+      responses:
+        '200':
+          description: Your batches, newest first. Use `next_cursor` to page through the rest.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Batch'
+                    description: Batches on this page.
+                  has_more:
+                    type: boolean
+                    description: Whether another page is available.
+                  next_cursor:
+                    type:
+                    - string
+                    - 'null'
+                    description: Cursor for the next page.
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: API key permissions or organization settings do not allow this request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          description: Search is temporarily unavailable (`SEARCH_UNAVAILABLE`). Retry or list without search filters.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /batch/{batch_id}:
+    get:
+      summary: Retrieve a batch
+      description: Get batch progress and result download links. Result files are deleted 180 days after the batch finishes.
+      operationId: getBatch
+      security:
+      - bearerAuth: []
+      tags:
+      - Batches
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          example: batch_9f2c8a
+          description: Batch ID.
+        required: true
+        description: Batch ID.
+        name: batch_id
+        in: path
+      responses:
+        '200':
+          description: Current state of the batch, with download links once it has finished.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Batch'
+                - type: object
+                  properties:
+                    key_metadata:
+                      $ref: '#/components/schemas/KeyMetadata'
+                      description: API key usage for this request.
+                    request_id:
+                      $ref: '#/components/schemas/RequestId'
+                  required:
+                  - request_id
+                - $ref: '#/components/schemas/BatchDetail'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: API key permissions or organization settings do not allow this request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+    delete:
+      summary: Delete a batch
+      description: Permanently delete a finished batch and its results. Its webhook deliveries can no longer be retried.
+      operationId: deleteBatch
+      security:
+      - bearerAuth: []
+      tags:
+      - Batches
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          example: batch_9f2c8a
+          description: Batch ID.
+        required: true
+        description: Batch ID.
+        name: batch_id
+        in: path
+      responses:
+        '200':
+          description: Batch and its stored results are permanently deleted.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: ID of the deleted batch.
+                  deleted:
+                    type: boolean
+                    description: Always true on success.
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: API key permissions or organization settings do not allow this request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Batch is active or still settling (`BATCH_NOT_COMPLETED`). Cancel it, wait for a final status, then retry.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /batch/{batch_id}/results:
+    get:
+      summary: List batch results
+      description: Page through a finished batch’s results as JSON. Each record contains result with the same outputs and per-format errors as POST /web/scrape. Results remain available for 180 days.
+      operationId: getBatchResults
+      security:
+      - bearerAuth: []
+      tags:
+      - Batches
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          example: batch_9f2c8a
+          description: Batch ID.
+        required: true
+        description: Batch ID.
+        name: batch_id
+        in: path
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+          description: Records per page. Defaults to 25. A page can close early so its payload stays under ~8 MB; rely on next_cursor rather than counting records.
+        required: false
+        description: Records per page. Defaults to 25. A page can close early so its payload stays under ~8 MB; rely on next_cursor rather than counting records.
+        name: limit
+        in: query
+      - schema:
+          type: string
+          pattern: ^\d+:\d+$
+          description: next_cursor from the previous page.
+        required: false
+        description: next_cursor from the previous page.
+        name: cursor
+        in: query
+      responses:
+        '200':
+          description: One page of result records. Keep paging with `next_cursor` while `has_more` is true.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BatchResultRecord'
+                    description: Result records on this page.
+                  has_more:
+                    type: boolean
+                    description: Whether another page is available.
+                  next_cursor:
+                    type:
+                    - string
+                    - 'null'
+                    description: Cursor for the next page.
+                  key_metadata:
+                    $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: API key permissions or organization settings do not allow this request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Batch has not finished yet (error_code BATCH_NOT_COMPLETED).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /batch/{batch_id}/cancel:
+    post:
+      summary: Cancel a batch
+      description: Stop a batch from starting new pages. Pages already in progress finish before the batch becomes cancelled.
+      operationId: cancelBatch
+      security:
+      - bearerAuth: []
+      tags:
+      - Batches
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          example: batch_9f2c8a
+          description: Batch ID.
+        required: true
+        description: Batch ID.
+        name: batch_id
+        in: path
+      responses:
+        '202':
+          description: Cancellation started. Poll `GET /batch/{batch_id}` until the batch settles.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/BatchCancelling'
+                - type: object
+                  properties:
+                    key_metadata:
+                      $ref: '#/components/schemas/KeyMetadata'
+                      description: API key usage for this request.
+                    request_id:
+                      $ref: '#/components/schemas/RequestId'
+                  required:
+                  - request_id
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: API key permissions or organization settings do not allow this request.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Batch already finished (`BATCH_NOT_CANCELLABLE`).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+webhooks:
+  batchCompleted:
+    post:
+      summary: Batch completed
+      description: Sent when a batch completes. Return any 2xx response to acknowledge delivery. Slack incoming webhook destinations receive a formatted Slack message instead of this event envelope.
+      operationId: batchCompleted
+      tags:
+      - Batches
+      security: []
+      parameters:
+      - schema:
+          type: string
+          example: Context.dev-Webhooks/1.0
+        required: true
+        description: Identifies the Context.dev webhook sender.
+        name: User-Agent
+        in: header
+      - schema:
+          type: string
+          enum:
+          - batch.completed
+        required: true
+        description: Which final status the batch reached. Matches the `event` field in the request body.
+        name: X-Context-Event
+        in: header
+      - schema:
+          type: string
+          example: evt_123
+        required: true
+        description: Unique event ID. Matches the top-level `id` field in the request body.
+        name: X-Context-Id
+        in: header
+      - schema:
+          type: string
+          example: whd_0123456789abcdef0123456789abcdef
+        required: false
+        description: Delivery ID for status checks and retries.
+        name: X-Context-Delivery-Id
+        in: header
+      - schema:
+          type: integer
+          minimum: 1
+        required: false
+        description: Attempt number, starting at 1.
+        name: X-Context-Attempt
+        in: header
+      - schema:
+          type: string
+          example: t=1783620012,v1=087d98aada1e39f9d24d65951f51e672da12b2f9ea1c02c7c8c5ef254f5d4068
+        required: false
+        description: '`t=<unix>,v1=<hmac>`: SHA-256 HMAC of `t.rawRequestBody`, keyed with the webhook secret. Verify with a constant-time comparison and reject stale timestamps.'
+        name: X-Context-Signature
+        in: header
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCompletedWebhookPayload'
+      responses:
+        2XX:
+          description: Webhook accepted.
+  batchFailed:
+    post:
+      summary: Batch failed
+      description: Sent when a batch fails. Return any 2xx response to acknowledge delivery. Slack incoming webhook destinations receive a formatted Slack message instead of this event envelope.
+      operationId: batchFailed
+      tags:
+      - Batches
+      security: []
+      parameters:
+      - schema:
+          type: string
+          example: Context.dev-Webhooks/1.0
+        required: true
+        description: Identifies the Context.dev webhook sender.
+        name: User-Agent
+        in: header
+      - schema:
+          type: string
+          enum:
+          - batch.failed
+        required: true
+        description: Which final status the batch reached. Matches the `event` field in the request body.
+        name: X-Context-Event
+        in: header
+      - schema:
+          type: string
+          example: evt_123
+        required: true
+        description: Unique event ID. Matches the top-level `id` field in the request body.
+        name: X-Context-Id
+        in: header
+      - schema:
+          type: string
+          example: whd_0123456789abcdef0123456789abcdef
+        required: false
+        description: Delivery ID for status checks and retries.
+        name: X-Context-Delivery-Id
+        in: header
+      - schema:
+          type: integer
+          minimum: 1
+        required: false
+        description: Attempt number, starting at 1.
+        name: X-Context-Attempt
+        in: header
+      - schema:
+          type: string
+          example: t=1783620012,v1=087d98aada1e39f9d24d65951f51e672da12b2f9ea1c02c7c8c5ef254f5d4068
+        required: false
+        description: '`t=<unix>,v1=<hmac>`: SHA-256 HMAC of `t.rawRequestBody`, keyed with the webhook secret. Verify with a constant-time comparison and reject stale timestamps.'
+        name: X-Context-Signature
+        in: header
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchFailedWebhookPayload'
+      responses:
+        2XX:
+          description: Webhook accepted.
+  batchCancelled:
+    post:
+      summary: Batch cancelled
+      description: Sent when a batch is cancelled. Return any 2xx response to acknowledge delivery. Slack incoming webhook destinations receive a formatted Slack message instead of this event envelope.
+      operationId: batchCancelled
+      tags:
+      - Batches
+      security: []
+      parameters:
+      - schema:
+          type: string
+          example: Context.dev-Webhooks/1.0
+        required: true
+        description: Identifies the Context.dev webhook sender.
+        name: User-Agent
+        in: header
+      - schema:
+          type: string
+          enum:
+          - batch.cancelled
+        required: true
+        description: Which final status the batch reached. Matches the `event` field in the request body.
+        name: X-Context-Event
+        in: header
+      - schema:
+          type: string
+          example: evt_123
+        required: true
+        description: Unique event ID. Matches the top-level `id` field in the request body.
+        name: X-Context-Id
+        in: header
+      - schema:
+          type: string
+          example: whd_0123456789abcdef0123456789abcdef
+        required: false
+        description: Delivery ID for status checks and retries.
+        name: X-Context-Delivery-Id
+        in: header
+      - schema:
+          type: integer
+          minimum: 1
+        required: false
+        description: Attempt number, starting at 1.
+        name: X-Context-Attempt
+        in: header
+      - schema:
+          type: string
+          example: t=1783620012,v1=087d98aada1e39f9d24d65951f51e672da12b2f9ea1c02c7c8c5ef254f5d4068
+        required: false
+        description: '`t=<unix>,v1=<hmac>`: SHA-256 HMAC of `t.rawRequestBody`, keyed with the webhook secret. Verify with a constant-time comparison and reject stale timestamps.'
+        name: X-Context-Signature
+        in: header
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCancelledWebhookPayload'
+      responses:
+        2XX:
+          description: Webhook accepted.
+components:
+  schemas:
+    ScrapePdfOptions:
+      type: object
+      additionalProperties: false
+      properties:
+        startPage:
+          type: integer
+          minimum: 1
+          description: First page to parse, starting at 1.
+        endPage:
+          type: integer
+          minimum: 1
+          description: Last page to parse. Must be at least `startPage`.
+        ocr:
+          type: string
+          enum:
+          - 'off'
+          - auto
+          default: 'off'
+          description: Set `auto` to read scanned pages with OCR.
+    ScrapeProfile:
+      oneOf:
+      - type: object
+        title: Existing Profile
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            const: existing
+            description: Reuse a saved browser profile.
+          profileId:
+            type: string
+            pattern: ^prof_[a-f0-9]{32}$
+            description: The ID returned in profile.id by an earlier scrape.
+        required:
+        - type
+        - profileId
+      - type: object
+        title: New Profile
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            const: new
+            description: Sign in and create a browser profile.
+          identifier:
+            type: string
+            minLength: 1
+            maxLength: 1024
+            description: Username or email for the target website.
+          password:
+            type: string
+            minLength: 1
+            maxLength: 4096
+            writeOnly: true
+            description: Password used to sign in. It is never stored in the profile.
+          description:
+            type: string
+            minLength: 1
+            maxLength: 500
+            description: Optional label shown when listing profiles with `GET /org/browser/profiles`.
+        required:
+        - type
+        - identifier
+        - password
+      discriminator:
+        propertyName: type
+    RequestTags:
+      type: array
+      items:
+        type: string
+        minLength: 1
+        maxLength: 50
+      maxItems: 20
+      description: Labels for filtering usage in the dashboard.
+      example:
+      - production
+      - team-alpha
+    ScrapeFormats:
+      type: object
+      additionalProperties: false
+      properties:
+        html:
+          type: boolean
+          default: false
+          description: Rendered HTML.
+        markdown:
+          type: boolean
+          default: false
+          description: Page content as Markdown.
+        screenshot:
+          type: boolean
+          default: false
+          description: A screenshot of the page.
+        images:
+          type: boolean
+          default: false
+          description: Images found on the page.
+        bytes:
+          type: boolean
+          default: false
+          description: The original HTTP response body.
+        parse:
+          type: boolean
+          default: false
+          description: Fields extracted with custom rules or a prebuilt parser, returned as `parsed`.
+        highlights:
+          type: boolean
+          default: false
+          description: Markdown excerpts relevant to `highlightsParams.query`.
+        json:
+          type: boolean
+          default: false
+          description: An object matching `jsonParams.schema`, extracted from the page.
+        product:
+          type: boolean
+          default: false
+          description: Product details such as name, price, and availability.
+      not:
+        allOf:
+        - not:
+            required:
+            - html
+            properties:
+              html:
+                const: true
+        - not:
+            required:
+            - markdown
+            properties:
+              markdown:
+                const: true
+        - not:
+            required:
+            - screenshot
+            properties:
+              screenshot:
+                const: true
+        - not:
+            required:
+            - images
+            properties:
+              images:
+                const: true
+        - not:
+            required:
+            - bytes
+            properties:
+              bytes:
+                const: true
+        - not:
+            required:
+            - parse
+            properties:
+              parse:
+                const: true
+        - not:
+            required:
+            - highlights
+            properties:
+              highlights:
+                const: true
+        - not:
+            required:
+            - json
+            properties:
+              json:
+                const: true
+        - not:
+            required:
+            - product
+            properties:
+              product:
+                const: true
+    ScrapeMarkdownParams:
+      type: object
+      additionalProperties: false
+      properties:
+        includeLinks:
+          type: boolean
+          default: true
+          description: Keep link URLs in the Markdown. Set false to return link text without URLs.
+        includeImages:
+          type: boolean
+          default: false
+          description: Include images in the Markdown using image syntax with URLs and alt text.
+        inlineImages:
+          type: string
+          enum:
+          - placeholder
+          - preserve
+          description: 'How base64 images appear: `placeholder` (default) or `preserve`. Requires `includeImages`.'
+      allOf:
+      - if:
+          required:
+          - inlineImages
+        then:
+          required:
+          - includeImages
+          properties:
+            includeImages:
+              const: true
+    ScrapeImage:
+      type: object
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+          format: uri
+          pattern: ^(https?://|data:image/)
+          description: Image URL, or a data URI for inline images.
+        alt:
+          type:
+          - string
+          - 'null'
+          description: Alt text, if present.
+        width:
+          type: integer
+          minimum: 1
+        height:
+          type: integer
+          minimum: 1
+        classification:
+          type: string
+          enum:
+          - photography
+          - illustration
+          - logo
+          - wordmark
+          - icon
+          - pattern
+          - graphic
+          - other
+        fileUrl:
+          type: string
+          format: uri
+          pattern: ^https?://
+          description: Hosted image URL, valid for 24 hours after capture. Requires `file` enrichment and ZDR disabled.
+      required:
+      - url
+      - alt
+    ScrapeSharedParams:
+      type: object
+      additionalProperties: false
+      properties:
+        profile:
+          $ref: '#/components/schemas/ScrapeProfile'
+          description: Create or reuse an authenticated browser profile. Requires a paid plan and an HTTPS target. Profiles persist session state, bypass shared caches, and cannot be combined with ZDR, custom headers, raw bytes, Google Maps, app store, Instagram, or G2 parsers. The emails, phone-numbers, and links parsers support profiles.
+        country:
+          type: string
+          pattern: ^[A-Za-z]{2}$
+          examples:
+          - US
+          description: Proxy country as a two-letter code, such as `US`. Case-insensitive.
+        headers:
+          type: object
+          propertyNames:
+            pattern: ^[!#$%&'*+.^_`|~0-9A-Za-z-]+$
+            not:
+              pattern: ^(?:[Hh][Oo][Ss][Tt]|[Cc][Oo][Nn][Tt][Ee][Nn][Tt]-[Ll][Ee][Nn][Gg][Tt][Hh]|[Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn]|[Kk][Ee][Ee][Pp]-[Aa][Ll][Ii][Vv][Ee]|[Pp][Rr][Oo][Xx][Yy]-[Aa][Uu][Tt][Hh][Ee][Nn][Tt][Ii][Cc][Aa][Tt][Ee]|[Pp][Rr][Oo][Xx][Yy]-[Aa][Uu][Tt][Hh][Oo][Rr][Ii][Zz][Aa][Tt][Ii][Oo][Nn]|[Pp][Rr][Oo][Xx][Yy]-[Cc][Oo][Nn][Nn][Ee][Cc][Tt][Ii][Oo][Nn]|[Tt][Ee]|[Tt][Rr][Aa][Ii][Ll][Ee][Rr]|[Tt][Rr][Aa][Nn][Ss][Ff][Ee][Rr]-[Ee][Nn][Cc][Oo][Dd][Ii][Nn][Gg]|[Uu][Pp][Gg][Rr][Aa][Dd][Ee]|[Ee][Xx][Pp][Ee][Cc][Tt])$
+          additionalProperties:
+            type: string
+            maxLength: 8192
+            pattern: ^[^\r\n]*$
+          description: HTTP headers to send to the target site. Requests with headers skip the cache.
+          examples:
+          - Accept-Language: en-US
+        viewport:
+          type: object
+          additionalProperties: false
+          properties:
+            width:
+              type: integer
+              description: Browser viewport width in pixels.
+              minimum: 240
+              maximum: 7680
+              default: 1440
+            height:
+              type: integer
+              description: Browser viewport height in pixels.
+              minimum: 240
+              maximum: 4320
+              default: 900
+          description: Browser size in pixels. Omit for 1920 × 1080. When provided, missing dimensions default to 1440 × 900.
+        theme:
+          type: string
+          enum:
+          - light
+          - dark
+          description: Emulate a light or dark color scheme.
+        dismissCookies:
+          type: boolean
+          default: true
+          description: Accept cookie banners before actions and capture.
+        dismissPopups:
+          type: boolean
+          default: false
+          description: Close other popups before actions and capture.
+        actions:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/ScrapeAction'
+          description: Browser steps run in order before capture. Requires a paid plan. Skips the cache.
+        waitFor:
+          oneOf:
+          - type: integer
+            minimum: 0
+            maximum: 30000
+            title: Milliseconds
+          - type: string
+            pattern: \S
+            maxLength: 2048
+            title: CSS selector
+          examples:
+          - 500
+          - '#content'
+          description: Milliseconds, or a CSS selector to wait for, after actions. Defaults to 500 (2000 with frames or XML).
+        settleAnimations:
+          type: boolean
+          description: Wait for CSS animations to finish before capture. Defaults to `true` when `screenshot` is requested.
+        mainContentOnly:
+          type: boolean
+          default: false
+          description: Keep only the main content. Doesn't affect `screenshot`, `bytes`, or `product`.
+        includeSelectors:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: string
+            pattern: \S
+            maxLength: 2048
+          description: Keep only elements matching these CSS selectors.
+        excludeSelectors:
+          type: array
+          minItems: 1
+          maxItems: 50
+          uniqueItems: true
+          items:
+            type: string
+            pattern: \S
+            maxLength: 2048
+          description: Remove elements matching these CSS selectors. Overrides `includeSelectors`.
+        includeFrames:
+          type: boolean
+          default: false
+          description: Include iframe content in HTML and text outputs. Screenshots always show visible frames.
+        parsers:
+          type: object
+          additionalProperties: false
+          description: Document parsing options.
+          properties:
+            pdf:
+              $ref: '#/components/schemas/ScrapePdfOptions'
+              description: PDF page range and OCR.
+    ScrapeJsonParams:
+      type: object
+      additionalProperties: false
+      properties:
+        schema:
+          type: object
+          additionalProperties: true
+          description: JSON Schema (not an example object) for a top-level object, up to 50 KB. Use optional or nullable fields for missing facts.
+          example:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Product name.
+              price:
+                type: number
+                description: Current price as a plain number.
+              inStock:
+                type: boolean
+            required:
+            - name
+            additionalProperties: false
+        instructions:
+          type: string
+          maxLength: 2000
+          description: Extra guidance, such as which facts to prefer or how to read a field.
+      required:
+      - schema
+    BatchCompletedWebhookPayload:
+      type: object
+      properties:
+        event:
+          type: string
+          enum:
+          - batch.completed
+          description: Which final status the batch reached. Mirrors the `X-Context-Event` header.
+        id:
+          type: string
+          example: evt_123
+          description: Unique event ID. Mirrors the `X-Context-Id` header.
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-07-09T18:00:12.000Z'
+          description: When the batch reached its final status.
+        data:
+          type: object
+          properties:
+            batch:
+              allOf:
+              - $ref: '#/components/schemas/Batch'
+              description: The batch in its final state, as in Retrieve a batch without `invalid_urls`. Result links expire 24 hours after the event, and replays resend the original links.
+          required:
+          - batch
+      required:
+      - event
+      - id
+      - created_at
+      - data
+      title: Batch completed webhook payload
+      description: Payload sent when a batch completes.
+    BatchCancelling:
+      type: object
+      properties:
+        id:
+          type: string
+          example: batch_9f2c8a
+          description: Batch ID.
+        status:
+          type: string
+          enum:
+          - cancelling
+          description: Always `cancelling`. Work already in flight finishes; the batch reaches `cancelled` shortly after.
+        mode:
+          type: string
+          enum:
+          - scrape
+          - crawl
+          description: How pages were selected.
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags stored on the batch at submission.
+          example:
+          - docs
+        crawl:
+          $ref: '#/components/schemas/BatchNullableCrawlControls'
+        input:
+          $ref: '#/components/schemas/BatchIntake'
+        progress:
+          type: object
+          properties:
+            succeeded:
+              type: integer
+              example: 4120
+              description: Pages scraped successfully before the request landed.
+            failed:
+              type: integer
+              example: 37
+              description: Pages that could not be scraped before the request landed.
+            pending:
+              type: integer
+              example: 20660
+              description: Pages that will be skipped.
+          required:
+          - succeeded
+          - failed
+          - pending
+          description: How far the batch got before cancellation.
+        credits:
+          type: object
+          properties:
+            reserved:
+              type: integer
+              example: 24817
+              description: Credits held at submission; unused credits are refunded when the batch settles.
+          required:
+          - reserved
+          description: What this batch cost so far.
+        timing:
+          type: object
+          properties:
+            created_at:
+              type: string
+              description: When the batch was created.
+            started_at:
+              type:
+              - string
+              - 'null'
+              description: When processing started. Null if it was cancelled while still queued.
+          required:
+          - created_at
+          - started_at
+          description: Batch timestamps.
+        page_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchPageErrorCount'
+          description: Page failures so far, grouped by error code and sorted by count.
+        formats:
+          $ref: '#/components/schemas/ScrapeFormats'
+          example:
+            html: true
+            markdown: true
+          description: Outputs requested for each page. Matches input.data.formats on submission.
+      required:
+      - id
+      - status
+      - mode
+      - tags
+      - crawl
+      - input
+      - progress
+      - credits
+      - timing
+      - page_errors
+      - formats
+      title: Cancelling batch
+      description: Acknowledgement that cancellation was requested. The batch has not settled, so it carries no results, no failure, no refund and no finish time; poll GET /batch/{batch_id} for those.
+    Batch:
+      type: object
+      properties:
+        id:
+          type: string
+          example: batch_9f2c8a
+          description: Batch ID.
+        status:
+          type: string
+          enum:
+          - queued
+          - running
+          - cancelling
+          - completed
+          - cancelled
+          - failed
+          description: Current state. `completed`, `cancelled`, and `failed` are final.
+        mode:
+          type: string
+          enum:
+          - scrape
+          - crawl
+          description: '`scrape` (URL list) or `crawl`.'
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags stored on the batch at submission.
+          example:
+          - docs
+        crawl:
+          $ref: '#/components/schemas/BatchNullableCrawlControls'
+        input:
+          $ref: '#/components/schemas/BatchIntake'
+        progress:
+          type: object
+          properties:
+            succeeded:
+              type: integer
+              example: 18091
+              description: Pages scraped successfully.
+            failed:
+              type: integer
+              example: 311
+              description: Pages that could not be scraped.
+            pending:
+              type: integer
+              example: 6415
+              description: Accepted pages not yet attempted. Unused crawl capacity is excluded after completion.
+          required:
+          - succeeded
+          - failed
+          - pending
+          description: Pages attempted so far. Use `status` to check completion.
+        credits:
+          type: object
+          properties:
+            reserved:
+              type: integer
+              example: 24817
+              description: Credits held when the batch was accepted.
+            refunded:
+              type: integer
+              example: 6726
+              description: Credits returned for unsuccessful pages when the batch settles.
+            ocr_charged:
+              type: integer
+              example: 42
+              description: OCR usage charged when the batch settles.
+            net:
+              type: integer
+              example: 18091
+              description: '`reserved` minus `refunded` plus `ocr_charged`.'
+          required:
+          - reserved
+          - refunded
+          - ocr_charged
+          - net
+          description: Batch credit usage and settlement.
+        timing:
+          type: object
+          properties:
+            created_at:
+              type: string
+              description: When the batch was created.
+            started_at:
+              type:
+              - string
+              - 'null'
+              description: When processing started. Null while queued.
+            completed_at:
+              type:
+              - string
+              - 'null'
+              description: When processing finished. Null while active.
+          required:
+          - created_at
+          - started_at
+          - completed_at
+        page_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchPageErrorCount'
+          description: Individual page failures grouped by error code, sorted by count. Unrelated to `failure`, which is the batch itself failing.
+        failure:
+          $ref: '#/components/schemas/BatchNullableFailure'
+        results:
+          type:
+          - object
+          - 'null'
+          properties:
+            expires_at:
+              type: string
+              description: When these links expire (24 hours after this response).
+            files:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Temporary URL for a gzipped NDJSON file.
+                  items:
+                    type: integer
+                    description: Results in this file.
+                  bytes:
+                    type: integer
+                    description: Compressed file size in bytes.
+                required:
+                - url
+                - items
+                - bytes
+              description: Result files. Order is not guaranteed.
+          required:
+          - expires_at
+          - files
+          description: Result download links; null until the batch finishes. Files are deleted 180 days after the batch finishes.
+        formats:
+          $ref: '#/components/schemas/ScrapeFormats'
+          example:
+            html: true
+            markdown: true
+          description: Outputs requested for each page. Matches input.data.formats on submission.
+      required:
+      - id
+      - status
+      - mode
+      - tags
+      - crawl
+      - input
+      - progress
+      - credits
+      - timing
+      - page_errors
+      - failure
+      - results
+      - formats
+      title: Batch
+      description: An asynchronous web scraping job.
+    BatchUnifiedCrawlData:
+      type: object
+      additionalProperties: false
+      properties:
+        source:
+          oneOf:
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - start_url
+                description: Start from one page.
+              url:
+                type: string
+                minLength: 1
+                description: Page where crawling begins. A URL without a scheme is read as https://.
+                example: https://example.com/docs
+              controls:
+                type: object
+                properties:
+                  maxUrls:
+                    type: integer
+                    minimum: 1
+                    maximum: 100000
+                    default: 100
+                    description: Maximum pages to fetch. Unused reserved credits are refunded. Maximum 100000.
+                  maxDepth:
+                    type: integer
+                    minimum: 0
+                    maximum: 50
+                    description: Maximum link depth. Source pages are depth 0. No limit when omitted.
+                  followSubdomains:
+                    type: boolean
+                    default: false
+                    description: Follow links to subdomains.
+                  regex:
+                    type: string
+                    maxLength: 256
+                    description: RE2 pattern for URLs to include. The `start_url` itself is always included.
+                    example: ^https://example\.com/docs/
+                  excludeRegex:
+                    type: string
+                    maxLength: 256
+                    description: RE2 pattern for URLs to exclude, even when they match `regex`. The `start_url` itself is always included.
+                    example: /tag/|/author/
+                default:
+                  maxUrls: 100
+                  followSubdomains: false
+                additionalProperties: false
+                description: Limits and filters for page discovery.
+            required:
+            - type
+            - url
+            additionalProperties: false
+            description: Discover pages by following links from one URL.
+            title: Start URL
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - sitemap
+                description: Scrape the URLs in the domain's sitemap.
+              domain:
+                type: string
+                minLength: 3
+                description: Domain whose sitemap lists the pages to scrape. A full URL is reduced to its domain.
+                example: example.com
+              controls:
+                type: object
+                properties:
+                  maxUrls:
+                    type: integer
+                    minimum: 1
+                    maximum: 100000
+                    default: 100
+                    description: Maximum pages to fetch. Unused reserved credits are refunded. Maximum 100000.
+                  regex:
+                    type: string
+                    maxLength: 256
+                    description: RE2 pattern; only sitemap URLs matching it are scraped.
+                    example: ^https://example\.com/docs/
+                  excludeRegex:
+                    type: string
+                    maxLength: 256
+                    description: RE2 pattern; sitemap URLs matching it are not scraped, even when they match `regex`.
+                    example: /tag/|/author/
+                default:
+                  maxUrls: 100
+                additionalProperties: false
+                description: Limits and filters for the sitemap URLs. A sitemap batch scrapes exactly those URLs and never follows links off them, so there is no crawl depth here.
+            required:
+            - type
+            - domain
+            additionalProperties: false
+            description: Scrape the pages listed in a domain's sitemap. Links on those pages are not followed.
+            title: Sitemap
+          discriminator:
+            propertyName: type
+          title: Crawl source
+          description: How to find pages to crawl.
+        formats:
+          $ref: '#/components/schemas/ScrapeFormats'
+          description: Outputs to return. Set at least one to `true`.
+        markdownParams:
+          $ref: '#/components/schemas/ScrapeMarkdownParams'
+          description: Markdown options. Requires `formats.markdown`.
+        screenshotParams:
+          $ref: '#/components/schemas/ScrapeScreenshotParams'
+          description: 'Screenshot options. Requires formats.screenshot: true.'
+        imageParams:
+          $ref: '#/components/schemas/ScrapeImageParams'
+          description: 'Image options. Requires formats.images: true.'
+        parseParams:
+          $ref: '#/components/schemas/ScrapeParseParams'
+          description: 'Requires `formats.parse: true`; required when it is set.'
+        highlightsParams:
+          $ref: '#/components/schemas/ScrapeHighlightsParams'
+          description: 'Requires `formats.highlights: true`; required when it is set.'
+        jsonParams:
+          $ref: '#/components/schemas/ScrapeJsonParams'
+          description: 'Requires `formats.json: true`; required when it is set.'
+        productParams:
+          $ref: '#/components/schemas/ScrapeProductParams'
+          description: 'Product options. Requires formats.product: true.'
+        sharedParams:
+          $ref: '#/components/schemas/ScrapeSharedParams'
+          description: Browser and content settings shared by all outputs.
+        maxAgeMs:
+          type: integer
+          minimum: 0
+          maximum: 31536000000
+          default: 259200000
+          description: 'Maximum age of a cached output, in milliseconds. `0` fetches fresh. Defaults to 3 days (259200000 ms). Maximum: 1 year (31536000000 ms).'
+        zdr:
+          type: string
+          enum:
+          - disabled
+          default: disabled
+          description: Batches persist their results. Only disabled is supported; enabled returns ZDR_NOT_SUPPORTED.
+        timeoutOpts:
+          $ref: '#/components/schemas/ScrapeTimeout'
+          default:
+            milliseconds: 90000
+            behavior: fail
+          description: Deadline for each page, using the same behavior and defaults as POST /web/scrape.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+          description: Labels for tracking request usage. Not retained when zdr is enabled.
+      required:
+      - source
+      - formats
+      title: Crawl with Scrape Anything
+      description: Use the same formats and parameters as POST /web/scrape, replacing url with source. Options apply to every page.
+    BatchPageErrorCount:
+      type: object
+      properties:
+        code:
+          type: string
+          example: WEBSITE_ACCESS_ERROR
+          description: Error code for these failures.
+        count:
+          type: integer
+          example: 204
+          description: Pages that failed with this code.
+      required:
+      - code
+      - count
+      x-stainless-model: batch.page_error_count
+      description: Page failures sharing one error code.
+    BatchAccepted:
+      type: object
+      properties:
+        id:
+          type: string
+          example: batch_9f2c8a
+          description: Batch ID. Poll GET /batch/{batch_id} with it.
+        status:
+          type: string
+          enum:
+          - queued
+          description: Always `queued`. An accepted batch has not started yet.
+        mode:
+          type: string
+          enum:
+          - scrape
+          - crawl
+          description: How pages will be selected.
+        tags:
+          type: array
+          items:
+            type: string
+          description: Tags stored on the batch.
+          example:
+          - docs
+        crawl:
+          $ref: '#/components/schemas/BatchNullableCrawlControls'
+        input:
+          $ref: '#/components/schemas/BatchIntake'
+        credits:
+          type: object
+          properties:
+            reserved:
+              type: integer
+              example: 24817
+              description: Credits held at submission.
+          required:
+          - reserved
+          description: What accepting this batch cost.
+        created_at:
+          type: string
+          description: When the batch was created.
+        invalid_urls:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                description: Rejected URL.
+              reason:
+                type: string
+                description: Why it was rejected.
+                example: Must be a public http:// or https:// URL
+            required:
+            - url
+            - reason
+          description: Rejected URLs (first 100).
+        cache_metadata:
+          $ref: '#/components/schemas/CacheMetadata'
+        webhook_secret:
+          type: string
+          description: Secret for verifying `X-Context-Signature`. Only submit returns it, so store it.
+        formats:
+          $ref: '#/components/schemas/ScrapeFormats'
+          example:
+            html: true
+            markdown: true
+          description: Outputs requested for each page. Matches input.data.formats on submission.
+      required:
+      - id
+      - status
+      - mode
+      - tags
+      - crawl
+      - input
+      - credits
+      - created_at
+      - invalid_urls
+      - cache_metadata
+      - formats
+      title: Accepted batch
+    ScrapeParseParams:
+      oneOf:
+      - type: object
+        title: Custom parser
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            const: custom
+            default: custom
+            description: Extract fields using custom CSS rules. This is the default when type is omitted.
+          rules:
+            $ref: '#/components/schemas/ScrapeParseRules'
+        required:
+        - rules
+      - type: object
+        title: Prebuilt parser
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            const: prebuilt
+            description: Use a prebuilt parser instead of custom rules.
+          parser:
+            type: string
+            enum:
+            - google-maps
+            - google-maps-reviews
+            - google-play
+            - google-play-reviews
+            - app-store
+            - app-store-reviews
+            - g2-reviews
+            - instagram-profile
+            - instagram-post
+            - instagram-feed
+            - tiktok-profile
+            - tiktok-video
+            - tiktok-feed
+            - tiktok-comments
+            - tiktok-followers
+            - tiktok-following
+            - tiktok-user-search
+            - emails
+            - phone-numbers
+            - links
+            description: The prebuilt parser to use. See https://docs.context.dev/scrape/prebuilt-parsers for supported sources, request options, and output schemas.
+          sort:
+            type: string
+            enum:
+            - newest
+            - oldest
+            - relevant
+            - highest
+            - lowest
+            default: newest
+            description: google-maps-reviews only. Order of data.reviews. newest, relevant, highest, and lowest follow Google; oldest returns the earliest reviews first, which Google itself does not offer.
+          limit:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+            description: google-maps-reviews only. Maximum number of reviews to return. Defaults to 100; maximum 1000.
+        required:
+        - type
+        - parser
+    ScrapeParseRules:
+      type: object
+      additionalProperties:
+        anyOf:
+        - type: string
+          minLength: 1
+          maxLength: 2048
+        - type: object
+          properties:
+            selector:
+              type: string
+              minLength: 1
+              maxLength: 2048
+              description: CSS selector to match within the current page or parent rule.
+            type:
+              type: string
+              enum:
+              - item
+              - list
+              description: Return the first match with `item` or all matches with `list`.
+            output:
+              description: Return text, HTML, an attribute such as `@href`, or nested field rules. Defaults to text.
+              anyOf:
+              - type: string
+                enum:
+                - text
+                - html
+              - type: string
+                pattern: ^@.*$
+              - $ref: '#/components/schemas/ScrapeParseRules'
+          required:
+          - selector
+          additionalProperties: false
+      minProperties: 1
+      description: Field names mapped to CSS selectors (`h1`, `a@href`) or rule objects. Max 100 fields, 5 levels.
+      examples:
+      - title: h1
+        links:
+          selector: a
+          type: list
+          output: '@href'
+    BatchCancelledWebhookPayload:
+      type: object
+      properties:
+        event:
+          type: string
+          enum:
+          - batch.cancelled
+          description: Which final status the batch reached. Mirrors the `X-Context-Event` header.
+        id:
+          type: string
+          example: evt_123
+          description: Unique event ID. Mirrors the `X-Context-Id` header.
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-07-09T18:00:12.000Z'
+          description: When the batch reached its final status.
+        data:
+          type: object
+          properties:
+            batch:
+              allOf:
+              - $ref: '#/components/schemas/Batch'
+              description: The batch in its final state, as in Retrieve a batch without `invalid_urls`. Result links expire 24 hours after the event, and replays resend the original links.
+          required:
+          - batch
+      required:
+      - event
+      - id
+      - created_at
+      - data
+      title: Batch cancelled webhook payload
+      description: Payload sent when a batch is cancelled.
+    ScrapeHighlightsParams:
+      type: object
+      additionalProperties: false
+      properties:
+        query:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: The question or topic to find passages for.
+        maxCharacters:
+          type: integer
+          minimum: 100
+          maximum: 20000
+          default: 4000
+          description: Maximum combined length of returned passages.
+      required:
+      - query
+    ScrapeProductResult:
+      type: object
+      additionalProperties: false
+      properties:
+        isProductPage:
+          type: boolean
+          description: Whether the page is a product detail page.
+        product:
+          oneOf:
+          - $ref: '#/components/schemas/ScrapeProduct'
+          - type: 'null'
+          description: The extracted product, or null when the page is not a product detail page.
+      required:
+      - isProductPage
+      - product
+    ScrapeTimeout:
+      type: object
+      properties:
+        milliseconds:
+          type: integer
+          minimum: 1
+          maximum: 300000
+          description: Deadline in milliseconds.
+        behavior:
+          type: string
+          enum:
+          - fail
+          - return-partial
+          default: fail
+          description: '"fail" returns 408 at the deadline. "return-partial" returns available results; inspect the response’s partial flag. "return-partial" requires at least 5000 ms.'
+      required:
+      - milliseconds
+      additionalProperties: false
+      description: Request deadline and what to return when it passes.
+    ScrapeProduct:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          description: Product name.
+        description:
+          type:
+          - string
+          - 'null'
+          description: Product description.
+        brand:
+          type:
+          - string
+          - 'null'
+          description: Brand or vendor.
+        sku:
+          type:
+          - string
+          - 'null'
+          description: Product identifier such as a SKU or model number.
+        price:
+          type:
+          - number
+          - 'null'
+          description: Current price.
+        regularPrice:
+          type:
+          - number
+          - 'null'
+          description: List price before any discount.
+        currency:
+          type:
+          - string
+          - 'null'
+          description: ISO 4217 currency code.
+        availability:
+          type:
+          - string
+          - 'null'
+          enum:
+          - in_stock
+          - out_of_stock
+          - limited_availability
+          - preorder
+          - backorder
+          - made_to_order
+          - discontinued
+          - null
+          description: Stock or ordering availability.
+        category:
+          type:
+          - string
+          - 'null'
+          description: Product category.
+        imageUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: Main product image URL.
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: Product image URLs, main image first.
+        dimensions:
+          type: array
+          items:
+            type: string
+          description: Product dimensions as shown on the page.
+        features:
+          type: array
+          items:
+            type: string
+          description: Key features and specifications.
+        targetAudience:
+          type: array
+          items:
+            type: string
+          description: Intended audience.
+        tags:
+          type: array
+          items:
+            type: string
+          description: Product tags.
+        variants:
+          $ref: '#/components/schemas/ProductVariants'
+      required:
+      - name
+      - description
+      - brand
+      - sku
+      - price
+      - regularPrice
+      - currency
+      - availability
+      - category
+      - imageUrl
+      - images
+      - dimensions
+      - features
+      - targetAudience
+      - tags
+      - variants
+    PageMetadataValue:
+      oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+    CacheMetadata:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - hit
+          - miss
+          - zdr
+          description: Whether the response was served from cache, required fresh work, or honored zero-data-retention cache bypass.
+        age_ms:
+          type: integer
+          minimum: 0
+          description: Age of the cached data in milliseconds. Zero for miss and zdr responses.
+      required:
+      - status
+      - age_ms
+      additionalProperties: false
+      description: Whether this response came from cache.
+    PageMetadataAlternate:
+      type: object
+      properties:
+        href:
+          type: string
+          description: Resolved alternate URL.
+        hreflang:
+          type: string
+          description: Language or locale for the alternate URL, when present.
+        type:
+          type: string
+          description: Alternate resource MIME type, when present.
+        title:
+          type: string
+          description: Alternate resource title, when present.
+      required:
+      - href
+      additionalProperties: false
+    ConcurrencyErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+          - true
+        limit_type:
+          type: string
+          enum:
+          - concurrency
+        limit:
+          type: number
+          minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        retry_after_seconds:
+          type: number
+          minimum: 0
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_charged:
+          type: number
+          enum:
+          - 0
+        should_retry:
+          type: boolean
+          enum:
+          - false
+        retry_condition:
+          type: string
+          enum:
+          - available_concurrency
+        recovery_options:
+          type: array
+          items:
+            type: string
+            enum:
+            - wait_for_in_flight_requests
+            - increase_concurrency_limit
+        info_url:
+          type: string
+          enum:
+          - https://context.dev/dashboard/subscription
+      required:
+      - is_authenticated
+      - limit_type
+      - limit
+      - remaining
+      - retry_after_seconds
+      - credits_charged
+      - should_retry
+      - retry_condition
+      - recovery_options
+      - info_url
+      description: Organization concurrency rejection details. Authentication is valid and no credits were charged. should_retry is false immediately; respect retry_after_seconds and wait for an in-flight request to finish or for the effective concurrency limit to increase. info_url opens subscription settings; no higher allowance is guaranteed for a particular account.
+    ProductVariants:
+      type: array
+      items:
+        type: object
+        properties:
+          sku:
+            type:
+            - string
+            - 'null'
+          attributes:
+            type: object
+            additionalProperties:
+              type: string
+            description: Explicit variant attributes such as color, size, material, pattern and properties declared by page.
+          url:
+            type:
+            - string
+            - 'null'
+            description: Variant or offer URL when provided by the source. May be shared by variants.
+          images:
+            type: array
+            items:
+              type: string
+            description: Original source image URLs explicitly attached to this variant.
+        required:
+        - sku
+        - attributes
+        - url
+        - images
+      description: Product variations, such as different colors or sizes, with their attributes and images. Empty if none are found. May not include every variation offered by the store.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: Credits charged for this request.
+        credits_remaining:
+          type: integer
+          description: Credits remaining for your organization.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Credits this request used and your remaining balance.
+    BillingErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+          - true
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_required:
+          type: number
+          minimum: 0
+        is_credits_required_estimated:
+          type: boolean
+        credits_charged:
+          type: number
+          minimum: 0
+        should_retry:
+          type: boolean
+          enum:
+          - false
+        retry_condition:
+          type: string
+          enum:
+          - sufficient_credits
+        next_refill_at:
+          type: string
+          format: date-time
+        next_refill_credits:
+          type: number
+          exclusiveMinimum: 0
+        info_url:
+          type: string
+          enum:
+          - https://context.dev/dashboard/subscription
+      required:
+      - is_authenticated
+      - should_retry
+      - retry_condition
+      - info_url
+      description: Credit admission or reservation failure details. credits_required is an admission estimate, not a final charge. should_retry is false for an unchanged request immediately; retry_condition requires sufficient account credits. Unknown balances, costs, and refill details are omitted. next_refill_at is an ISO 8601 UTC timestamp. Existing request_id and key_metadata remain on the error envelope.
+    ScrapeMetadata:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          description: Best title extracted from the page.
+        description:
+          type: string
+          description: Best description extracted from standard, Open Graph, or Twitter metadata.
+        language:
+          type: string
+          description: Language extracted from html lang or language meta tags.
+        keywords:
+          type: array
+          items:
+            type: string
+          description: Keywords extracted from the page's keywords meta tag.
+        canonicalUrl:
+          type: string
+          description: Resolved canonical URL, when present.
+        author:
+          type: string
+          description: Author metadata, when present.
+        siteName:
+          type: string
+          description: Site or application name from page metadata.
+        image:
+          type: string
+          description: Primary resolved preview image from Open Graph, Twitter, or image metadata.
+        favicon:
+          type: string
+          description: Resolved favicon URL, when present.
+        publishedTime:
+          type: string
+          description: Published timestamp/date from page metadata, when present.
+        modifiedTime:
+          type: string
+          description: Modified timestamp/date from page metadata, when present.
+        robots:
+          type: string
+          description: Robots meta directive, when present.
+        openGraph:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: 'Open Graph metadata with the og: prefix removed and keys camel-cased.'
+        twitter:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: 'Twitter card metadata with the twitter: prefix removed and keys camel-cased.'
+        alternates:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageMetadataAlternate'
+          description: Resolved alternate links from link rel=alternate tags.
+        headings:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageMetadataHeading'
+          description: Up to 500 h1–h6 headings in document order, before content filtering.
+        jsonLd:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: JSON-LD structured data blocks parsed from the page.
+        additionalMeta:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PageMetadataValue'
+          description: Additional non-social meta tags not promoted to top-level metadata fields.
+    ScrapeAction:
+      title: Browser action
+      oneOf:
+      - type: object
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - perform
+            description: Use `perform` for a plain-language browser instruction.
+          action:
+            type: string
+            minLength: 1
+            maxLength: 500
+            examples:
+            - Click the product details tab
+            description: One browser instruction, such as clicking a button or entering text.
+        required:
+        - type
+        - action
+        title: Instruction
+      - type: object
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - scroll
+            description: Use `scroll` to move through the page or a container.
+          direction:
+            type: string
+            enum:
+            - down
+            - up
+            - left
+            - right
+            default: down
+            description: Direction to scroll.
+          amount:
+            oneOf:
+            - type: integer
+              minimum: 1
+              maximum: 100000
+            - type: string
+              enum:
+              - viewport
+              - max
+            default: viewport
+            description: 'Distance per scroll: pixels, one `viewport`, or `max` to reach the end.'
+          selector:
+            type: string
+            pattern: \S
+            maxLength: 2000
+            description: Scroll this container. Omit to scroll the page.
+          maxScrolls:
+            type: integer
+            description: Maximum number of scroll steps for this action.
+            minimum: 1
+            maximum: 50
+            default: 1
+        required:
+        - type
+        title: Scroll
+      - type: object
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - wait
+            description: Use `wait` to pause for a fixed duration.
+          milliseconds:
+            type: integer
+            description: Time to pause in milliseconds before the next action.
+            minimum: 0
+            maximum: 30000
+        required:
+        - type
+        - milliseconds
+        title: Wait
+      - type: object
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - waitFor
+            description: Use `waitFor` to wait for a matching element.
+          selector:
+            type: string
+            pattern: \S
+            maxLength: 2048
+            description: CSS selector to wait for before continuing.
+        required:
+        - type
+        - selector
+        title: Wait for element
+      discriminator:
+        propertyName: type
+    BatchCrawlControls:
+      type: object
+      properties:
+        source:
+          anyOf:
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - start_url
+              url:
+                type: string
+                example: https://example.com/docs
+                description: Page the crawl started from.
+            required:
+            - type
+            - url
+            title: Start URL
+            description: The crawl discovered pages by following links from one URL.
+          - type: object
+            properties:
+              type:
+                type: string
+                enum:
+                - sitemap
+              domain:
+                type: string
+                example: example.com
+                description: Domain whose sitemap supplied the pages.
+            required:
+            - type
+            - domain
+            title: Sitemap
+            description: The crawl scraped the pages listed in the domain's sitemap.
+          description: Where the crawl started.
+        max_pages:
+          type: integer
+          example: 500
+          description: The `maxUrls` submitted with the crawl. A sitemap crawl scrapes only the URLs its sitemap actually lists, up to this many, so `input.reserved` is often lower.
+        max_depth:
+          type:
+          - integer
+          - 'null'
+          example: 0
+          description: Link depth limit. Always 0 for a sitemap crawl, which never follows links off its URLs; null when a `start_url` crawl set no limit.
+        follow_subdomains:
+          type: boolean
+          description: Whether links to subdomains were followed. Always false for a sitemap crawl.
+        url_pattern:
+          type:
+          - string
+          - 'null'
+          example: ^https://example\.com/docs/
+          description: RE2 pattern URLs had to match to be crawled. Null when the crawl set none.
+        exclude_url_pattern:
+          type:
+          - string
+          - 'null'
+          example: /tag/|/author/
+          description: RE2 pattern URLs must not match to be crawled. Null when the crawl set none.
+      required:
+      - source
+      - max_pages
+      - max_depth
+      - follow_subdomains
+      - url_pattern
+      - exclude_url_pattern
+      x-stainless-model: batch.crawl_controls
+      title: Crawl controls
+      description: Crawl settings as submitted.
+    BatchUnifiedScrapeData:
+      type: object
+      additionalProperties: false
+      properties:
+        urls:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                minLength: 1
+                description: Page URL to scrape.
+                example: https://example.com/products/anvil
+              itemId:
+                type: string
+                minLength: 1
+                maxLength: 200
+                description: Your ID for this page, returned with its result. The same URL can use different IDs.
+                example: sku-1
+              meta:
+                type: object
+                additionalProperties: {}
+                description: Custom JSON returned unchanged with this page result.
+            required:
+            - url
+            additionalProperties: false
+            description: A page to scrape, with optional data for matching results.
+          minItems: 1
+          maxItems: 100000
+          description: Pages to scrape. Maximum 100000.
+        formats:
+          $ref: '#/components/schemas/ScrapeFormats'
+          description: Outputs to return. Set at least one to `true`.
+        markdownParams:
+          $ref: '#/components/schemas/ScrapeMarkdownParams'
+          description: Markdown options. Requires `formats.markdown`.
+        screenshotParams:
+          $ref: '#/components/schemas/ScrapeScreenshotParams'
+          description: 'Screenshot options. Requires formats.screenshot: true.'
+        imageParams:
+          $ref: '#/components/schemas/ScrapeImageParams'
+          description: 'Image options. Requires formats.images: true.'
+        parseParams:
+          $ref: '#/components/schemas/ScrapeParseParams'
+          description: 'Requires `formats.parse: true`; required when it is set.'
+        highlightsParams:
+          $ref: '#/components/schemas/ScrapeHighlightsParams'
+          description: 'Requires `formats.highlights: true`; required when it is set.'
+        jsonParams:
+          $ref: '#/components/schemas/ScrapeJsonParams'
+          description: 'Requires `formats.json: true`; required when it is set.'
+        productParams:
+          $ref: '#/components/schemas/ScrapeProductParams'
+          description: 'Product options. Requires formats.product: true.'
+        sharedParams:
+          $ref: '#/components/schemas/ScrapeSharedParams'
+          description: Browser and content settings shared by all outputs.
+        maxAgeMs:
+          type: integer
+          minimum: 0
+          maximum: 31536000000
+          default: 259200000
+          description: 'Maximum age of a cached output, in milliseconds. `0` fetches fresh. Defaults to 3 days (259200000 ms). Maximum: 1 year (31536000000 ms).'
+        zdr:
+          type: string
+          enum:
+          - disabled
+          default: disabled
+          description: Batches persist their results. Only disabled is supported; enabled returns ZDR_NOT_SUPPORTED.
+        timeoutOpts:
+          $ref: '#/components/schemas/ScrapeTimeout'
+          default:
+            milliseconds: 90000
+            behavior: fail
+          description: Deadline for each page, using the same behavior and defaults as POST /web/scrape.
+        tags:
+          $ref: '#/components/schemas/RequestTags'
+          description: Labels for tracking request usage. Not retained when zdr is enabled.
+      required:
+      - urls
+      - formats
+      title: Scrape Anything
+      description: Use the same formats and parameters as POST /web/scrape, replacing url with urls. Options apply to every page.
+    BatchIntake:
+      type: object
+      properties:
+        reserved:
+          type: integer
+          example: 24817
+          description: Pages accepted; progress counts toward this total.
+        reserved_is_ceiling:
+          type: boolean
+          example: false
+          description: True when `reserved` is a crawl ceiling; false when it is an exact URL count.
+        submitted:
+          type:
+          - integer
+          - 'null'
+          example: 25000
+          description: URLs in the list you sent, before validation and de-duplication. Null for a crawl, which is given a source rather than a list.
+        duplicates:
+          type: integer
+          example: 183
+          description: URLs dropped before reserving because another entry resolved to the same page. Non-zero for sitemap crawls too, whose sitemaps routinely list a page more than once.
+        invalid:
+          type:
+          - integer
+          - 'null'
+          example: 0
+          description: Rejected input URLs; `null` for a crawl.
+      required:
+      - reserved
+      - reserved_is_ceiling
+      - submitted
+      - duplicates
+      - invalid
+      x-stainless-model: batch.intake
+      description: What the submission accepted.
+    BatchFailedWebhookPayload:
+      type: object
+      properties:
+        event:
+          type: string
+          enum:
+          - batch.failed
+          description: Which final status the batch reached. Mirrors the `X-Context-Event` header.
+        id:
+          type: string
+          example: evt_123
+          description: Unique event ID. Mirrors the `X-Context-Id` header.
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-07-09T18:00:12.000Z'
+          description: When the batch reached its final status.
+        data:
+          type: object
+          properties:
+            batch:
+              allOf:
+              - $ref: '#/components/schemas/Batch'
+              description: The batch in its final state, as in Retrieve a batch without `invalid_urls`. Result links expire 24 hours after the event, and replays resend the original links.
+          required:
+          - batch
+      required:
+      - event
+      - id
+      - created_at
+      - data
+      title: Batch failed webhook payload
+      description: Payload sent when a batch fails.
+    ScrapeProductParams:
+      type: object
+      additionalProperties: false
+      properties:
+        dedupeImages:
+          type: boolean
+          default: false
+          description: Drop visually duplicate product images, keeping the largest copy.
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        error_code:
+          type: string
+          enum:
+          - PROFILE_NOT_FOUND
+          - PROFILE_BUSY
+          - PROFILE_SESSION_EXPIRED
+          - PROFILE_REAUTHENTICATION_REQUIRED
+          - PROFILE_INVALID_CREDENTIALS
+          - PROFILE_MISSING_CREDENTIALS
+          - PROFILE_INTERACTION_REQUIRED
+          - PROFILE_AUTHENTICATION_UNKNOWN
+          - PROFILE_ORIGIN_BLOCKED
+          - PROFILE_INVALID_SESSION
+          - PROFILE_SESSION_TOO_LARGE
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - PAID_PLAN_REQUIRED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - TIMEOUT_TOO_SHORT_FOR_WAIT
+          - WEBSITE_ACCESS_ERROR
+          - WEBSITE_BLOCKED
+          - WEBSITE_NOT_FOUND
+          - PDF_SKIPPED
+          - PDF_IMAGES_ONLY
+          - INPUT_VALIDATION_ERROR
+          - ZDR_NOT_SUPPORTED
+          - ZDR_NOT_ENABLED
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - COLD_DOMAIN_TIMEOUT_TOO_LOW
+          - UNSUPPORTED_CONTENT
+          - CONTENT_TOO_LARGE
+          - MONITOR_PAUSED
+          - MONITOR_NO_WEBHOOK
+          - COLLECTION_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          - BATCH_LIMIT_EXCEEDED
+          - BATCH_NOT_CANCELLABLE
+          - BATCH_NOT_COMPLETED
+          - IDEMPOTENCY_KEY_CONFLICT
+          - DELIVERY_IN_PROGRESS
+          - DELIVERY_ALREADY_DELIVERED
+          - DELIVERY_EXPIRED
+          - DELIVERY_CANCELLED
+          description: Machine-readable error code.
+        error_data:
+          anyOf:
+          - $ref: '#/components/schemas/BillingErrorData'
+          - $ref: '#/components/schemas/ConcurrencyErrorData'
+        required_permission:
+          type: string
+          enum:
+          - logs:read
+          - data:execute
+          - monitors:read
+          - monitors:write
+          - batches:read
+          - batches:write
+          description: Permission required for this request when error_code is INSUFFICIENT_PERMISSIONS. Manage (write) also grants read access to the same resource group.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - request_id
+    BatchResultRecord:
+      title: Batch result record
+      description: One scrape outcome. result uses the single Scrape Anything response schema; itemId and meta identify your input.
+      discriminator:
+        propertyName: status
+      oneOf:
+      - type: object
+        additionalProperties: false
+        title: Scraped page
+        description: At least one requested output succeeded. Check result.isPartial and each output success for incomplete results.
+        properties:
+          url:
+            type: string
+            example: https://example.com/products/anvil
+            description: URL as submitted, or as discovered by the crawl.
+          itemId:
+            type: string
+            example: sku-1
+            description: Your `itemId` from submission.
+          meta:
+            type: object
+            additionalProperties: {}
+            description: Caller-supplied metadata echoed from submission.
+          status:
+            type: string
+            enum:
+            - ok
+          result:
+            $ref: '#/components/schemas/BatchScrapeResponse'
+          credits_used:
+            type: integer
+            minimum: 0
+            description: Credits charged for this page, including OCR. Cached outputs use the same pricing as POST /web/scrape.
+          ocr_pages:
+            type: integer
+            minimum: 0
+            description: PDF pages recovered by OCR. Omitted when OCR did not run.
+        required:
+        - url
+        - status
+        - result
+        - credits_used
+      - type: object
+        properties:
+          url:
+            type: string
+            example: https://example.com/products/anvil
+            description: URL as submitted, or as discovered by the crawl.
+          itemId:
+            type: string
+            example: sku-1
+            description: Your `itemId` from submission.
+          meta:
+            type: object
+            additionalProperties: {}
+            description: Caller-supplied metadata echoed from submission.
+          status:
+            type: string
+            enum:
+            - error
+            description: The page could not be scraped.
+          error_code:
+            type: string
+            example: NOT_FOUND
+            description: Why the page failed.
+          message:
+            type: string
+            example: Page returned 404
+            description: Human-readable failure detail.
+          result:
+            $ref: '#/components/schemas/BatchScrapeResponse'
+            description: Per-format failures when scraping returned a structured response. Omitted for errors that prevent scraping.
+          credits_used:
+            type: integer
+            minimum: 0
+            description: Credits charged for this page, including OCR. Cached outputs use the same pricing as POST /web/scrape.
+          ocr_pages:
+            type: integer
+            minimum: 0
+            description: PDF pages recovered by OCR. Omitted when OCR did not run.
+        required:
+        - url
+        - status
+        - error_code
+        - message
+        title: Failed page
+        description: A page the batch could not fetch.
+    BatchScrapeResponse:
+      $ref: '#/components/schemas/ScrapeResponse'
+      title: Scrape result
+      description: The same response as POST /web/scrape, including per-format success, failure, and partial results.
+    BatchNullableCrawlControls:
+      anyOf:
+      - allOf:
+        - $ref: '#/components/schemas/BatchCrawlControls'
+      - type: 'null'
+      description: How the crawl was configured. Null for scrape batches.
+    RequestId:
+      type: string
+      format: uuid
+      description: Unique ID of this request, also in `X-Request-Id`. Include it when contacting support.
+      example: 3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91
+    ScrapeResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        url:
+          type: string
+          format: uri
+          pattern: ^https?://
+          description: Final URL after redirects and browser actions.
+        html:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              type:
+              - string
+              - 'null'
+          required:
+          - requested
+          - success
+          - data
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                type: string
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: Rendered HTML after content filters.
+        markdown:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              type:
+              - string
+              - 'null'
+          required:
+          - requested
+          - success
+          - data
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                type: string
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: Markdown after content filters.
+        screenshot:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              type:
+              - string
+              - 'null'
+              format: uri
+              pattern: ^data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$
+          required:
+          - requested
+          - success
+          - data
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                type: string
+                format: uri
+                pattern: ^data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: Screenshot as a base64 image data URL.
+        images:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              type:
+              - array
+              - 'null'
+              items:
+                $ref: '#/components/schemas/ScrapeImage'
+          required:
+          - requested
+          - success
+          - data
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScrapeImage'
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: Images after content filters. `[]` when none are found.
+        bytes:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              type:
+              - object
+              - 'null'
+              additionalProperties: false
+              properties:
+                contentType:
+                  type: string
+                  examples:
+                  - text/html; charset=utf-8
+                base64:
+                  type: string
+                  contentEncoding: base64
+                  pattern: ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$
+                  description: Body as base64, after HTTP decompression. Up to 50 MiB decoded.
+              required:
+              - contentType
+              - base64
+          required:
+          - requested
+          - success
+          - data
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                type: object
+                additionalProperties: false
+                properties:
+                  contentType:
+                    type: string
+                    examples:
+                    - text/html; charset=utf-8
+                  base64:
+                    type: string
+                    contentEncoding: base64
+                    pattern: ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$
+                    description: Body as base64, after HTTP decompression. Up to 50 MiB decoded.
+                required:
+                - contentType
+                - base64
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: The original HTTP response body, unchanged by waits, actions, and filters.
+        parsed:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            type:
+              type: string
+              enum:
+              - custom
+              - google-maps
+              - google-maps-reviews
+              - google-play
+              - google-play-reviews
+              - app-store
+              - app-store-reviews
+              - g2-reviews
+              - instagram-profile
+              - instagram-post
+              - instagram-feed
+              - tiktok-profile
+              - tiktok-video
+              - tiktok-feed
+              - tiktok-comments
+              - tiktok-followers
+              - tiktok-following
+              - tiktok-user-search
+              - emails
+              - phone-numbers
+              - links
+              description: The selected prebuilt parser name, or custom when type is omitted, custom rules are used, or parsing is not requested.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              type:
+              - object
+              - 'null'
+              additionalProperties: true
+          required:
+          - requested
+          - success
+          - data
+          - type
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                type: object
+                additionalProperties: true
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: Custom rules return fields after content filters; unmatched fields are null ([] for lists). Prebuilt parsers return source-specific structured data. See https://docs.context.dev/scrape/prebuilt-parsers for output schemas and request options.
+        highlights:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              type:
+              - array
+              - 'null'
+              items:
+                type: string
+          required:
+          - requested
+          - success
+          - data
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                type: array
+                items:
+                  type: string
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: Relevant Markdown excerpts in page order. `[Heading]` adds context; `…` marks omitted text.
+        json:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              type:
+              - object
+              - 'null'
+              additionalProperties: true
+            isTruncated:
+              type: boolean
+              const: true
+              description: True when the page was too long to read in full, so values found only in the unread parts may be missing.
+          required:
+          - requested
+          - success
+          - data
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                type: object
+                additionalProperties: true
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: Object matching `jsonParams.schema`.
+        product:
+          type: object
+          additionalProperties: false
+          properties:
+            error_code:
+              type: string
+              description: Why the output failed. Present only when `success` is `false`.
+            message:
+              type: string
+              description: Explanation of the failure and possible next steps.
+            requested:
+              type: boolean
+            success:
+              type:
+              - boolean
+              - 'null'
+              description: '`true` if returned, `false` if it failed, `null` if not requested.'
+            data:
+              oneOf:
+              - $ref: '#/components/schemas/ScrapeProductResult'
+              - type: 'null'
+          required:
+          - requested
+          - success
+          - data
+          allOf:
+          - if:
+              properties:
+                requested:
+                  const: true
+            then:
+              properties:
+                success:
+                  type: boolean
+            else:
+              properties:
+                success:
+                  type: 'null'
+          if:
+            properties:
+              success:
+                const: true
+          then:
+            properties:
+              data:
+                $ref: '#/components/schemas/ScrapeProductResult'
+          else:
+            properties:
+              data:
+                type: 'null'
+          description: Product details found on the page.
+        profile:
+          type:
+          - object
+          - 'null'
+          additionalProperties: false
+          properties:
+            id:
+              type: string
+              pattern: ^prof_[a-f0-9]{32}$
+              description: Save this ID after creating a profile, then reuse it as sharedParams.profile.profileId with type "existing".
+          required:
+          - id
+          description: Authenticated browser profile used for this scrape, or null when no profile was requested. New and existing profile requests both return the profile ID.
+        isPartial:
+          type: boolean
+          const: true
+          description: True when at least one requested output succeeds but the response has failed or incomplete outputs. Absent when all requested outputs fail.
+        metadata:
+          $ref: '#/components/schemas/ScrapeMetadata'
+          description: Page metadata. Fields are omitted when not found.
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+        cache_metadata:
+          $ref: '#/components/schemas/CacheMetadata'
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+      required:
+      - url
+      - html
+      - markdown
+      - screenshot
+      - images
+      - bytes
+      - parsed
+      - highlights
+      - json
+      - product
+      - profile
+      - metadata
+      - request_id
+      - cache_metadata
+      not:
+        properties:
+          html:
+            properties:
+              requested:
+                const: false
+          markdown:
+            properties:
+              requested:
+                const: false
+          screenshot:
+            properties:
+              requested:
+                const: false
+          images:
+            properties:
+              requested:
+                const: false
+          bytes:
+            properties:
+              requested:
+                const: false
+          parsed:
+            properties:
+              requested:
+                const: false
+          highlights:
+            properties:
+              requested:
+                const: false
+          json:
+            properties:
+              requested:
+                const: false
+          product:
+            properties:
+              requested:
+                const: false
+    BatchNullableFailure:
+      anyOf:
+      - allOf:
+        - $ref: '#/components/schemas/BatchFailure'
+      - type: 'null'
+      description: Why the batch as a whole stopped. Null unless `status` is `failed`. Individual pages that failed are counted in `page_errors` instead.
+    BatchDetail:
+      type: object
+      properties:
+        invalid_urls:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                description: Rejected URL.
+              reason:
+                type: string
+                description: Why it was rejected.
+                example: Must be a public http:// or https:// URL
+            required:
+            - url
+            - reason
+          description: Rejected URLs (first 100).
+        webhook_delivery_id:
+          type: string
+          description: Batch completion delivery ID, when available.
+      required:
+      - invalid_urls
+      title: Batch detail
+      description: What a single-batch read adds to the batch itself.
+    WebhookRetry:
+      type: object
+      properties:
+        delays_seconds:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 86400
+          maxItems: 10
+          description: Retry delays in seconds, totaling at most 72 hours. Use [] to disable automatic retries.
+          example:
+          - 30
+          - 300
+          - 3600
+      additionalProperties: false
+      description: Webhook retry settings. Use {} for the default schedule.
+      example:
+        delays_seconds:
+        - 10
+        - 60
+        - 300
+        - 1800
+        - 7200
+        - 21600
+        - 57600
+    ScrapeScreenshotParams:
+      type: object
+      additionalProperties: false
+      properties:
+        area:
+          default: viewport
+          description: 'What to capture: `viewport`, `fullPage`, one element, or a rectangle. Max 40 megapixels.'
+          oneOf:
+          - type: string
+            enum:
+            - viewport
+            - fullPage
+            title: Page
+          - type: object
+            additionalProperties: false
+            properties:
+              selector:
+                type: string
+                pattern: \S
+                maxLength: 2048
+                description: CSS selector matching exactly one visible element.
+            required:
+            - selector
+            title: Element
+          - type: object
+            additionalProperties: false
+            properties:
+              x:
+                type: integer
+                description: Left edge of the capture, in pixels from the document origin.
+                minimum: 0
+                maximum: 100000
+              y:
+                type: integer
+                description: Top edge of the capture, in pixels from the document origin.
+                minimum: 0
+                maximum: 100000
+              width:
+                type: integer
+                description: Width of the capture in pixels.
+                minimum: 1
+                maximum: 7680
+              height:
+                type: integer
+                description: Height of the capture in pixels.
+                minimum: 1
+                maximum: 100000
+            required:
+            - x
+            - y
+            - width
+            - height
+            title: Rectangle
+            description: Pixels from the document origin.
+        format:
+          type: string
+          enum:
+          - png
+          - jpeg
+          - webp
+          default: png
+          description: Image format for the screenshot.
+    PageMetadataHeading:
+      type: object
+      properties:
+        level:
+          type: integer
+          minimum: 1
+          maximum: 6
+          description: Heading level, 1–6 (from h1–h6).
+        text:
+          type: string
+          description: Heading text with whitespace collapsed, truncated to 1000 characters.
+      required:
+      - level
+      - text
+      additionalProperties: false
+    ScrapeImageParams:
+      type: object
+      additionalProperties: false
+      properties:
+        enrich:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - dimensions
+            - classification
+            - file
+          description: 'Extra data per image: `dimensions`, `classification`, or a hosted `file` URL.'
+        dedupe:
+          type: string
+          enum:
+          - none
+          - visual
+          default: none
+          description: Set `visual` to drop visual duplicates, keeping the largest copy.
+    BatchSubmitRequest:
+      type: object
+      properties:
+        input:
+          oneOf:
+          - type: object
+            properties:
+              mode:
+                type: string
+                enum:
+                - scrape
+                description: Scrape the pages in `data.urls`.
+              data:
+                $ref: '#/components/schemas/BatchUnifiedScrapeData'
+            required:
+            - mode
+            - data
+            additionalProperties: false
+            title: Scrape
+            description: Scrape a list of up to 100,000 URLs.
+          - type: object
+            properties:
+              mode:
+                type: string
+                enum:
+                - crawl
+                description: Discover and scrape pages from `data.source`.
+              data:
+                $ref: '#/components/schemas/BatchUnifiedCrawlData'
+            required:
+            - mode
+            - data
+            additionalProperties: false
+            title: Crawl
+            description: Crawl pages starting from a URL or from a domain's sitemap.
+          discriminator:
+            propertyName: mode
+          title: Batch input
+          description: Choose a URL list or a site crawl.
+        webhookUrl:
+          type: string
+          format: uri
+          description: Legacy URL notified when the batch finishes. Preserves one best-effort attempt. Cannot be combined with webhook.
+        webhook:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+              description: Public HTTP(S) URL that receives batch completion, failure, or cancellation events.
+            retry:
+              $ref: '#/components/schemas/WebhookRetry'
+          required:
+          - url
+          additionalProperties: false
+          description: Where to send the batch's final-status event. Omit `retry` for one attempt; `{}` uses the default retry schedule.
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          maxItems: 20
+          description: Tags stored on the batch. Filter the batch list by them later.
+          example:
+          - docs
+          - competitor
+      required:
+      - input
+      additionalProperties: false
+      title: Submit batch request
+      description: Create an asynchronous scraping job.
+    BatchFailure:
+      type: object
+      properties:
+        code:
+          type: string
+          example: stalled
+          description: Why the batch itself stopped.
+        message:
+          type: string
+          example: Batch stopped reporting progress and was finalized automatically
+          description: Human-readable explanation.
+      required:
+      - code
+      - message
+      x-stainless-model: batch.failure
+      description: A failure of the batch as a whole, distinct from the per-page failures in `page_errors`.
+  headers:
+    RateLimitLimit:
+      description: Maximum request units per minute, or maximum concurrent requests when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitMode:
+      description: Set to concurrency when these headers report concurrent requests. When a per-minute limit also applies, its rejections report per-minute headers without this header. New Free accounts have 2 concurrent requests and 10 requests per minute; paid plans have no per-minute limit by default. Existing and custom allowances can differ.
+      schema:
+        type: string
+        enum:
+        - concurrency
+    RateLimitRemaining:
+      description: Request units remaining in the current minute, or concurrent requests still available when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 0
+    RequestId:
+      description: Unique ID of this request; also `request_id` in JSON bodies.
+      schema:
+        type: string
+        format: uuid
+    RateLimitReset:
+      description: Unix timestamp in seconds when the per-minute rate limit resets. Omitted for concurrency limits.
+      schema:
+        type: integer
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+    RateLimited:
+      description: Rate limit exceeded. Organization concurrency rejections include structured error_data and subscription settings; follow Retry-After before retrying.
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+        Retry-After:
+          description: Seconds to wait before retrying.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: Human-readable error message.
+              error_code:
+                type: string
+                enum:
+                - RATE_LIMITED
+                description: Error code indicating the rate limit was exceeded
+              key_metadata:
+                $ref: '#/components/schemas/KeyMetadata'
+              error_data:
+                $ref: '#/components/schemas/ConcurrencyErrorData'
+              request_id:
+                $ref: '#/components/schemas/RequestId'
+            required:
+            - request_id
+            - message
+            - error_code
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Send `Authorization: Bearer <API_KEY>`. Keys have full access unless restricted to scopes.'

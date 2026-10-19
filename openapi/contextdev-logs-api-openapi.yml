@@ -1,0 +1,668 @@
+openapi: 3.2.0
+info:
+  title: Context.dev Logs API
+  description: Scrape, crawl, search, and monitor websites, and retrieve brand, people, and news data.
+  version: 1.0.0
+servers:
+- url: https://api.context.dev/v1
+tags:
+- name: Logs
+  description: Read your organization's API request logs.
+paths:
+  /org/logs:
+    get:
+      operationId: listLogs
+      summary: List request logs
+      tags:
+      - Logs
+      description: List your organization’s request logs with filters and pagination. Logs also include batch settlements and monitor runs.
+      security:
+      - bearerAuth: []
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          format: date-time
+          description: Only include requests at or after this ISO 8601 timestamp. Defaults to 24 hours before `to`.
+          example: '2026-09-10T00:00:00Z'
+        required: false
+        description: Only include requests at or after this ISO 8601 timestamp. Defaults to 24 hours before `to`.
+        name: from
+        in: query
+      - schema:
+          type: string
+          format: date-time
+          description: Only include requests at or before this ISO 8601 timestamp. Defaults to now.
+          example: '2026-09-11T00:00:00Z'
+        required: false
+        description: Only include requests at or before this ISO 8601 timestamp. Defaults to now.
+        name: to
+        in: query
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^\/
+          description: Filter by endpoint path, with or without the /v1 prefix.
+          example: /brand/retrieve
+        required: false
+        description: Filter by endpoint path, with or without the /v1 prefix.
+        name: path
+        in: query
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Filter by the API key that made the request.
+        required: false
+        description: Filter by the API key that made the request.
+        name: key_id
+        in: query
+      - schema:
+          type: integer
+          minimum: 100
+          maximum: 599
+          description: Filter by exact HTTP status code.
+          example: 500
+        required: false
+        description: Filter by exact HTTP status code.
+        name: status_code
+        in: query
+      - schema:
+          type: string
+          pattern: ^[A-Z][A-Z0-9_]{1,63}$
+          description: Filter by the `error_code` returned in the response.
+          example: WEBSITE_ACCESS_ERROR
+        required: false
+        description: Filter by the `error_code` returned in the response.
+        name: error_code
+        in: query
+      - schema:
+          type: boolean
+          default: false
+          description: Only include requests that returned a 4xx or 5xx status.
+        required: false
+        description: Only include requests that returned a 4xx or 5xx status.
+        name: errors_only
+        in: query
+      - schema:
+          type: string
+          description: Comma-separated request tags. Matches requests carrying any of them. Up to 20 tags, each 1-50 characters.
+          example: nightly-import,team-alpha
+        required: false
+        description: Comma-separated request tags. Matches requests carrying any of them. Up to 20 tags, each 1-50 characters.
+        name: tags
+        in: query
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Case-insensitive substring match against the request query and body, e.g. a domain.
+          example: acme.com
+        required: false
+        description: Case-insensitive substring match against the request query and body, e.g. a domain.
+        name: search
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 1
+          description: Page number, starting at 1.
+        required: false
+        description: Page number, starting at 1.
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+          description: Number of log entries per page.
+        required: false
+        description: Number of log entries per page.
+        name: limit
+        in: query
+      responses:
+        '200':
+          description: A page of log entries
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListLogsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          description: Rate limit exceeded (60 requests per minute per organization).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Log storage is temporarily unavailable.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /org/logs/{request_id}:
+    get:
+      operationId: getLog
+      summary: Retrieve a request log
+      tags:
+      - Logs
+      description: Retrieve a request’s metadata, retained input, and response.
+      security:
+      - bearerAuth: []
+      x-mint:
+        content: <Badge color="blue">0 credits</Badge>
+      parameters:
+      - schema:
+          type: string
+          format: uuid
+          description: The request ID of the logged API call.
+        required: true
+        description: The request ID of the logged API call.
+        name: request_id
+        in: path
+      responses:
+        '200':
+          description: Log entry
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLogResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          description: Rate limit exceeded (60 requests per minute per organization).
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Log storage is temporarily unavailable.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ConcurrencyErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+          - true
+        limit_type:
+          type: string
+          enum:
+          - concurrency
+        limit:
+          type: number
+          minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        retry_after_seconds:
+          type: number
+          minimum: 0
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_charged:
+          type: number
+          enum:
+          - 0
+        should_retry:
+          type: boolean
+          enum:
+          - false
+        retry_condition:
+          type: string
+          enum:
+          - available_concurrency
+        recovery_options:
+          type: array
+          items:
+            type: string
+            enum:
+            - wait_for_in_flight_requests
+            - increase_concurrency_limit
+        info_url:
+          type: string
+          enum:
+          - https://context.dev/dashboard/subscription
+      required:
+      - is_authenticated
+      - limit_type
+      - limit
+      - remaining
+      - retry_after_seconds
+      - credits_charged
+      - should_retry
+      - retry_condition
+      - recovery_options
+      - info_url
+      description: Organization concurrency rejection details. Authentication is valid and no credits were charged. should_retry is false immediately; respect retry_after_seconds and wait for an in-flight request to finish or for the effective concurrency limit to increase. info_url opens subscription settings; no higher allowance is guaranteed for a particular account.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: Credits charged for this request.
+        credits_remaining:
+          type: integer
+          description: Credits remaining for your organization.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Credits this request used and your remaining balance.
+    BillingErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+          - true
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_required:
+          type: number
+          minimum: 0
+        is_credits_required_estimated:
+          type: boolean
+        credits_charged:
+          type: number
+          minimum: 0
+        should_retry:
+          type: boolean
+          enum:
+          - false
+        retry_condition:
+          type: string
+          enum:
+          - sufficient_credits
+        next_refill_at:
+          type: string
+          format: date-time
+        next_refill_credits:
+          type: number
+          exclusiveMinimum: 0
+        info_url:
+          type: string
+          enum:
+          - https://context.dev/dashboard/subscription
+      required:
+      - is_authenticated
+      - should_retry
+      - retry_condition
+      - info_url
+      description: Credit admission or reservation failure details. credits_required is an admission estimate, not a final charge. should_retry is false for an unchanged request immediately; retry_condition requires sufficient account credits. Unknown balances, costs, and refill details are omitted. next_refill_at is an ISO 8601 UTC timestamp. Existing request_id and key_metadata remain on the error envelope.
+    ListLogsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogEntry'
+          description: Log entries, newest first.
+        page:
+          type: integer
+          description: Current page number.
+        limit:
+          type: integer
+          description: Entries per page.
+        has_more:
+          type: boolean
+          description: Whether a next page exists.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - data
+      - page
+      - limit
+      - has_more
+      - request_id
+    LogDetail:
+      allOf:
+      - $ref: '#/components/schemas/LogEntry'
+      - type: object
+        properties:
+          input:
+            type: object
+            properties:
+              query:
+                type: object
+                additionalProperties: {}
+                description: Query parameters as sent.
+              body:
+                description: Request body with credentials and uploaded content redacted.
+            required:
+            - query
+            description: What was sent with the request.
+          response:
+            description: The retained JSON response with credentials redacted, or null when unavailable.
+          user_agent:
+            type:
+            - string
+            - 'null'
+            description: User-Agent header of the request.
+        required:
+        - input
+        - user_agent
+    GetLogResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/LogDetail'
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - data
+      - request_id
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Human-readable error message.
+        error_code:
+          type: string
+          enum:
+          - PROFILE_NOT_FOUND
+          - PROFILE_BUSY
+          - PROFILE_SESSION_EXPIRED
+          - PROFILE_REAUTHENTICATION_REQUIRED
+          - PROFILE_INVALID_CREDENTIALS
+          - PROFILE_MISSING_CREDENTIALS
+          - PROFILE_INTERACTION_REQUIRED
+          - PROFILE_AUTHENTICATION_UNKNOWN
+          - PROFILE_ORIGIN_BLOCKED
+          - PROFILE_INVALID_SESSION
+          - PROFILE_SESSION_TOO_LARGE
+          - INTERNAL_ERROR
+          - VALID
+          - NOT_FOUND
+          - FORBIDDEN
+          - USAGE_EXCEEDED
+          - RATE_LIMITED
+          - UNAUTHORIZED
+          - DISABLED
+          - PAID_PLAN_REQUIRED
+          - INSUFFICIENT_PERMISSIONS
+          - TIMEOUT_EXCEEDS_MAXIMUM
+          - TIMEOUT_TOO_SHORT_FOR_WAIT
+          - WEBSITE_ACCESS_ERROR
+          - WEBSITE_BLOCKED
+          - WEBSITE_NOT_FOUND
+          - PDF_SKIPPED
+          - PDF_IMAGES_ONLY
+          - INPUT_VALIDATION_ERROR
+          - ZDR_NOT_SUPPORTED
+          - ZDR_NOT_ENABLED
+          - FREE_EMAIL_DETECTED
+          - DISPOSABLE_EMAIL_DETECTED
+          - REQUEST_TIMEOUT
+          - COLD_DOMAIN_TIMEOUT_TOO_LOW
+          - UNSUPPORTED_CONTENT
+          - CONTENT_TOO_LARGE
+          - MONITOR_PAUSED
+          - MONITOR_NO_WEBHOOK
+          - COLLECTION_PAUSED
+          - MONITOR_LIMIT_EXCEEDED
+          - SEARCH_UNAVAILABLE
+          - BATCH_LIMIT_EXCEEDED
+          - BATCH_NOT_CANCELLABLE
+          - BATCH_NOT_COMPLETED
+          - IDEMPOTENCY_KEY_CONFLICT
+          - DELIVERY_IN_PROGRESS
+          - DELIVERY_ALREADY_DELIVERED
+          - DELIVERY_EXPIRED
+          - DELIVERY_CANCELLED
+          description: Machine-readable error code.
+        error_data:
+          anyOf:
+          - $ref: '#/components/schemas/BillingErrorData'
+          - $ref: '#/components/schemas/ConcurrencyErrorData'
+        required_permission:
+          type: string
+          enum:
+          - logs:read
+          - data:execute
+          - monitors:read
+          - monitors:write
+          - batches:read
+          - batches:write
+          description: Permission required for this request when error_code is INSUFFICIENT_PERMISSIONS. Manage (write) also grants read access to the same resource group.
+        key_metadata:
+          $ref: '#/components/schemas/KeyMetadata'
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - request_id
+    LogEntry:
+      type: object
+      properties:
+        request_id:
+          type: string
+          description: Request ID of the logged API call.
+        timestamp:
+          type: string
+          format: date-time
+          description: When the request completed.
+        method:
+          type: string
+          description: HTTP method, or `MONITOR` / `BATCH` for monitor-run and batch-settlement entries.
+          example: GET
+        path:
+          type: string
+          description: Endpoint path as called.
+          example: /v1/brand/retrieve
+        status_code:
+          type: integer
+          description: HTTP status code returned.
+          example: 500
+        error_code:
+          type:
+          - string
+          - 'null'
+          description: The `error_code` from the response, or null on success.
+          example: WEBSITE_ACCESS_ERROR
+        latency_ms:
+          type: number
+          description: Server-side processing time in milliseconds.
+        credits_used:
+          type: integer
+          description: Credits charged for this request.
+        key_id:
+          type:
+          - string
+          - 'null'
+          description: ID of the API key that made the request.
+        tags:
+          type: array
+          items:
+            type: string
+          description: Request tags supplied by the caller.
+        zdr:
+          type: boolean
+          description: Whether the request was made under zero data retention.
+      required:
+      - request_id
+      - timestamp
+      - method
+      - path
+      - status_code
+      - error_code
+      - latency_ms
+      - credits_used
+      - key_id
+      - tags
+      - zdr
+    RequestId:
+      type: string
+      format: uuid
+      description: Unique ID of this request, also in `X-Request-Id`. Include it when contacting support.
+      example: 3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        X-RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
+  headers:
+    RateLimitLimit:
+      description: Maximum request units per minute, or maximum concurrent requests when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitReset:
+      description: Unix timestamp in seconds when the per-minute rate limit resets. Omitted for concurrency limits.
+      schema:
+        type: integer
+    RateLimitMode:
+      description: Set to concurrency when these headers report concurrent requests. When a per-minute limit also applies, its rejections report per-minute headers without this header. New Free accounts have 2 concurrent requests and 10 requests per minute; paid plans have no per-minute limit by default. Existing and custom allowances can differ.
+      schema:
+        type: string
+        enum:
+        - concurrency
+    RateLimitRemaining:
+      description: Request units remaining in the current minute, or concurrent requests still available when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 0
+    RequestId:
+      description: Unique ID of this request; also `request_id` in JSON bodies.
+      schema:
+        type: string
+        format: uuid
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Send `Authorization: Bearer <API_KEY>`. Keys have full access unless restricted to scopes.'

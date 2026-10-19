@@ -1,7 +1,7 @@
 openapi: 3.2.0
 info:
-  title: Context Web Extraction API
-  description: API for retrieving context data from any website
+  title: Context.dev Web Extraction API
+  description: Scrape, crawl, search, and monitor websites, and retrieve brand, people, and news data.
   version: 1.0.0
 servers:
 - url: https://api.context.dev/v1
@@ -10,8 +10,14 @@ tags:
 paths:
   /web/extract:
     post:
-      summary: Extract Structured Website Data
-      description: Crawl a website, use the provided JSON Schema and instructions to prioritize relevant internal links, and extract structured data from the selected pages.
+      summary: Extract structured data
+      description: Extract website data using your JSON Schema and instructions.
+      security:
+      - bearerAuth: []
+      tags:
+      - Web Extraction
+      x-mint:
+        content: <Badge color="blue">10 credits</Badge>
       requestBody:
         required: true
         content:
@@ -21,12 +27,13 @@ paths:
               properties:
                 url:
                   type: string
+                  minLength: 1
                   format: uri
                   description: The starting website URL to crawl and extract from. Must include http:// or https://.
                 schema:
                   type: object
-                  description: JSON Schema for the returned data object. TypeScript Zod users can pass a JSON Schema generated from a Zod object; Python users can pass the equivalent JSON Schema object.
-                  additionalProperties: true
+                  additionalProperties: {}
+                  description: JSON Schema (not an example object) for the returned object. Image fields include relevant page image references.
                   example:
                     type: object
                     properties:
@@ -57,7 +64,7 @@ paths:
                 factCheck:
                   type: boolean
                   default: false
-                  description: When true, every returned value must be grounded in facts stated on the page; fields that cannot be supported by the page are returned as null/empty. When false (default), the model may make reasonable inferences and derivations from the page content (e.g. ideal customer, competitor analysis, recommendations) while keeping verifiable specifics (names, quotes, URLs, dates, metrics) faithful to the source.
+                  description: Require facts stated on the page. Unsupported fields become null or empty.
                 followSubdomains:
                   type: boolean
                   default: false
@@ -86,78 +93,106 @@ paths:
                     end:
                       type: integer
                       minimum: 1
-                      description: Last 1-based PDF page to parse. Must be greater than or equal to start when both are provided.
-                  additionalProperties: false
+                      description: Last PDF page to parse (1-based, inclusive). Defaults to the final page. Must be >= start.
                   default:
                     shouldParse: true
+                  additionalProperties: false
+                  description: PDF handling. `start`/`end` limit parsing to an inclusive, 1-based page range.
                 includeFrames:
                   type: boolean
                   default: false
                   description: When true, iframe contents are included in Markdown before extraction.
                 maxAgeMs:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   minimum: 0
                   maximum: 2592000000
                   default: 604800000
                   description: Return cached scrape results if a prior scrape for the same parameters is younger than this many milliseconds. Defaults to 7 days (604800000 ms).
                 waitForMs:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   minimum: 0
                   maximum: 30000
                   description: Optional browser wait time in milliseconds after initial page load for each crawled page.
+                settleAnimations:
+                  type: boolean
+                  default: false
+                  description: Wait briefly for CSS animations and transitions to settle before reading each page.
+                actions:
+                  type:
+                  - array
+                  - 'null'
+                  items:
+                    $ref: '#/components/schemas/WebScrapeAction'
+                  maxItems: 5
+                  description: Browser steps before page discovery. Requires a paid plan; defaults the crawl budget to 110000 ms.
                 stopAfterMs:
                   type: integer
                   minimum: 10000
-                  maximum: 110000
                   default: 80000
-                  description: 'Soft time budget for the crawl in milliseconds. Min: 10000 (10s). Max: 110000 (110s). Default: 80000 (80s).'
-                timeoutMS:
-                  $ref: '#/components/schemas/TimeoutMS'
+                  maximum: 110000
+                  description: 'Soft time budget for the crawl in milliseconds. Min: 10000 (10s). Max: 110000 (110s). Defaults to 80000 (80s), or 110000 (110s) when browser actions are provided.'
+                timeoutOpts:
+                  $ref: '#/components/schemas/PartialTimeout'
+                zdr:
+                  type: string
+                  enum:
+                  - enabled
+                  - disabled
+                  default: disabled
+                  description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
                 tags:
                   $ref: '#/components/schemas/RequestTags'
               required:
               - url
               - schema
               additionalProperties: false
-      security:
-      - bearerAuth: []
-      tags:
-      - Web Extraction
-      x-mint:
-        content: <Badge color="blue">10 Credits</Badge>
-        title: Extract Structured Website Data
-        sidebarTitle: Extract structured data
-        description: Crawl a website, use the provided JSON Schema and instructions to prioritize relevant internal links, and extract structured data from the selected pages.
       responses:
         '200':
           description: Successful response
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            X-Context-ZDR:
+              description: Present with the value true when zero data retention was requested and honored.
+              schema:
+                type: string
+                enum:
+                - 'true'
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  partial:
+                    type: boolean
+                    description: True when the timeout ended processing and this response contains only usable results completed so far. Unfinished results are omitted.
                   status:
                     type: string
-                    description: Status of the response, e.g., 'ok'
+                    description: Always `ok` on success.
                   url:
                     type: string
                     description: The starting URL that was analyzed
                   urls_analyzed:
                     type: array
-                    description: List of URLs whose Markdown was used for extraction
                     items:
                       type: string
+                    description: List of URLs whose Markdown was used for extraction
                   data:
                     type: object
+                    additionalProperties: {}
                     description: Extracted data matching the request schema
-                    additionalProperties: true
                   metadata:
                     type: object
                     properties:
@@ -174,6 +209,35 @@ paths:
                       numBlocked:
                         type: integer
                         description: Number of crawled pages excluded because they were anti-bot challenges, error pages, or parked-domain placeholders.
+                      actionsApplied:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            instruction:
+                              type: string
+                            status:
+                              type: string
+                              enum:
+                              - applied
+                              - failed
+                              - skipped
+                              description: Applied means the requested page state was visibly verified. Failed means it was not verified. Skipped means it was not attempted.
+                            method:
+                              type: string
+                            targetDescription:
+                              type: string
+                            completionEvidence:
+                              type: string
+                              description: Visible page evidence used to verify an applied action.
+                            error:
+                              type: string
+                            durationMs:
+                              type: number
+                          required:
+                          - instruction
+                          - status
+                        description: One verified outcome per requested browser action, in request order.
                     required:
                     - numUrls
                     - maxCrawlDepth
@@ -183,21 +247,31 @@ paths:
                     - numBlocked
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                  cache_metadata:
+                    $ref: '#/components/schemas/CacheMetadata'
                 required:
                 - status
                 - url
                 - urls_analyzed
                 - data
                 - metadata
+                - request_id
+                - cache_metadata
         '400':
           description: Bad request - Invalid URL, schema, or inaccessible website
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -209,34 +283,64 @@ paths:
                     type: string
                     enum:
                     - INPUT_VALIDATION_ERROR
+                    - TIMEOUT_TOO_SHORT_FOR_WAIT
                     - WEBSITE_ACCESS_ERROR
+                    description: TIMEOUT_TOO_SHORT_FOR_WAIT means timeoutOpts.milliseconds is shorter than waitForMs plus the page-load margin; raise timeoutOpts.milliseconds or lower waitForMs.
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
                 required:
                 - message
                 - error_code
+                - request_id
         '401':
           description: Unauthorized - Invalid or missing API key
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: Insufficient credits (`USAGE_EXCEEDED`); authentication is valid. Retry once funded. Legacy deployments may return 401.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Forbidden - Insufficient permissions or usage limit exceeded
+          description: API key permissions or organization settings do not allow this request.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -244,12 +348,16 @@ paths:
         '408':
           description: Request timeout
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -259,334 +367,26 @@ paths:
         '500':
           description: Internal server error
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-codeSamples:
-      - lang: JavaScript
-        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.extract({\n  schema: {\n    type: 'bar',\n    properties: 'bar',\n    required: 'bar',\n    additionalProperties: 'bar',\n  },\n  url: 'https://example.com',\n});\n\nconsole.log(response.data);"
-      - lang: Python
-        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.extract(\n    schema={\n        \"type\": \"bar\",\n        \"properties\": \"bar\",\n        \"required\": \"bar\",\n        \"additionalProperties\": \"bar\",\n    },\n    url=\"https://example.com\",\n)\nprint(response.data)"
-      - lang: Go
-        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.Extract(context.TODO(), contextdev.WebExtractParams{\n\t\tSchema: map[string]any{\n\t\t\t\"type\":                 \"bar\",\n\t\t\t\"properties\":           \"bar\",\n\t\t\t\"required\":             \"bar\",\n\t\t\t\"additionalProperties\": \"bar\",\n\t\t},\n\t\tURL: \"https://example.com\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Data)\n}\n"
-      - lang: Ruby
-        source: "require \"context_dev\"\n\ncontext_dev = ContextDev::Client.new(api_key: \"My API Key\")\n\nresponse = context_dev.web.extract(\n  schema: {type: \"bar\", properties: \"bar\", required: \"bar\", additionalProperties: \"bar\"},\n  url: \"https://example.com\"\n)\n\nputs(response)"
-      - lang: PHP
-        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->extract(\n    schema: [\n      'type' => 'bar',\n      'properties' => 'bar',\n      'required' => 'bar',\n      'additionalProperties' => 'bar',\n    ],\n    url: 'https://example.com',\n    factCheck: true,\n    followSubdomains: true,\n    includeFrames: true,\n    instructions: 'instructions',\n    maxAgeMs: 0,\n    maxDepth: 0,\n    maxPages: 1,\n    pdf: ['end' => 1, 'shouldParse' => true, 'start' => 1],\n    stopAfterMs: 10000,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    waitForMs: 0,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
-      - lang: CLI
-        source: "context-dev web extract \\\n  --api-key 'My API Key' \\\n  --schema '{type: bar, properties: bar, required: bar, additionalProperties: bar}' \\\n  --url https://example.com"
       operationId: postWebExtract
-      x-operation-id-source: derived
-  /web/competitors:
-    get:
-      x-hidden: true
-      summary: Find website competitors
-      description: Analyze a company's landing page and web search evidence to return direct competitors for the same product or market.
-      security:
-      - bearerAuth: []
-      tags:
-      - Web Extraction
-      x-mint:
-        content: <Badge color="orange">10 Credits</Badge> <Badge color="purple">Private Alpha</Badge>
-        title: Find website competitors
-        sidebarTitle: Find competitors
-        description: Analyze a company's website and web search evidence to return direct competitors.
-      parameters:
-      - schema:
-          type: string
-          minLength: 3
-          description: Company domain to analyze, such as `stripe.com`. Full http(s) URLs are accepted and normalized to their domain.
-        required: true
-        description: Company domain to analyze, such as `stripe.com`. Full http(s) URLs are accepted and normalized to their domain.
-        name: domain
-        in: query
-      - schema:
-          type: integer
-          minimum: 1
-          maximum: 10
-          default: 5
-          description: Exact number of direct competitors to return. Defaults to 5.
-        required: false
-        description: Exact number of direct competitors to return. Defaults to 5.
-        name: numCompetitors
-        in: query
-      - schema:
-          $ref: '#/components/schemas/TimeoutMS'
-        required: false
-        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-        name: timeoutMS
-        in: query
-      - $ref: '#/components/parameters/RequestTags'
-      responses:
-        '200':
-          description: Competitor research succeeded.
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    enum:
-                    - ok
-                    description: Status of the response.
-                  domain:
-                    type: string
-                    description: Normalized input domain.
-                  target:
-                    type: object
-                    description: Target company profile inferred from the landing page.
-                    properties:
-                      companyName:
-                        type: string
-                        description: Company or product name inferred from the landing page.
-                      field:
-                        type: string
-                        description: Specific operating field, product category, or market.
-                      fieldDescription:
-                        type: string
-                        description: One-sentence description of what the target company sells and who it serves.
-                      websiteUrl:
-                        type: string
-                        description: Resolved URL used for the landing page analysis.
-                    required:
-                    - companyName
-                    - field
-                    - fieldDescription
-                    - websiteUrl
-                    additionalProperties: false
-                  competitors:
-                    type: array
-                    description: Direct competitors ordered by relevance and confidence.
-                    items:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                          description: Competitor company or product name.
-                        domain:
-                          type: string
-                          description: Competitor's normalized official domain.
-                        url:
-                          type: string
-                          description: Competitor website URL.
-                        description:
-                          type: string
-                          description: Short description of the competitor.
-                        confidence:
-                          type: string
-                          enum:
-                          - high
-                          - medium
-                          description: Confidence that this company is a direct competitor.
-                        sourceUrls:
-                          type: array
-                          description: Search result URLs used as evidence for this competitor.
-                          items:
-                            type: string
-                      required:
-                      - name
-                      - domain
-                      - url
-                      - description
-                      - confidence
-                      - sourceUrls
-                      additionalProperties: false
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-                required:
-                - status
-                - domain
-                - target
-                - competitors
-                additionalProperties: false
-        '400':
-          description: Bad request - Invalid parameters or inaccessible website
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    oneOf:
-                    - type: string
-                    - type: array
-                      items:
-                        type: object
-                    description: Error message or validation details.
-                  error_code:
-                    type: string
-                    enum:
-                    - INPUT_VALIDATION_ERROR
-                    - WEBSITE_ACCESS_ERROR
-                    description: Error code indicating the type of error.
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-                required:
-                - message
-                - error_code
-        '401':
-          description: Unauthorized - Invalid or missing API key
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message.
-                  error_code:
-                    type: string
-                    enum:
-                    - UNAUTHORIZED
-                    description: Error code indicating unauthorized access.
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-                required:
-                - message
-                - error_code
-        '403':
-          description: Forbidden - Insufficient permissions or usage limit exceeded
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message.
-                  error_code:
-                    type: string
-                    enum:
-                    - FORBIDDEN
-                    - USAGE_EXCEEDED
-                    - DISABLED
-                    - INSUFFICIENT_PERMISSIONS
-                    description: Error code indicating forbidden access.
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-                required:
-                - message
-                - error_code
-        '408':
-          description: Request timeout
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Timeout error message.
-                  error_code:
-                    type: string
-                    enum:
-                    - REQUEST_TIMEOUT
-                    description: Error code indicating request timeout.
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-                required:
-                - message
-                - error_code
-        '429':
-          $ref: '#/components/responses/RateLimited'
-        '500':
-          description: Internal server error
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message.
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    description: Error code indicating internal server error.
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-                required:
-                - message
-                - error_code
-      x-codeSamples:
-      - lang: JavaScript
-        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.extractCompetitors({ domain: 'xxx' });\n\nconsole.log(response.competitors);"
-      - lang: Python
-        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.extract_competitors(\n    domain=\"xxx\",\n)\nprint(response.competitors)"
-      - lang: Go
-        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.ExtractCompetitors(context.TODO(), contextdev.WebExtractCompetitorsParams{\n\t\tDomain: \"xxx\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Competitors)\n}\n"
-      - lang: Ruby
-        source: 'require "context_dev"
-
-
-          context_dev = ContextDev::Client.new(api_key: "My API Key")
-
-
-          response = context_dev.web.extract_competitors(domain: "xxx")
-
-
-          puts(response)'
-      - lang: PHP
-        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->extractCompetitors(\n    domain: 'xxx',\n    numCompetitors: 1,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
-      - lang: CLI
-        source: "context-dev web extract-competitors \\\n  --api-key 'My API Key' \\\n  --domain xxx"
-      operationId: getWebCompetitors
       x-operation-id-source: derived
   /web/styleguide:
     get:
-      summary: Scrape Styleguide
-      description: Extract a comprehensive design system from a website including colors, typography, spacing, shadows, and UI components.
+      summary: Extract a styleguide
+      description: Extract colors, typography, spacing, and component styles from a website.
       x-oneOf-query:
       - title: By Domain
         required:
@@ -597,18 +397,25 @@ paths:
             description: Domain name to extract styleguide from (e.g., 'example.com', 'google.com').
           maxAgeMs:
             type: integer
-            minimum: 86400000
+            minimum: 0
             maximum: 31536000000
             default: 7776000000
-            description: Maximum age in milliseconds for cached styleguide data before a hard refresh. Defaults to 3 months. Ignored when 'directUrl' is used.
+            description: Maximum age in milliseconds for cached styleguide data before a hard refresh. Defaults to 3 months. Set to 0 to always perform a hard refresh.
           colorScheme:
             type: string
             enum:
             - light
             - dark
             description: Optional browser color scheme to emulate for websites that respond to prefers-color-scheme. This value is part of the styleguide cache key.
-          timeoutMS:
-            $ref: '#/components/schemas/TimeoutMS'
+          timeoutOpts:
+            $ref: '#/components/schemas/ScrapeTimeout'
+          zdr:
+            type: string
+            enum:
+            - enabled
+            - disabled
+            default: disabled
+            description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
       - title: By Direct URL
         required:
         - directUrl
@@ -617,23 +424,33 @@ paths:
             type: string
             format: uri
             description: A specific URL to fetch the styleguide from directly, bypassing domain resolution.
+          maxAgeMs:
+            type: integer
+            minimum: 0
+            maximum: 31536000000
+            default: 7776000000
+            description: Maximum age in milliseconds for cached styleguide data before a hard refresh. Defaults to 3 months. Set to 0 to always perform a hard refresh.
           colorScheme:
             type: string
             enum:
             - light
             - dark
             description: Optional browser color scheme to emulate for websites that respond to prefers-color-scheme. This value is part of the styleguide cache key.
-          timeoutMS:
-            $ref: '#/components/schemas/TimeoutMS'
+          timeoutOpts:
+            $ref: '#/components/schemas/ScrapeTimeout'
+          zdr:
+            type: string
+            enum:
+            - enabled
+            - disabled
+            default: disabled
+            description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
       security:
       - bearerAuth: []
       tags:
       - Web Extraction
       x-mint:
-        content: <Badge color="orange">10 Credits</Badge>
-        title: Scrape Styleguide
-        sidebarTitle: Scrape styleguide
-        description: Extract a comprehensive design system from a website including colors, typography, spacing, shadows, and UI components.
+        content: <Badge color="blue">10 credits</Badge>
       parameters:
       - schema:
           type: string
@@ -646,9 +463,9 @@ paths:
       - schema:
           type: string
           format: uri
-          description: A specific URL to fetch the styleguide from directly, bypassing domain resolution (e.g., 'https://example.com/design-system'). When provided, the styleguide is extracted from this exact URL. You must provide either 'domain' or 'directUrl', but not both.
+          description: Exact URL to inspect. Provide either `domain` or `directUrl`, not both.
         required: false
-        description: A specific URL to fetch the styleguide from directly, bypassing domain resolution (e.g., 'https://example.com/design-system'). When provided, the styleguide is extracted from this exact URL. You must provide either 'domain' or 'directUrl', but not both.
+        description: Exact URL to inspect. Provide either `domain` or `directUrl`, not both.
         name: directUrl
         in: query
       - schema:
@@ -656,16 +473,18 @@ paths:
           - integer
           - 'null'
           default: 7776000000
-          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+          description: Maximum age of cached brand data in ms. Defaults to 3 months; clamped to 0–1 year. `0` refreshes.
         required: false
-        description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        description: Maximum age of cached brand data in ms. Defaults to 3 months; clamped to 0–1 year. `0` refreshes.
         name: maxAgeMs
         in: query
       - schema:
-          $ref: '#/components/schemas/TimeoutMS'
+          $ref: '#/components/schemas/ScrapeTimeout'
         required: false
-        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-        name: timeoutMS
+        description: Request deadline and what to return when it passes.
+        style: deepObject
+        explode: true
+        name: timeoutOpts
         in: query
       - schema:
           type: string
@@ -677,39 +496,57 @@ paths:
         description: Optional browser color scheme to emulate for websites that respond to prefers-color-scheme. This value is part of the styleguide cache key.
         name: colorScheme
         in: query
+      - schema:
+          type: string
+          enum:
+          - enabled
+          - disabled
+          default: disabled
+          description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
+        required: false
+        description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
+        name: zdr
+        in: query
       - $ref: '#/components/parameters/RequestTags'
       responses:
         '200':
           description: Successful response
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            X-Context-ZDR:
+              description: Present with the value true when zero data retention was requested and honored.
+              schema:
+                type: string
+                enum:
+                - 'true'
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  finalDOMState:
+                    type: string
+                    enum:
+                    - loaded
+                    - still-loading
+                    description: '`loaded`, or `still-loading` when capture ended before the page finished loading.'
                   status:
                     type: string
-                    description: Status of the response, e.g., 'ok'
+                    description: Always `ok` on success.
                   domain:
                     type: string
                     description: The normalized domain that was processed
                   styleguide:
                     type: object
-                    description: Comprehensive styleguide data extracted from the website
-                    required:
-                    - mode
-                    - colors
-                    - typography
-                    - elementSpacing
-                    - shadows
-                    - components
-                    - fontLinks
                     properties:
                       mode:
                         type: string
@@ -719,11 +556,6 @@ paths:
                         description: The primary color mode of the website design
                       colors:
                         type: object
-                        description: Primary colors used on the website
-                        required:
-                        - accent
-                        - background
-                        - text
                         properties:
                           accent:
                             type: string
@@ -734,29 +566,23 @@ paths:
                           text:
                             type: string
                             description: Text color (hex format)
+                        required:
+                        - accent
+                        - background
+                        - text
+                        description: Primary colors used on the website
                       typography:
                         type: object
-                        description: Typography styles used on the website
-                        required:
-                        - headings
                         properties:
                           headings:
                             type: object
-                            description: Heading styles
                             properties:
                               h1:
                                 type: object
-                                required:
-                                - fontFamily
-                                - fontFallbacks
-                                - fontSize
-                                - fontWeight
-                                - lineHeight
-                                - letterSpacing
                                 properties:
                                   fontFamily:
                                     type: string
-                                    description: Primary face (first family in the computed stack)
+                                    description: First font in the stack.
                                   fontFallbacks:
                                     type: array
                                     items:
@@ -770,19 +596,19 @@ paths:
                                     type: string
                                   letterSpacing:
                                     type: string
+                                required:
+                                - fontFamily
+                                - fontFallbacks
+                                - fontSize
+                                - fontWeight
+                                - lineHeight
+                                - letterSpacing
                               h2:
                                 type: object
-                                required:
-                                - fontFamily
-                                - fontFallbacks
-                                - fontSize
-                                - fontWeight
-                                - lineHeight
-                                - letterSpacing
                                 properties:
                                   fontFamily:
                                     type: string
-                                    description: Primary face (first family in the computed stack)
+                                    description: First font in the stack.
                                   fontFallbacks:
                                     type: array
                                     items:
@@ -796,19 +622,19 @@ paths:
                                     type: string
                                   letterSpacing:
                                     type: string
+                                required:
+                                - fontFamily
+                                - fontFallbacks
+                                - fontSize
+                                - fontWeight
+                                - lineHeight
+                                - letterSpacing
                               h3:
                                 type: object
-                                required:
-                                - fontFamily
-                                - fontFallbacks
-                                - fontSize
-                                - fontWeight
-                                - lineHeight
-                                - letterSpacing
                                 properties:
                                   fontFamily:
                                     type: string
-                                    description: Primary face (first family in the computed stack)
+                                    description: First font in the stack.
                                   fontFallbacks:
                                     type: array
                                     items:
@@ -822,19 +648,19 @@ paths:
                                     type: string
                                   letterSpacing:
                                     type: string
+                                required:
+                                - fontFamily
+                                - fontFallbacks
+                                - fontSize
+                                - fontWeight
+                                - lineHeight
+                                - letterSpacing
                               h4:
                                 type: object
-                                required:
-                                - fontFamily
-                                - fontFallbacks
-                                - fontSize
-                                - fontWeight
-                                - lineHeight
-                                - letterSpacing
                                 properties:
                                   fontFamily:
                                     type: string
-                                    description: Primary face (first family in the computed stack)
+                                    description: First font in the stack.
                                   fontFallbacks:
                                     type: array
                                     items:
@@ -848,19 +674,20 @@ paths:
                                     type: string
                                   letterSpacing:
                                     type: string
+                                required:
+                                - fontFamily
+                                - fontFallbacks
+                                - fontSize
+                                - fontWeight
+                                - lineHeight
+                                - letterSpacing
+                            description: Heading styles
                           p:
                             type: object
-                            required:
-                            - fontFamily
-                            - fontFallbacks
-                            - fontSize
-                            - fontWeight
-                            - lineHeight
-                            - letterSpacing
                             properties:
                               fontFamily:
                                 type: string
-                                description: Primary face (first family in the computed stack)
+                                description: First font in the stack.
                               fontFallbacks:
                                 type: array
                                 items:
@@ -874,15 +701,18 @@ paths:
                                 type: string
                               letterSpacing:
                                 type: string
+                            required:
+                            - fontFamily
+                            - fontFallbacks
+                            - fontSize
+                            - fontWeight
+                            - lineHeight
+                            - letterSpacing
+                        required:
+                        - headings
+                        description: Typography styles used on the website
                       elementSpacing:
                         type: object
-                        description: Spacing system used on the website
-                        required:
-                        - xs
-                        - sm
-                        - md
-                        - lg
-                        - xl
                         properties:
                           xs:
                             type: string
@@ -894,15 +724,15 @@ paths:
                             type: string
                           xl:
                             type: string
-                      shadows:
-                        type: object
-                        description: Shadow styles used on the website
                         required:
+                        - xs
                         - sm
                         - md
                         - lg
                         - xl
-                        - inner
+                        description: Spacing system used on the website
+                      shadows:
+                        type: object
                         properties:
                           sm:
                             type: string
@@ -914,14 +744,17 @@ paths:
                             type: string
                           inner:
                             type: string
+                        required:
+                        - sm
+                        - md
+                        - lg
+                        - xl
+                        - inner
+                        description: Shadow styles used on the website
                       fontLinks:
                         type: object
-                        description: Font assets keyed by family name as it appears in fontFamily/fontFallbacks (non-generic names only). Clients match typography.fontFamily / fontWeight or button styles to pick a file URL from files.
                         additionalProperties:
                           type: object
-                          required:
-                          - type
-                          - files
                           properties:
                             type:
                               type: string
@@ -939,33 +772,18 @@ paths:
                             displayName:
                               type: string
                               description: 'Present when type is custom: human-readable name derived from the fontLinks key (strip build/hash suffixes, split camelCase / PascalCase, normalize separators). Google entries omit this.'
+                          required:
+                          - type
+                          - files
+                        description: Font assets keyed by family name as it appears in fontFamily/fontFallbacks (non-generic names only). Clients match typography.fontFamily / fontWeight or button styles to pick a file URL from files.
                       components:
                         type: object
-                        description: UI component styles
-                        required:
-                        - button
                         properties:
                           button:
                             type: object
-                            description: Button component styles
                             properties:
                               primary:
                                 type: object
-                                required:
-                                - backgroundColor
-                                - color
-                                - borderColor
-                                - borderRadius
-                                - borderWidth
-                                - borderStyle
-                                - padding
-                                - minWidth
-                                - minHeight
-                                - fontSize
-                                - fontWeight
-                                - textDecoration
-                                - boxShadow
-                                - css
                                 properties:
                                   backgroundColor:
                                     type: string
@@ -984,7 +802,7 @@ paths:
                                     type: string
                                   minWidth:
                                     type: string
-                                    description: Sampled minimum width of the button box (typically px)
+                                    description: Minimum width (usually px).
                                   minHeight:
                                     type: string
                                     description: Sampled minimum height of the button box (typically px)
@@ -1011,23 +829,23 @@ paths:
                                   css:
                                     type: string
                                     description: Ready-to-use CSS declaration block for this component style
+                                required:
+                                - backgroundColor
+                                - color
+                                - borderColor
+                                - borderRadius
+                                - borderWidth
+                                - borderStyle
+                                - padding
+                                - minWidth
+                                - minHeight
+                                - fontSize
+                                - fontWeight
+                                - textDecoration
+                                - boxShadow
+                                - css
                               secondary:
                                 type: object
-                                required:
-                                - backgroundColor
-                                - color
-                                - borderColor
-                                - borderRadius
-                                - borderWidth
-                                - borderStyle
-                                - padding
-                                - minWidth
-                                - minHeight
-                                - fontSize
-                                - fontWeight
-                                - textDecoration
-                                - boxShadow
-                                - css
                                 properties:
                                   backgroundColor:
                                     type: string
@@ -1046,7 +864,7 @@ paths:
                                     type: string
                                   minWidth:
                                     type: string
-                                    description: Sampled minimum width of the button box (typically px)
+                                    description: Minimum width (usually px).
                                   minHeight:
                                     type: string
                                     description: Sampled minimum height of the button box (typically px)
@@ -1073,23 +891,23 @@ paths:
                                   css:
                                     type: string
                                     description: Ready-to-use CSS declaration block for this component style
+                                required:
+                                - backgroundColor
+                                - color
+                                - borderColor
+                                - borderRadius
+                                - borderWidth
+                                - borderStyle
+                                - padding
+                                - minWidth
+                                - minHeight
+                                - fontSize
+                                - fontWeight
+                                - textDecoration
+                                - boxShadow
+                                - css
                               link:
                                 type: object
-                                required:
-                                - backgroundColor
-                                - color
-                                - borderColor
-                                - borderRadius
-                                - borderWidth
-                                - borderStyle
-                                - padding
-                                - minWidth
-                                - minHeight
-                                - fontSize
-                                - fontWeight
-                                - textDecoration
-                                - boxShadow
-                                - css
                                 properties:
                                   backgroundColor:
                                     type: string
@@ -1108,7 +926,7 @@ paths:
                                     type: string
                                   minWidth:
                                     type: string
-                                    description: Sampled minimum width of the button box (typically px)
+                                    description: Minimum width (usually px).
                                   minHeight:
                                     type: string
                                     description: Sampled minimum height of the button box (typically px)
@@ -1135,19 +953,24 @@ paths:
                                   css:
                                     type: string
                                     description: Ready-to-use CSS declaration block for this component style
+                                required:
+                                - backgroundColor
+                                - color
+                                - borderColor
+                                - borderRadius
+                                - borderWidth
+                                - borderStyle
+                                - padding
+                                - minWidth
+                                - minHeight
+                                - fontSize
+                                - fontWeight
+                                - textDecoration
+                                - boxShadow
+                                - css
+                            description: Button component styles
                           card:
                             type: object
-                            description: Card component style
-                            required:
-                            - backgroundColor
-                            - borderColor
-                            - borderRadius
-                            - borderWidth
-                            - borderStyle
-                            - padding
-                            - boxShadow
-                            - textColor
-                            - css
                             properties:
                               backgroundColor:
                                 type: string
@@ -1169,20 +992,54 @@ paths:
                               css:
                                 type: string
                                 description: Ready-to-use CSS declaration block for this component style
+                            required:
+                            - backgroundColor
+                            - borderColor
+                            - borderRadius
+                            - borderWidth
+                            - borderStyle
+                            - padding
+                            - boxShadow
+                            - textColor
+                            - css
+                            description: Card component style
+                        required:
+                        - button
+                        description: UI component styles
+                    required:
+                    - mode
+                    - colors
+                    - typography
+                    - elementSpacing
+                    - shadows
+                    - fontLinks
+                    - components
+                    description: Comprehensive styleguide data extracted from the website
                   code:
                     type: integer
                     description: HTTP status code
+                  cache_metadata:
+                    $ref: '#/components/schemas/CacheMetadata'
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - cache_metadata
+                - request_id
         '400':
           description: Bad Request
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1190,7 +1047,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message
+                    description: Human-readable error message.
                   error_code:
                     type: string
                     enum:
@@ -1205,19 +1062,29 @@ paths:
                     - INSUFFICIENT_PERMISSIONS
                     - TIMEOUT_EXCEEDS_MAXIMUM
                     - WEBSITE_ACCESS_ERROR
+                    - WEBSITE_BLOCKED
+                    - WEBSITE_NOT_FOUND
                     - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
+                    description: Machine-readable error code, such as `WEBSITE_BLOCKED` or `WEBSITE_NOT_FOUND`.
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '401':
-          description: Unauthorized
+          description: Missing or invalid API key.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1238,18 +1105,43 @@ paths:
                     - TIMEOUT_EXCEEDS_MAXIMUM
                     - WEBSITE_ACCESS_ERROR
                     - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
+                    description: Machine-readable error code.
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
-        '408':
-          description: Request Timeout
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
+        '402':
+          description: Insufficient credits (`USAGE_EXCEEDED`); authentication is valid. Retry once funded. Legacy deployments may return 401.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '408':
+          description: Request Timeout
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1265,17 +1157,25 @@ paths:
                     description: Error code indicating request timeout
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':
           description: Internal server error
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1283,7 +1183,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message
+                    description: Human-readable error message.
                   error_code:
                     type: string
                     enum:
@@ -1291,34 +1191,16 @@ paths:
                     description: Error code indicating internal server error
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
-      x-codeSamples:
-      - lang: JavaScript
-        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.extractStyleguide();\n\nconsole.log(response.styleguide);"
-      - lang: Python
-        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.extract_styleguide()\nprint(response.styleguide)"
-      - lang: Go
-        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.ExtractStyleguide(context.TODO(), contextdev.WebExtractStyleguideParams{})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Styleguide)\n}\n"
-      - lang: Ruby
-        source: 'require "context_dev"
-
-
-          context_dev = ContextDev::Client.new(api_key: "My API Key")
-
-
-          response = context_dev.web.extract_styleguide
-
-
-          puts(response)'
-      - lang: PHP
-        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->extractStyleguide(\n    colorScheme: 'light',\n    directURL: 'https://example.com',\n    domain: 'xxx',\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
-      - lang: CLI
-        source: "context-dev web extract-styleguide \\\n  --api-key 'My API Key'"
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
       operationId: getWebStyleguide
       x-operation-id-source: derived
   /web/fonts:
     get:
-      summary: Scrape Fonts
-      description: Scrape font information from a website including font families, usage statistics, fallbacks, and element/word counts.
+      summary: Extract fonts
+      description: Identify fonts and available font files used by a website.
       x-oneOf-query:
       - title: By Domain
         required:
@@ -1329,12 +1211,12 @@ paths:
             description: Domain name to extract fonts from (e.g., 'example.com', 'google.com').
           maxAgeMs:
             type: integer
-            minimum: 86400000
+            minimum: 0
             maximum: 31536000000
             default: 7776000000
-            description: Maximum age in milliseconds for cached font data before a hard refresh. Defaults to 3 months. Ignored when 'directUrl' is used.
-          timeoutMS:
-            $ref: '#/components/schemas/TimeoutMS'
+            description: Maximum age in milliseconds for cached font data before a hard refresh. Defaults to 3 months. Set to 0 to always perform a hard refresh. Ignored when 'directUrl' is used.
+          timeoutOpts:
+            $ref: '#/components/schemas/ScrapeTimeout'
       - title: By Direct URL
         required:
         - directUrl
@@ -1343,24 +1225,21 @@ paths:
             type: string
             format: uri
             description: A specific URL to fetch fonts from directly, bypassing domain resolution.
-          timeoutMS:
-            $ref: '#/components/schemas/TimeoutMS'
+          timeoutOpts:
+            $ref: '#/components/schemas/ScrapeTimeout'
       security:
       - bearerAuth: []
       tags:
       - Web Extraction
       x-mint:
-        content: <Badge color="orange">5 Credits</Badge>
-        title: Scrape Fonts
-        sidebarTitle: Scrape fonts
-        description: Scrape font information from a website including font families, usage statistics, fallbacks, and element/word counts.
+        content: <Badge color="blue">5 credits</Badge>
       parameters:
       - schema:
           type: string
           format: uri
-          description: A specific URL to fetch fonts from directly, bypassing domain resolution (e.g., 'https://example.com/design-system'). When provided, fonts are extracted from this exact URL. You must provide either 'domain' or 'directUrl', but not both.
+          description: Exact page to inspect. Provide either `domain` or `directUrl`.
         required: false
-        description: A specific URL to fetch fonts from directly, bypassing domain resolution (e.g., 'https://example.com/design-system'). When provided, fonts are extracted from this exact URL. You must provide either 'domain' or 'directUrl', but not both.
+        description: Exact page to inspect. Provide either `domain` or `directUrl`.
         name: directUrl
         in: query
       - schema:
@@ -1376,42 +1255,53 @@ paths:
           - integer
           - 'null'
           default: 7776000000
-          description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+          description: Maximum age of cached brand data in ms. Defaults to 3 months; clamped to 0–1 year. `0` refreshes.
         required: false
-        description: Maximum age in milliseconds for cached brand data before the API performs a hard refresh. Defaults to 3 months (7776000000 ms). Values below 1 day (86400000 ms) are clamped to 1 day; values above 1 year (31536000000 ms) are clamped to 1 year.
+        description: Maximum age of cached brand data in ms. Defaults to 3 months; clamped to 0–1 year. `0` refreshes.
         name: maxAgeMs
         in: query
       - schema:
-          $ref: '#/components/schemas/TimeoutMS'
+          $ref: '#/components/schemas/ScrapeTimeout'
         required: false
-        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-        name: timeoutMS
+        description: Request deadline and what to return when it passes.
+        style: deepObject
+        explode: true
+        name: timeoutOpts
         in: query
       - $ref: '#/components/parameters/RequestTags'
       responses:
         '200':
           description: Successful response
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  finalDOMState:
+                    type: string
+                    enum:
+                    - loaded
+                    - still-loading
+                    description: '`loaded`, or `still-loading` when capture ended before the page finished loading.'
                   status:
                     type: string
-                    description: Status of the response, e.g., 'ok'
+                    description: Always `ok` on success.
                   domain:
                     type: string
                     description: The normalized domain that was processed
                   fonts:
                     type: array
-                    description: Array of font usage information
                     items:
                       type: object
                       properties:
@@ -1448,14 +1338,11 @@ paths:
                       - num_words
                       - percent_words
                       - percent_elements
+                    description: Array of font usage information
                   fontLinks:
                     type: object
-                    description: Font assets keyed by family name as it appears in the fonts array (non-generic names only). Clients match entries in fonts to pick a file URL from files. Omitted when no families resolve to Google or custom @font-face URLs.
                     additionalProperties:
                       type: object
-                      required:
-                      - type
-                      - files
                       properties:
                         type:
                           type: string
@@ -1473,25 +1360,39 @@ paths:
                         displayName:
                           type: string
                           description: 'Present when type is custom: human-readable name derived from the fontLinks key (strip build/hash suffixes, split camelCase / PascalCase, normalize separators). Google entries omit this.'
+                      required:
+                      - type
+                      - files
+                    description: Available font files keyed by family name. Omitted when no downloadable fonts are found.
                   code:
                     type: integer
                     description: HTTP status code, e.g., 200
+                  cache_metadata:
+                    $ref: '#/components/schemas/CacheMetadata'
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
                 required:
                 - status
                 - domain
                 - fonts
                 - code
+                - cache_metadata
+                - request_id
         '400':
           description: Bad request - Invalid input parameters
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1507,66 +1408,74 @@ paths:
                     description: Error code indicating input validation error
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '401':
-          description: Unauthorized - Invalid or missing API key
+          description: Missing, invalid, or disabled API key.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message
-                  error_code:
-                    type: string
-                    enum:
-                    - UNAUTHORIZED
-                    description: Error code indicating unauthorized access
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
+                $ref: '#/components/schemas/ErrorResponse'
+        '402':
+          description: Insufficient credits (`USAGE_EXCEEDED`); authentication is valid. Retry once funded. Legacy deployments may return 401.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
-          description: Forbidden - Insufficient permissions or usage limit exceeded
+          description: API key permissions or organization settings do not allow this request.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message
-                  error_code:
-                    type: string
-                    enum:
-                    - FORBIDDEN
-                    - USAGE_EXCEEDED
-                    - DISABLED
-                    - INSUFFICIENT_PERMISSIONS
-                    description: Error code indicating forbidden access
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
+                $ref: '#/components/schemas/ErrorResponse'
         '408':
           description: Request timeout
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1582,17 +1491,25 @@ paths:
                     description: Error code indicating request timeout
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '429':
           $ref: '#/components/responses/RateLimited'
         '500':
           description: Internal server error
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1600,7 +1517,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message
+                    description: Human-readable error message.
                   error_code:
                     type: string
                     enum:
@@ -1608,43 +1525,22 @@ paths:
                     description: Error code indicating internal server error
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
-      x-codeSamples:
-      - lang: JavaScript
-        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.web.extractFonts();\n\nconsole.log(response.code);"
-      - lang: Python
-        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.web.extract_fonts()\nprint(response.code)"
-      - lang: Go
-        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Web.ExtractFonts(context.TODO(), contextdev.WebExtractFontsParams{})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Code)\n}\n"
-      - lang: Ruby
-        source: 'require "context_dev"
-
-
-          context_dev = ContextDev::Client.new(api_key: "My API Key")
-
-
-          response = context_dev.web.extract_fonts
-
-
-          puts(response)'
-      - lang: PHP
-        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->web->extractFonts(\n    directURL: 'https://example.com',\n    domain: 'xxx',\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
-      - lang: CLI
-        source: "context-dev web extract-fonts \\\n  --api-key 'My API Key'"
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
       operationId: getWebFonts
       x-operation-id-source: derived
   /web/naics:
     get:
-      summary: Classify NAICS industries
-      description: Classify any brand into 2022 NAICS industry codes from its domain or name.
+      summary: Classify NAICS codes
+      description: Classify a company into NAICS industry codes.
       security:
       - bearerAuth: []
       tags:
       - Web Extraction
       x-mint:
-        content: <Badge color="orange">10 Credits</Badge>
-        title: Classify NAICS industries
-        sidebarTitle: Classify NAICS industries
-        description: Classify any brand into 2022 NAICS industry codes from its domain or name.
+        content: <Badge color="blue">10 credits</Badge>
       parameters:
       - schema:
           type: string
@@ -1675,30 +1571,56 @@ paths:
         name: maxResults
         in: query
       - schema:
-          $ref: '#/components/schemas/TimeoutMS'
+          $ref: '#/components/schemas/PartialTimeout'
         required: false
-        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-        name: timeoutMS
+        description: Request deadline and what to return when it passes.
+        style: deepObject
+        explode: true
+        name: timeoutOpts
+        in: query
+      - schema:
+          type: string
+          enum:
+          - enabled
+          - disabled
+          default: disabled
+          description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
+        required: false
+        description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
+        name: zdr
         in: query
       - $ref: '#/components/parameters/RequestTags'
       responses:
         '200':
           description: Successful response
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            X-Context-ZDR:
+              description: Present with the value true when zero data retention was requested and honored.
+              schema:
+                type: string
+                enum:
+                - 'true'
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  partial:
+                    type: boolean
+                    description: True when the timeout ended processing and this response contains only usable results completed so far. Unfinished results are omitted.
                   status:
                     type: string
-                    description: Status of the response, e.g., 'ok'
+                    description: Always `ok` on success.
                   domain:
                     type: string
                     description: Domain found for the brand
@@ -1707,7 +1629,6 @@ paths:
                     description: Industry classification type, for naics api it will be `naics`
                   codes:
                     type: array
-                    description: Array of NAICS codes and titles.
                     items:
                       type: object
                       properties:
@@ -1728,17 +1649,26 @@ paths:
                       - code
                       - name
                       - confidence
+                    description: Array of NAICS codes and titles.
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '400':
-          description: Bad Request
+          description: Invalid input, company not found (`NOT_FOUND`), or the website could not be read.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1746,7 +1676,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message
+                    description: Human-readable error message.
                   error_code:
                     type: string
                     enum:
@@ -1761,19 +1691,29 @@ paths:
                     - INSUFFICIENT_PERMISSIONS
                     - TIMEOUT_EXCEEDS_MAXIMUM
                     - WEBSITE_ACCESS_ERROR
+                    - WEBSITE_NOT_FOUND
+                    - WEBSITE_BLOCKED
                     - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
+                    description: Machine-readable error code.
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '401':
-          description: Unauthorized
+          description: Missing or invalid API key.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1794,18 +1734,26 @@ paths:
                     - TIMEOUT_EXCEEDS_MAXIMUM
                     - WEBSITE_ACCESS_ERROR
                     - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
+                    description: Machine-readable error code.
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
-        '404':
-          description: Brand not found.
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
+        '402':
+          description: Insufficient credits (`USAGE_EXCEEDED`); authentication is valid. Retry once funded. Legacy deployments may return 401.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1813,12 +1761,16 @@ paths:
         '408':
           description: Request Timeout
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -1834,45 +1786,24 @@ paths:
                     description: Error code indicating request timeout
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '429':
           $ref: '#/components/responses/RateLimited'
-      x-codeSamples:
-      - lang: JavaScript
-        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.industry.retrieveNaics({ input: 'xxxx' });\n\nconsole.log(response.codes);"
-      - lang: Python
-        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.industry.retrieve_naics(\n    input=\"xxxx\",\n)\nprint(response.codes)"
-      - lang: Go
-        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Industry.GetNaics(context.TODO(), contextdev.IndustryGetNaicsParams{\n\t\tInput: \"xxxx\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Codes)\n}\n"
-      - lang: Ruby
-        source: 'require "context_dev"
-
-
-          context_dev = ContextDev::Client.new(api_key: "My API Key")
-
-
-          response = context_dev.industry.retrieve_naics(input: "xxxx")
-
-
-          puts(response)'
-      - lang: PHP
-        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->industry->retrieveNaics(\n    input: 'xxxx',\n    maxResults: 1,\n    minResults: 1,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
-      - lang: CLI
-        source: "context-dev industry retrieve-naics \\\n  --api-key 'My API Key' \\\n  --input xxxx"
       operationId: getWebNaics
       x-operation-id-source: derived
   /web/sic:
     get:
-      summary: Classify SIC industries
-      description: Classify any brand into Standard Industrial Classification (SIC) codes from its domain or name. Choose between the original SIC system (`original_sic`) or the latest SIC list maintained by the SEC (`latest_sec`).
+      summary: Classify SIC codes
+      description: Classify a company into SIC industry codes.
       security:
       - bearerAuth: []
       tags:
       - Web Extraction
       x-mint:
-        content: <Badge color="orange">10 Credits</Badge>
-        title: Classify SIC industries
-        sidebarTitle: Classify SIC industries
-        description: Classify any brand into Standard Industrial Classification (SIC) codes from its domain or name.
+        content: <Badge color="blue">10 credits</Badge>
       parameters:
       - schema:
           type: string
@@ -1888,9 +1819,9 @@ paths:
           - original_sic
           - latest_sec
           default: original_sic
-          description: Which SIC dataset to classify against. `original_sic` uses the 1987 Standard Industrial Classification system; `latest_sec` uses the current SIC list as published by the SEC. Defaults to `original_sic`.
+          description: 'SIC dataset: `original_sic` (1987) or `latest_sec` (current SEC list).'
         required: false
-        description: Which SIC dataset to classify against. `original_sic` uses the 1987 Standard Industrial Classification system; `latest_sec` uses the current SIC list as published by the SEC. Defaults to `original_sic`.
+        description: 'SIC dataset: `original_sic` (1987) or `latest_sec` (current SEC list).'
         name: type
         in: query
       - schema:
@@ -1914,30 +1845,56 @@ paths:
         name: maxResults
         in: query
       - schema:
-          $ref: '#/components/schemas/TimeoutMS'
+          $ref: '#/components/schemas/PartialTimeout'
         required: false
-        description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
-        name: timeoutMS
+        description: Request deadline and what to return when it passes.
+        style: deepObject
+        explode: true
+        name: timeoutOpts
+        in: query
+      - schema:
+          type: string
+          enum:
+          - enabled
+          - disabled
+          default: disabled
+          description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
+        required: false
+        description: '`enabled` turns on zero data retention. Returns 403 `ZDR_NOT_ENABLED` unless your organization has ZDR.'
+        name: zdr
         in: query
       - $ref: '#/components/parameters/RequestTags'
       responses:
         '200':
           description: Successful response
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
+            X-Context-ZDR:
+              description: Present with the value true when zero data retention was requested and honored.
+              schema:
+                type: string
+                enum:
+                - 'true'
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  partial:
+                    type: boolean
+                    description: True when the timeout ended processing and this response contains only usable results completed so far. Unfinished results are omitted.
                   status:
                     type: string
-                    description: Status of the response, e.g., 'ok'
+                    description: Always `ok` on success.
                   domain:
                     type: string
                     description: Domain found for the brand
@@ -1952,7 +1909,6 @@ paths:
                     description: Echoes back which SIC dataset was used to classify the brand.
                   codes:
                     type: array
-                    description: 'Array of SIC codes with confidence scores. Extra fields depend on the requested classification: `original_sic` results include `majorGroup` and `majorGroupName`; `latest_sec` results include `office`.'
                     items:
                       type: object
                       properties:
@@ -1982,17 +1938,26 @@ paths:
                       - code
                       - name
                       - confidence
+                    description: 'Array of SIC codes with confidence scores. Extra fields depend on the requested classification: `original_sic` results include `majorGroup` and `majorGroupName`; `latest_sec` results include `office`.'
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '400':
-          description: Bad Request
+          description: Invalid input, company not found (`NOT_FOUND`), or the website could not be read.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -2000,7 +1965,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    description: Error message
+                    description: Human-readable error message.
                   error_code:
                     type: string
                     enum:
@@ -2015,19 +1980,29 @@ paths:
                     - INSUFFICIENT_PERMISSIONS
                     - TIMEOUT_EXCEEDS_MAXIMUM
                     - WEBSITE_ACCESS_ERROR
+                    - WEBSITE_NOT_FOUND
+                    - WEBSITE_BLOCKED
                     - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
+                    description: Machine-readable error code.
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '401':
-          description: Unauthorized
+          description: Missing or invalid API key.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -2048,18 +2023,26 @@ paths:
                     - TIMEOUT_EXCEEDS_MAXIMUM
                     - WEBSITE_ACCESS_ERROR
                     - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
+                    description: Machine-readable error code.
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
-        '404':
-          description: Brand not found.
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
+        '402':
+          description: Insufficient credits (`USAGE_EXCEEDED`); authentication is valid. Retry once funded. Legacy deployments may return 401.
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -2067,12 +2050,16 @@ paths:
         '408':
           description: Request Timeout
           headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
             X-RateLimit-Limit:
               $ref: '#/components/headers/RateLimitLimit'
             X-RateLimit-Remaining:
               $ref: '#/components/headers/RateLimitRemaining'
             X-RateLimit-Reset:
               $ref: '#/components/headers/RateLimitReset'
+            X-RateLimit-Mode:
+              $ref: '#/components/headers/RateLimitMode'
           content:
             application/json:
               schema:
@@ -2088,961 +2075,35 @@ paths:
                     description: Error code indicating request timeout
                   key_metadata:
                     $ref: '#/components/schemas/KeyMetadata'
+                  request_id:
+                    $ref: '#/components/schemas/RequestId'
+                required:
+                - request_id
         '429':
           $ref: '#/components/responses/RateLimited'
-      x-codeSamples:
-      - lang: JavaScript
-        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.industry.retrieveSic({ input: 'xxxx' });\n\nconsole.log(response.classification);"
-      - lang: Python
-        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.industry.retrieve_sic(\n    input=\"xxxx\",\n)\nprint(response.classification)"
-      - lang: Go
-        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.Industry.GetSic(context.TODO(), contextdev.IndustryGetSicParams{\n\t\tInput: \"xxxx\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.Classification)\n}\n"
-      - lang: Ruby
-        source: 'require "context_dev"
-
-
-          context_dev = ContextDev::Client.new(api_key: "My API Key")
-
-
-          response = context_dev.industry.retrieve_sic(input: "xxxx")
-
-
-          puts(response)'
-      - lang: PHP
-        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->industry->retrieveSic(\n    input: 'xxxx',\n    maxResults: 1,\n    minResults: 1,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    type: 'original_sic',\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
-      - lang: CLI
-        source: "context-dev industry retrieve-sic \\\n  --api-key 'My API Key' \\\n  --input xxxx"
       operationId: getWebSic
       x-operation-id-source: derived
-  /brand/ai/query:
-    post:
-      x-hidden: true
-      summary: Query website data using AI
-      description: Use AI to extract specific data points from a brand's website. The AI will crawl the website and extract the requested information based on the provided data points.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - domain
-              - data_to_extract
-              properties:
-                domain:
-                  type: string
-                  description: The domain name to analyze
-                specific_pages:
-                  type: object
-                  description: Optional object specifying which pages to analyze
-                  properties:
-                    home_page:
-                      type: boolean
-                      description: Whether to analyze the home page
-                    blog:
-                      type: boolean
-                      description: Whether to analyze the blog
-                    terms_and_conditions:
-                      type: boolean
-                      description: Whether to analyze the terms and conditions page
-                    privacy_policy:
-                      type: boolean
-                      description: Whether to analyze the privacy policy page
-                    about_us:
-                      type: boolean
-                      description: Whether to analyze the about us page
-                    contact_us:
-                      type: boolean
-                      description: Whether to analyze the contact us page
-                    careers:
-                      type: boolean
-                      description: Whether to analyze the careers page
-                    faq:
-                      type: boolean
-                      description: Whether to analyze the FAQ page
-                    pricing:
-                      type: boolean
-                      description: Whether to analyze the pricing page
-                data_to_extract:
-                  type: array
-                  description: Array of data points to extract from the website
-                  items:
-                    type: object
-                    required:
-                    - datapoint_name
-                    - datapoint_type
-                    - datapoint_description
-                    - datapoint_example
-                    properties:
-                      datapoint_name:
-                        type: string
-                        description: Name of the data point to extract
-                      datapoint_type:
-                        type: string
-                        enum:
-                        - text
-                        - number
-                        - date
-                        - boolean
-                        - list
-                        - url
-                        description: Type of the data point
-                      datapoint_list_type:
-                        type: string
-                        enum:
-                        - string
-                        - text
-                        - number
-                        - date
-                        - boolean
-                        - list
-                        - url
-                        - object
-                        default: string
-                        description: Type of items in the list when datapoint_type is 'list'. Defaults to 'string'. Use 'object' to extract an array of objects matching a schema.
-                      datapoint_object_schema:
-                        type: object
-                        description: Schema definition for objects when datapoint_list_type is 'object'. Provide a map of field names to their scalar types.
-                        additionalProperties:
-                          type: string
-                          enum:
-                          - string
-                          - number
-                          - date
-                          - boolean
-                        minProperties: 1
-                        example:
-                          testimonial_text: string
-                          testimonial_author: string
-                      datapoint_description:
-                        type: string
-                        description: Description of what to extract
-                      datapoint_example:
-                        type: string
-                        description: Example of the expected value
-                timeoutMS:
-                  $ref: '#/components/schemas/TimeoutMS'
-                tags:
-                  $ref: '#/components/schemas/RequestTags'
-      security:
-      - bearerAuth: []
-      tags:
-      - Web Extraction
-      x-mint:
-        content: <Badge color="orange">10 Credits</Badge>
-      responses:
-        '200':
-          description: Successful response
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    description: Status of the response, e.g., 'ok'
-                  domain:
-                    type: string
-                    description: The domain that was analyzed
-                  urls_analyzed:
-                    type: array
-                    description: List of URLs that were analyzed
-                    items:
-                      type: string
-                  data_extracted:
-                    type: array
-                    description: Array of extracted data points
-                    items:
-                      type: object
-                      properties:
-                        datapoint_name:
-                          type: string
-                          description: Name of the extracted data point
-                        datapoint_value:
-                          oneOf:
-                          - type: string
-                          - type: number
-                          - type: boolean
-                          - type: array
-                            items:
-                              type: string
-                          - type: array
-                            items:
-                              type: number
-                          - type: array
-                            items:
-                              type: object
-                          description: Value of the extracted data point. Can be a primitive type, an array of primitives, or an array of objects when datapoint_list_type is 'object'.
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '400':
-          description: Bad Request - validation error
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    - VALID
-                    - NOT_FOUND
-                    - FORBIDDEN
-                    - USAGE_EXCEEDED
-                    - RATE_LIMITED
-                    - UNAUTHORIZED
-                    - DISABLED
-                    - INSUFFICIENT_PERMISSIONS
-                    - TIMEOUT_EXCEEDS_MAXIMUM
-                    - WEBSITE_ACCESS_ERROR
-                    - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '401':
-          description: Unauthorized
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    - VALID
-                    - NOT_FOUND
-                    - FORBIDDEN
-                    - USAGE_EXCEEDED
-                    - RATE_LIMITED
-                    - UNAUTHORIZED
-                    - DISABLED
-                    - INSUFFICIENT_PERMISSIONS
-                    - TIMEOUT_EXCEEDS_MAXIMUM
-                    - WEBSITE_ACCESS_ERROR
-                    - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '408':
-          description: Request Timeout
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Timeout error message
-                  error_code:
-                    type: string
-                    enum:
-                    - REQUEST_TIMEOUT
-                    description: Error code indicating request timeout
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-        '500':
-          description: Internal server error
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    description: Error code indicating internal server error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-      operationId: postBrandAiQuery
-      x-operation-id-source: derived
-  /brand/ai/product:
-    post:
-      summary: Extract a single product from a URL
-      description: Given a single URL, determines if it is a product page and extracts the product information.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - url
-              properties:
-                url:
-                  type: string
-                  format: uri
-                  description: The product page URL to extract product data from.
-                maxAgeMs:
-                  type: integer
-                  minimum: 0
-                  maximum: 2592000000
-                  default: 604800000
-                  description: Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 7 days (604800000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh.
-                timeoutMS:
-                  $ref: '#/components/schemas/TimeoutMS'
-                tags:
-                  $ref: '#/components/schemas/RequestTags'
-      security:
-      - bearerAuth: []
-      tags:
-      - Web Extraction
-      x-mint:
-        content: <Badge color="orange">10 Credits</Badge>
-      responses:
-        '200':
-          description: Successful response
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  is_product_page:
-                    type: boolean
-                    description: Whether the given URL is a product detail page
-                  platform:
-                    type:
-                    - string
-                    - 'null'
-                    enum:
-                    - amazon
-                    - tiktok_shop
-                    - etsy
-                    - generic
-                    - null
-                    description: The detected ecommerce platform, or null if not a product page
-                  product:
-                    type:
-                    - object
-                    - 'null'
-                    description: The extracted product data, or null if not a product page
-                    properties:
-                      name:
-                        type: string
-                        description: Name of the product
-                      description:
-                        type: string
-                        description: Description of the product
-                      price:
-                        type:
-                        - number
-                        - 'null'
-                        description: Price of the product
-                      currency:
-                        type:
-                        - string
-                        - 'null'
-                        description: Currency code for the price (e.g., USD, EUR)
-                      billing_frequency:
-                        type:
-                        - string
-                        - 'null'
-                        enum:
-                        - monthly
-                        - yearly
-                        - one_time
-                        - usage_based
-                        - null
-                        description: Billing frequency for the product
-                      pricing_model:
-                        type:
-                        - string
-                        - 'null'
-                        enum:
-                        - per_seat
-                        - flat
-                        - tiered
-                        - freemium
-                        - custom
-                        - null
-                        description: Pricing model for the product
-                      url:
-                        type:
-                        - string
-                        - 'null'
-                        description: URL to the product page
-                      category:
-                        type:
-                        - string
-                        - 'null'
-                        description: Category of the product
-                      features:
-                        type: array
-                        description: List of product features
-                        items:
-                          type: string
-                      target_audience:
-                        type: array
-                        description: Target audience for the product (array of strings)
-                        items:
-                          type: string
-                      tags:
-                        type: array
-                        description: Tags associated with the product
-                        items:
-                          type: string
-                      image_url:
-                        type:
-                        - string
-                        - 'null'
-                        description: URL to the product image
-                      images:
-                        type: array
-                        description: URLs to product images on the page (up to 7)
-                        items:
-                          type: string
-                      sku:
-                        type:
-                        - string
-                        - 'null'
-                        description: Stock Keeping Unit (product identifier). Null if no identifier is found.
-                    required:
-                    - name
-                    - description
-                    - features
-                    - target_audience
-                    - tags
-                    - images
-                    - sku
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '400':
-          description: Bad Request - validation error
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    - VALID
-                    - NOT_FOUND
-                    - FORBIDDEN
-                    - USAGE_EXCEEDED
-                    - RATE_LIMITED
-                    - UNAUTHORIZED
-                    - DISABLED
-                    - INSUFFICIENT_PERMISSIONS
-                    - TIMEOUT_EXCEEDS_MAXIMUM
-                    - WEBSITE_ACCESS_ERROR
-                    - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '401':
-          description: Unauthorized
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    - VALID
-                    - NOT_FOUND
-                    - FORBIDDEN
-                    - USAGE_EXCEEDED
-                    - RATE_LIMITED
-                    - UNAUTHORIZED
-                    - DISABLED
-                    - INSUFFICIENT_PERMISSIONS
-                    - TIMEOUT_EXCEEDS_MAXIMUM
-                    - WEBSITE_ACCESS_ERROR
-                    - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '408':
-          description: Request Timeout
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Timeout error message
-                  error_code:
-                    type: string
-                    enum:
-                    - REQUEST_TIMEOUT
-                    description: Error code indicating request timeout
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-        '500':
-          description: Internal server error
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    description: Error code indicating internal server error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-      x-codeSamples:
-      - lang: JavaScript
-        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.ai.extractProduct({ url: 'https://example.com' });\n\nconsole.log(response.is_product_page);"
-      - lang: Python
-        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.ai.extract_product(\n    url=\"https://example.com\",\n)\nprint(response.is_product_page)"
-      - lang: Go
-        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.AI.ExtractProduct(context.TODO(), contextdev.AIExtractProductParams{\n\t\tURL: \"https://example.com\",\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.IsProductPage)\n}\n"
-      - lang: Ruby
-        source: 'require "context_dev"
-
-
-          context_dev = ContextDev::Client.new(api_key: "My API Key")
-
-
-          response = context_dev.ai.extract_product(url: "https://example.com")
-
-
-          puts(response)'
-      - lang: PHP
-        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->ai->extractProduct(\n    url: 'https://example.com',\n    maxAgeMs: 0,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
-      - lang: CLI
-        source: "context-dev ai extract-product \\\n  --api-key 'My API Key' \\\n  --url https://example.com"
-      operationId: postBrandAiProduct
-      x-operation-id-source: derived
-  /brand/ai/products:
-    post:
-      summary: Extract products from a brand's website
-      description: Extract product information from a brand's website. We will analyze the website and return a list of products with details such as name, description, image, pricing, features, and more.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-              - title: By Domain
-                type: object
-                required:
-                - domain
-                properties:
-                  domain:
-                    type: string
-                    description: The domain name to analyze.
-                  maxProducts:
-                    type: integer
-                    minimum: 1
-                    maximum: 12
-                    description: Maximum number of products to extract.
-                  maxAgeMs:
-                    type: integer
-                    minimum: 0
-                    maximum: 2592000000
-                    default: 604800000
-                    description: Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 7 days (604800000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh.
-                  timeoutMS:
-                    $ref: '#/components/schemas/TimeoutMS'
-                  tags:
-                    $ref: '#/components/schemas/RequestTags'
-              - title: By Direct URL
-                type: object
-                required:
-                - directUrl
-                properties:
-                  directUrl:
-                    type: string
-                    format: uri
-                    description: A specific URL to use directly as the starting point for extraction without domain resolution.
-                  maxProducts:
-                    type: integer
-                    minimum: 1
-                    maximum: 12
-                    description: Maximum number of products to extract.
-                  maxAgeMs:
-                    type: integer
-                    minimum: 0
-                    maximum: 2592000000
-                    default: 604800000
-                    description: Return a cached result if a prior scrape for the same parameters exists and is younger than this many milliseconds. Defaults to 7 days (604800000 ms) when omitted. Max is 30 days (2592000000 ms). Set to 0 to always scrape fresh.
-                  timeoutMS:
-                    $ref: '#/components/schemas/TimeoutMS'
-                  tags:
-                    $ref: '#/components/schemas/RequestTags'
-      security:
-      - bearerAuth: []
-      tags:
-      - Web Extraction
-      x-mint:
-        content: <Badge color="orange">10 Credits</Badge> <Badge color="purple">Beta Feature</Badge>
-      responses:
-        '200':
-          description: Successful response
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  products:
-                    type: array
-                    description: Array of products extracted from the website
-                    items:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                          description: Name of the product
-                        description:
-                          type: string
-                          description: Description of the product
-                        price:
-                          type:
-                          - number
-                          - 'null'
-                          description: Price of the product
-                        currency:
-                          type:
-                          - string
-                          - 'null'
-                          description: Currency code for the price (e.g., USD, EUR)
-                        billing_frequency:
-                          type:
-                          - string
-                          - 'null'
-                          enum:
-                          - monthly
-                          - yearly
-                          - one_time
-                          - usage_based
-                          - null
-                          description: Billing frequency for the product
-                        pricing_model:
-                          type:
-                          - string
-                          - 'null'
-                          enum:
-                          - per_seat
-                          - flat
-                          - tiered
-                          - freemium
-                          - custom
-                          - null
-                          description: Pricing model for the product
-                        url:
-                          type:
-                          - string
-                          - 'null'
-                          description: URL to the product page
-                        category:
-                          type:
-                          - string
-                          - 'null'
-                          description: Category of the product
-                        features:
-                          type: array
-                          description: List of product features
-                          items:
-                            type: string
-                        target_audience:
-                          type: array
-                          description: Target audience for the product (array of strings)
-                          items:
-                            type: string
-                        tags:
-                          type: array
-                          description: Tags associated with the product
-                          items:
-                            type: string
-                        image_url:
-                          type:
-                          - string
-                          - 'null'
-                          description: URL to the product image
-                        images:
-                          type: array
-                          description: URLs to product images on the page (up to 7)
-                          items:
-                            type: string
-                        sku:
-                          type:
-                          - string
-                          - 'null'
-                          description: Stock Keeping Unit (product identifier). Null if no identifier is found.
-                      required:
-                      - name
-                      - description
-                      - features
-                      - target_audience
-                      - tags
-                      - images
-                      - sku
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '400':
-          description: Bad Request - validation error
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    - VALID
-                    - NOT_FOUND
-                    - FORBIDDEN
-                    - USAGE_EXCEEDED
-                    - RATE_LIMITED
-                    - UNAUTHORIZED
-                    - DISABLED
-                    - INSUFFICIENT_PERMISSIONS
-                    - TIMEOUT_EXCEEDS_MAXIMUM
-                    - WEBSITE_ACCESS_ERROR
-                    - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '401':
-          description: Unauthorized
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    - VALID
-                    - NOT_FOUND
-                    - FORBIDDEN
-                    - USAGE_EXCEEDED
-                    - RATE_LIMITED
-                    - UNAUTHORIZED
-                    - DISABLED
-                    - INSUFFICIENT_PERMISSIONS
-                    - TIMEOUT_EXCEEDS_MAXIMUM
-                    - WEBSITE_ACCESS_ERROR
-                    - INPUT_VALIDATION_ERROR
-                    description: Error code indicating the type of error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '408':
-          description: Request Timeout
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Timeout error message
-                  error_code:
-                    type: string
-                    enum:
-                    - REQUEST_TIMEOUT
-                    description: Error code indicating request timeout
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-        '429':
-          $ref: '#/components/responses/RateLimited'
-        '500':
-          description: Internal server error
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/RateLimitLimit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/RateLimitRemaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/RateLimitReset'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Error message
-                  error_code:
-                    type: string
-                    enum:
-                    - INTERNAL_ERROR
-                    description: Error code indicating internal server error
-                  key_metadata:
-                    $ref: '#/components/schemas/KeyMetadata'
-      x-codeSamples:
-      - lang: JavaScript
-        source: "import ContextDev from 'context.dev';\n\nconst client = new ContextDev({\n  apiKey: process.env['CONTEXT_DEV_API_KEY'], // This is the default and can be omitted\n});\n\nconst response = await client.ai.extractProducts({ domain: 'domain' });\n\nconsole.log(response.key_metadata);"
-      - lang: Python
-        source: "import os\nfrom context.dev import ContextDev\n\nclient = ContextDev(\n    api_key=os.environ.get(\"CONTEXT_DEV_API_KEY\"),  # This is the default and can be omitted\n)\nresponse = client.ai.extract_products(\n    domain=\"domain\",\n)\nprint(response.key_metadata)"
-      - lang: Go
-        source: "package main\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\n\t\"github.com/context-dot-dev/context-go-sdk\"\n\t\"github.com/context-dot-dev/context-go-sdk/option\"\n)\n\nfunc main() {\n\tclient := contextdev.NewClient(\n\t\toption.WithAPIKey(\"My API Key\"),\n\t)\n\tresponse, err := client.AI.ExtractProducts(context.TODO(), contextdev.AIExtractProductsParams{\n\t\tOfByDomain: &contextdev.AIExtractProductsParamsBodyByDomain{\n\t\t\tDomain: \"domain\",\n\t\t},\n\t})\n\tif err != nil {\n\t\tpanic(err.Error())\n\t}\n\tfmt.Printf(\"%+v\\n\", response.KeyMetadata)\n}\n"
-      - lang: Ruby
-        source: 'require "context_dev"
-
-
-          context_dev = ContextDev::Client.new(api_key: "My API Key")
-
-
-          response = context_dev.ai.extract_products(body: {domain: "domain"})
-
-
-          puts(response)'
-      - lang: PHP
-        source: "<?php\n\nrequire_once dirname(__DIR__) . '/vendor/autoload.php';\n\nuse ContextDev\\Client;\nuse ContextDev\\Core\\Exceptions\\APIException;\n\n$client = new Client(apiKey: getenv('CONTEXT_DEV_API_KEY') ?: 'My API Key');\n\ntry {\n  $response = $client->ai->extractProducts(\n    domain: 'domain',\n    maxAgeMs: 0,\n    maxProducts: 1,\n    tags: ['production', 'team-alpha'],\n    timeoutMs: 1000,\n    directURL: 'https://example.com',\n  );\n\n  var_dump($response);\n} catch (APIException $e) {\n  echo $e->getMessage();\n}"
-      - lang: CLI
-        source: "context-dev ai extract-products \\\n  --api-key 'My API Key' \\\n  --domain domain \\\n  --direct-url https://example.com"
-      operationId: postBrandAiProducts
-      x-operation-id-source: derived
 components:
-  headers:
-    RateLimitReset:
-      description: Unix timestamp in seconds when the current rate-limit window resets. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-    RateLimitLimit:
-      description: Maximum requests allowed in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 1
-    RateLimitRemaining:
-      description: Requests remaining in the current fixed one-minute window. Returned when the authenticated API key has a per-minute rate limit.
-      schema:
-        type: integer
-        minimum: 0
   schemas:
-    KeyMetadata:
+    WebScrapePerformAction:
       type: object
       properties:
-        credits_consumed:
-          type: integer
-          description: The number of credits consumed by this request.
-        credits_remaining:
-          type: integer
-          description: The number of credits remaining for your organization after this request.
+        do:
+          type: string
+          enum:
+          - perform
+          description: Use `perform` for a plain-language browser instruction.
+        action:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: One browser instruction, such as clicking a button or entering text.
       required:
-      - credits_consumed
-      - credits_remaining
-      description: Metadata about the API key used for the request. Included in every response whenever a valid API key is provided, even when the response status is not 200.
+      - do
+      - action
+      additionalProperties: false
+      description: Resolve and perform one natural-language browser action.
+      title: Perform
     RequestTags:
       type: array
       items:
@@ -3050,19 +2111,272 @@ components:
         minLength: 1
         maxLength: 50
       maxItems: 20
-      description: Optional caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
+      description: Labels for filtering usage in the dashboard.
       example:
       - production
       - team-alpha
+    PartialTimeout:
+      type: object
+      properties:
+        milliseconds:
+          type: integer
+          minimum: 1000
+          maximum: 300000
+          description: Deadline in milliseconds.
+        behavior:
+          type: string
+          enum:
+          - fail
+          - return-partial
+          default: fail
+          description: '"fail" returns 408 at the deadline. "return-partial" returns available results; inspect the response’s partial flag.'
+      required:
+      - milliseconds
+      additionalProperties: false
+      description: Request deadline and what to return when it passes.
+    WebScrapeAction:
+      oneOf:
+      - $ref: '#/components/schemas/WebScrapeWaitAction'
+      - $ref: '#/components/schemas/WebScrapePerformAction'
+      - $ref: '#/components/schemas/WebScrapeScrollAction'
+      discriminator:
+        propertyName: do
+        mapping:
+          wait: '#/components/schemas/WebScrapeWaitAction'
+          perform: '#/components/schemas/WebScrapePerformAction'
+          scroll: '#/components/schemas/WebScrapeScrollAction'
+      description: Browser action discriminated by `do`. Each variant exposes only its applicable fields.
+    ScrapeTimeout:
+      type: object
+      properties:
+        milliseconds:
+          type: integer
+          minimum: 1
+          maximum: 300000
+          description: Deadline in milliseconds.
+        behavior:
+          type: string
+          enum:
+          - fail
+          - return-partial
+          default: fail
+          description: '"fail" returns 408 at the deadline. "return-partial" returns available results; inspect the response’s partial flag. "return-partial" requires at least 5000 ms.'
+      required:
+      - milliseconds
+      additionalProperties: false
+      description: Request deadline and what to return when it passes.
+    WebScrapeScrollAction:
+      type: object
+      properties:
+        do:
+          type: string
+          enum:
+          - scroll
+          description: Use `scroll` to move through the page or a container.
+        direction:
+          type: string
+          enum:
+          - up
+          - down
+          - left
+          - right
+          description: Direction to scroll. Defaults to down.
+        amount:
+          anyOf:
+          - type: integer
+            minimum: 1
+            maximum: 100000
+          - type: string
+            enum:
+            - viewport
+            - max
+          description: Pixels per scroll, one visible viewport, or the current scroll boundary. Defaults to viewport.
+        container:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: CSS selector for the first matching scroll container. Defaults to the page.
+        maxScrolls:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Maximum scroll iterations. Stops early when scrolling and scrollable extent stop changing. Defaults to 1.
+      required:
+      - do
+      additionalProperties: false
+      description: Scroll the page or a selected scrollable container, waiting adaptively for content and dimensions to settle after each iteration.
+      title: Scroll
+    CacheMetadata:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - hit
+          - miss
+          - zdr
+          description: Whether the response was served from cache, required fresh work, or honored zero-data-retention cache bypass.
+        age_ms:
+          type: integer
+          minimum: 0
+          description: Age of the cached data in milliseconds. Zero for miss and zdr responses.
+      required:
+      - status
+      - age_ms
+      additionalProperties: false
+      description: Whether this response came from cache.
+    ConcurrencyErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+          - true
+        limit_type:
+          type: string
+          enum:
+          - concurrency
+        limit:
+          type: number
+          minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        retry_after_seconds:
+          type: number
+          minimum: 0
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_charged:
+          type: number
+          enum:
+          - 0
+        should_retry:
+          type: boolean
+          enum:
+          - false
+        retry_condition:
+          type: string
+          enum:
+          - available_concurrency
+        recovery_options:
+          type: array
+          items:
+            type: string
+            enum:
+            - wait_for_in_flight_requests
+            - increase_concurrency_limit
+        info_url:
+          type: string
+          enum:
+          - https://context.dev/dashboard/subscription
+      required:
+      - is_authenticated
+      - limit_type
+      - limit
+      - remaining
+      - retry_after_seconds
+      - credits_charged
+      - should_retry
+      - retry_condition
+      - recovery_options
+      - info_url
+      description: Organization concurrency rejection details. Authentication is valid and no credits were charged. should_retry is false immediately; respect retry_after_seconds and wait for an in-flight request to finish or for the effective concurrency limit to increase. info_url opens subscription settings; no higher allowance is guaranteed for a particular account.
+    KeyMetadata:
+      type: object
+      properties:
+        credits_consumed:
+          type: integer
+          description: Credits charged for this request.
+        credits_remaining:
+          type: integer
+          description: Credits remaining for your organization.
+      required:
+      - credits_consumed
+      - credits_remaining
+      description: Credits this request used and your remaining balance.
+    BillingErrorData:
+      type: object
+      properties:
+        is_authenticated:
+          type: boolean
+          enum:
+          - true
+        credits_remaining:
+          type: number
+          minimum: 0
+        credits_required:
+          type: number
+          minimum: 0
+        is_credits_required_estimated:
+          type: boolean
+        credits_charged:
+          type: number
+          minimum: 0
+        should_retry:
+          type: boolean
+          enum:
+          - false
+        retry_condition:
+          type: string
+          enum:
+          - sufficient_credits
+        next_refill_at:
+          type: string
+          format: date-time
+        next_refill_credits:
+          type: number
+          exclusiveMinimum: 0
+        info_url:
+          type: string
+          enum:
+          - https://context.dev/dashboard/subscription
+      required:
+      - is_authenticated
+      - should_retry
+      - retry_condition
+      - info_url
+      description: Credit admission or reservation failure details. credits_required is an admission estimate, not a final charge. should_retry is false for an unchanged request immediately; retry_condition requires sufficient account credits. Unknown balances, costs, and refill details are omitted. next_refill_at is an ISO 8601 UTC timestamp. Existing request_id and key_metadata remain on the error envelope.
+    WebScrapeWaitAction:
+      type: object
+      properties:
+        do:
+          type: string
+          enum:
+          - wait
+          description: Use `wait` to pause for a fixed duration.
+        timeMs:
+          type: integer
+          minimum: 0
+          maximum: 30000
+          description: Time to pause in milliseconds before the next action.
+      required:
+      - do
+      - timeMs
+      additionalProperties: false
+      description: Pause for a fixed number of milliseconds before continuing to the next action.
+      title: Wait
     ErrorResponse:
       type: object
       properties:
         message:
           type: string
-          description: Error message
+          description: Human-readable error message.
         error_code:
           type: string
           enum:
+          - PROFILE_NOT_FOUND
+          - PROFILE_BUSY
+          - PROFILE_SESSION_EXPIRED
+          - PROFILE_REAUTHENTICATION_REQUIRED
+          - PROFILE_INVALID_CREDENTIALS
+          - PROFILE_MISSING_CREDENTIALS
+          - PROFILE_INTERACTION_REQUIRED
+          - PROFILE_AUTHENTICATION_UNKNOWN
+          - PROFILE_ORIGIN_BLOCKED
+          - PROFILE_INVALID_SESSION
+          - PROFILE_SESSION_TOO_LARGE
           - INTERNAL_ERROR
           - VALID
           - NOT_FOUND
@@ -3071,38 +2385,116 @@ components:
           - RATE_LIMITED
           - UNAUTHORIZED
           - DISABLED
+          - PAID_PLAN_REQUIRED
           - INSUFFICIENT_PERMISSIONS
           - TIMEOUT_EXCEEDS_MAXIMUM
+          - TIMEOUT_TOO_SHORT_FOR_WAIT
           - WEBSITE_ACCESS_ERROR
-          - EXTERNAL_PROVIDER_ERROR
+          - WEBSITE_BLOCKED
+          - WEBSITE_NOT_FOUND
+          - PDF_SKIPPED
+          - PDF_IMAGES_ONLY
           - INPUT_VALIDATION_ERROR
+          - ZDR_NOT_SUPPORTED
+          - ZDR_NOT_ENABLED
           - FREE_EMAIL_DETECTED
           - DISPOSABLE_EMAIL_DETECTED
           - REQUEST_TIMEOUT
+          - COLD_DOMAIN_TIMEOUT_TOO_LOW
           - UNSUPPORTED_CONTENT
+          - CONTENT_TOO_LARGE
           - MONITOR_PAUSED
+          - MONITOR_NO_WEBHOOK
+          - COLLECTION_PAUSED
           - MONITOR_LIMIT_EXCEEDED
           - SEARCH_UNAVAILABLE
-          description: Error code indicating the type of error
+          - BATCH_LIMIT_EXCEEDED
+          - BATCH_NOT_CANCELLABLE
+          - BATCH_NOT_COMPLETED
+          - IDEMPOTENCY_KEY_CONFLICT
+          - DELIVERY_IN_PROGRESS
+          - DELIVERY_ALREADY_DELIVERED
+          - DELIVERY_EXPIRED
+          - DELIVERY_CANCELLED
+          description: Machine-readable error code.
+        error_data:
+          anyOf:
+          - $ref: '#/components/schemas/BillingErrorData'
+          - $ref: '#/components/schemas/ConcurrencyErrorData'
+        required_permission:
+          type: string
+          enum:
+          - logs:read
+          - data:execute
+          - monitors:read
+          - monitors:write
+          - batches:read
+          - batches:write
+          description: Permission required for this request when error_code is INSUFFICIENT_PERMISSIONS. Manage (write) also grants read access to the same resource group.
         key_metadata:
           $ref: '#/components/schemas/KeyMetadata'
-    TimeoutMS:
-      type: integer
-      minimum: 1000
-      maximum: 300000
-      description: Optional timeout in milliseconds for the request. If the request takes longer than this value, it will be aborted with a 408 status code. Maximum allowed value is 300000ms (5 minutes).
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+      required:
+      - request_id
+    RequestId:
+      type: string
+      format: uuid
+      description: Unique ID of this request, also in `X-Request-Id`. Include it when contacting support.
+      example: 3f1c2a6e-8b4d-4c1e-9f0a-2d7b5e6c8a91
+  headers:
+    RateLimitLimit:
+      description: Maximum request units per minute, or maximum concurrent requests when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 1
+    RateLimitMode:
+      description: Set to concurrency when these headers report concurrent requests. When a per-minute limit also applies, its rejections report per-minute headers without this header. New Free accounts have 2 concurrent requests and 10 requests per minute; paid plans have no per-minute limit by default. Existing and custom allowances can differ.
+      schema:
+        type: string
+        enum:
+        - concurrency
+    RateLimitRemaining:
+      description: Request units remaining in the current minute, or concurrent requests still available when X-RateLimit-Mode is concurrency.
+      schema:
+        type: integer
+        minimum: 0
+    RequestId:
+      description: Unique ID of this request; also `request_id` in JSON bodies.
+      schema:
+        type: string
+        format: uuid
+    RateLimitReset:
+      description: Unix timestamp in seconds when the per-minute rate limit resets. Omitted for concurrency limits.
+      schema:
+        type: integer
+  parameters:
+    RequestTags:
+      name: tags
+      in: query
+      required: false
+      style: form
+      explode: false
+      schema:
+        $ref: '#/components/schemas/RequestTags'
+      description: Comma-separated labels for filtering usage, e.g. `production,team-alpha`.
+      example: production,team-alpha
   responses:
     RateLimited:
-      description: Rate limit exceeded
+      description: Rate limit exceeded. Organization concurrency rejections include structured error_data and subscription settings; follow Retry-After before retrying.
       headers:
+        X-Request-Id:
+          $ref: '#/components/headers/RequestId'
         X-RateLimit-Limit:
           $ref: '#/components/headers/RateLimitLimit'
         X-RateLimit-Remaining:
           $ref: '#/components/headers/RateLimitRemaining'
         X-RateLimit-Reset:
           $ref: '#/components/headers/RateLimitReset'
+        X-RateLimit-Mode:
+          $ref: '#/components/headers/RateLimitMode'
         Retry-After:
-          description: Seconds until the per-minute rate limit window resets
+          description: Seconds to wait before retrying.
           schema:
             type: integer
             minimum: 1
@@ -3114,7 +2506,7 @@ components:
             properties:
               message:
                 type: string
-                description: Error message
+                description: Human-readable error message.
               error_code:
                 type: string
                 enum:
@@ -3122,21 +2514,16 @@ components:
                 description: Error code indicating the rate limit was exceeded
               key_metadata:
                 $ref: '#/components/schemas/KeyMetadata'
+              error_data:
+                $ref: '#/components/schemas/ConcurrencyErrorData'
+              request_id:
+                $ref: '#/components/schemas/RequestId'
             required:
+            - request_id
             - message
             - error_code
-  parameters:
-    RequestTags:
-      name: tags
-      in: query
-      required: false
-      style: form
-      explode: false
-      schema:
-        $ref: '#/components/schemas/RequestTags'
-      description: Optional comma-separated caller-defined tags for tracking this request. Tags are recorded on the request's usage log and can be used to filter usage on the dashboard usage page. Up to 20 tags, each 1-50 characters.
-      example: production,team-alpha
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
+      description: 'Send `Authorization: Bearer <API_KEY>`. Keys have full access unless restricted to scopes.'
