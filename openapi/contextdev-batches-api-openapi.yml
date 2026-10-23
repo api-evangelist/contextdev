@@ -3951,3 +3951,9 @@ components:
       type: http
       scheme: bearer
       description: 'Send `Authorization: Bearer <API_KEY>`. Keys have full access unless restricted to scopes.'
+x-provenance:
+  method: harvested
+  publisher: Context.dev
+  source: https://docs.context.dev/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
