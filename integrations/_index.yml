@@ -215,3 +215,34 @@
     detected: '2026-10-22'
   status: not-a-workflow
   arazzo: null
+- slug: contextdev-packagist
+  label: Packagist
+  partner: packagist
+  partner_name: Packagist
+  category: official SDK (PHP)
+  type: register
+  channel: package-registry
+  evidence: https://packagist.org/packages/context-dev/context-dev-php
+  source: edge
+  relationship: distribution-channel
+  contract_reference:
+    register: Packagist (public registry JSON)
+    spec_file: null
+    language: PHP
+    packages:
+    - name: context-dev/context-dev-php
+      version: v2.36.1
+      released: '2026-10-21'
+      released_field: time
+      lapsed: false
+      page: https://packagist.org/packages/context-dev/context-dev-php
+      repo_leg: github-org:context-dot-dev
+      publisher_leg: org:context-dev
+      matched_by: github-org
+    current: true
+    signal_note: 'an official package on the registry: distribution, not an integration; lapsed = no release in
+      24 months'
+    detected_by: sweep-php-dart-elixir-package-registries.py
+    detected: '2026-10-22'
+  status: not-a-workflow
+  arazzo: null
