@@ -64,20 +64,165 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Context.dev is the unified web-context API for software and AI agents — one API that
-turns any domain or URL into structured, typed JSON: brand intelligence (logos,
-colors, fonts, socials, industry codes, stock ticker / ISIN and transaction-descriptor
-resolution), web scraping and crawling to clean Markdown or HTML, screenshots, sitemap
-discovery, web search, structured data extraction against a JSON Schema, product
-extraction, document parsing to Markdown, NAICS / SIC classification, and website change
-monitoring with signed webhooks.
+Context.dev is the unified web-context API for software and AI agents — one API that turns any domain or URL into structured, typed JSON. It covers brand intelligence (logos, colors, fonts, socials, address, industry codes, stock ticker / ISIN and transaction-descriptor resolution), web scraping and crawling to clean Markdown or HTML, screenshots, sitemap discovery, web search, structured data extraction against a JSON Schema, product extraction, document parsing to Markdown, NAICS / SIC classification, and website change monitoring with signed webhooks. Typed first-party SDKs ship for TypeScript, Python, Ruby, Go, and PHP, alongside a CLI, a hosted MCP server, and a published Agent Skill. Founded in 2025 by Yahia Bakour and backed by Y Combinator (S26).
 
-- Website: https://www.context.dev
-- Docs: https://docs.context.dev
-- API base URL: `https://api.context.dev/v1`
-- SDKs: TypeScript, Python, Ruby, Go, PHP
-- CLI, hosted MCP server, and a published Agent Skill
-- Founded 2025 by Yahia Bakour · Backed by Y Combinator (S26)
+**Areas:** Web Scraping · Brand Intelligence · Data Enrichment · AI Agents · Web Data · Classification · Website Monitoring · Company Data · Developer Tools · A2A
 
-Surfaced as a Y Combinator portfolio company and enriched by the API Evangelist pipeline
-from Context.dev's own public developer surface.
+## Context.dev on APIs.io
+
+Everything profiled for Context.dev is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/contextdev/](https://apis.io/providers/contextdev/)** — or go straight to one of the APIs or properties below.
+
+### APIs (7)
+
+- [Context.dev Brand Intelligence API](https://apis.io/apis/contextdev/contextdev-brand-intelligence-api/) — The Brand Intelligence API from Context.dev — 7 operation(s) for brand intelligence.
+- [Context.dev Monitors API](https://apis.io/apis/contextdev/contextdev-monitors-api/) — Monitor pages, sitemaps, and extracted website data for exact or semantic changes. Webhook payloads are documented by the…
+- [Context.dev Parsing API](https://apis.io/apis/contextdev/contextdev-parsing-api/) — The Parsing API from Context.dev — 1 operation(s) for parsing.
+- [Context.dev People API](https://apis.io/apis/contextdev/contextdev-people-api/) — The People API from Context.dev — 1 operation(s) for people.
+- [Context.dev Utility API](https://apis.io/apis/contextdev/contextdev-utility-api/) — The Utility API from Context.dev — 3 operation(s) for utility.
+- [Context.dev Web Extraction API](https://apis.io/apis/contextdev/contextdev-web-extraction-api/) — The Web Extraction API from Context.dev — 9 operation(s) for web extraction.
+- [Context.dev Web Scraping API](https://apis.io/apis/contextdev/contextdev-web-scraping-api/) — The Web Scraping API from Context.dev — 7 operation(s) for web scraping.
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### AsyncAPI (1)
+
+Event-driven and webhook contracts.
+
+- [Contextdev Webhooks](https://apis.io/asyncapis/contextdev/contextdev-webhooks/)
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [context](https://apis.io/servers/contextdev/context/)
+
+#### Agentic access (1)
+
+Which operations an agent can call, which act, and which need a human in the loop.
+
+- [Contextdev Agentic Access](https://apis.io/agentic-access/contextdev/contextdev-agentic-access/)
+
+#### Collections (7)
+
+Postman and Open Collection request collections.
+
+- [Context Brand Intelligence API](https://apis.io/collections/contextdev/open-contextdev-brand-intelligence-api/)
+- [Context Brand Intelligence Monitors API](https://apis.io/collections/contextdev/open-contextdev-monitors-api/)
+- [Context Brand Intelligence Parsing API](https://apis.io/collections/contextdev/open-contextdev-parsing-api/)
+- [Context Brand Intelligence People API](https://apis.io/collections/contextdev/open-contextdev-people-api/)
+- [Context Brand Intelligence Utility API](https://apis.io/collections/contextdev/open-contextdev-utility-api/)
+- [Context Brand Intelligence Web Extraction API](https://apis.io/collections/contextdev/open-contextdev-web-extraction-api/)
+- [Context Brand Intelligence Web Scraping API](https://apis.io/collections/contextdev/open-contextdev-web-scraping-api/)
+
+#### Overlays (9)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Contextdev Batch Api Overlay](https://apis.io/overlays/contextdev/contextdev-batch-api-overlay/)
+- [Contextdev Brand Intelligence Api Phrasing Overlay](https://apis.io/overlays/contextdev/contextdev-brand-intelligence-api-phrasing-overlay/)
+- [Contextdev Monitors Api Phrasing Overlay](https://apis.io/overlays/contextdev/contextdev-monitors-api-phrasing-overlay/)
+- [Contextdev Openapi Overlay](https://apis.io/overlays/contextdev/contextdev-openapi-overlay/)
+- [Contextdev Parsing Api Phrasing Overlay](https://apis.io/overlays/contextdev/contextdev-parsing-api-phrasing-overlay/)
+- [Contextdev People Api Phrasing Overlay](https://apis.io/overlays/contextdev/contextdev-people-api-phrasing-overlay/)
+- [Contextdev Utility Api Phrasing Overlay](https://apis.io/overlays/contextdev/contextdev-utility-api-phrasing-overlay/)
+- [Contextdev Web Extraction Api Phrasing Overlay](https://apis.io/overlays/contextdev/contextdev-web-extraction-api-phrasing-overlay/)
+- [Contextdev Web Scraping Api Phrasing Overlay](https://apis.io/overlays/contextdev/contextdev-web-scraping-api-phrasing-overlay/)
+
+#### Security (3)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Contextdev Authentication](https://apis.io/security/contextdev/contextdev-authentication/)
+- [Contextdev Domain Security](https://apis.io/security/contextdev/contextdev-domain-security/)
+- [Contextdev Trust Center](https://apis.io/security/contextdev/contextdev-trust-center/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Contextdev Scopes](https://apis.io/scopes/contextdev/contextdev-scopes/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Contextdev Plans Pricing](https://apis.io/plans/contextdev/contextdev-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Contextdev Rate Limits](https://apis.io/rate-limits/contextdev/contextdev-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://www.context.dev/)
+- [Documentation](https://docs.context.dev/introduction)
+- [Getting started](https://docs.context.dev/quickstart)
+- [API reference](https://docs.context.dev)
+- [Pricing](https://www.context.dev/pricing)
+- [Sign up](https://www.context.dev/signup)
+- [Changelog](https://docs.context.dev/changelog)
+- [Blog](https://www.context.dev/blog)
+- [Privacy policy](https://www.context.dev/privacy)
+- [GitHub](https://github.com/context-dot-dev)
+- [Status](https://status.context.dev)
+
+## API Evangelist rating
+
+**Kin Score 67.7** — exemplar · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 60.4 |
+| Contract governance | 18.2 |
+| Operational transparency | 65.8 |
+| Developer ergonomics | 78.6 |
+| Access clarity | 81.6 |
+
+**Agent readiness 57.8** — agent-native
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | — |
+| MCP Server | platform (partial credit) |
+| Auth Clarity | served (partial credit) |
+| Idempotency | verified |
+| Error Semantics | verified |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | verified |
+| Event Surface Described | yes |
+| Agent Skills | yes |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | partial |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 35.3** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/contextdev/](https://apis.io/providers/contextdev/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Context.dev: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/contextdev/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
